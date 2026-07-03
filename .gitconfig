@@ -1,0 +1,30 @@
+[user]
+	name = NouradinAbdurahman
+	email = n.aden1208@gmail.com
+[init]
+	defaultBranch = main
+[pull]
+	rebase = false
+[core]
+	editor = code --wait
+	autocrlf = input
+	excludesfile = /Users/nouradin/.gitignore_global
+[fetch]
+	prune = true
+[credential]
+	helper = osxkeychain
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[rerere]
+	enabled = true
+[merge]
+	conflictstyle = zdiff3

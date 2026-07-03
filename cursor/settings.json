@@ -1,0 +1,60 @@
+{
+    "database-client.autoSync": true,
+    "workbench.colorCustomizations": {},
+    "workbench.iconTheme": "vscode-icons",
+    "files.autoSave": "afterDelay",
+    "security.workspace.trust.untrustedFiles": "open",
+    "geminicodeassist.project": "steadfast-cocoa-wkhfj",
+    "mssql.connectionGroups": [
+        {
+            "name": "ROOT",
+            "id": "ROOT"
+        }
+    ],
+    "mssql.connections": [
+        {
+            "authenticationType": "SqlLogin",
+            "connectTimeout": 30,
+            "applicationName": "vscode-mssql",
+            "applicationIntent": "ReadWrite",
+            "server": "localhost",
+            "database": "",
+            "user": "sa",
+            "password": "",
+            "commandTimeout": 30,
+            "encrypt": "Mandatory",
+            "profileName": "DataEngineering",
+            "savePassword": true,
+            "trustServerCertificate": true,
+            "groupId": "ROOT",
+            "id": "DAAD098B-5E5E-4D14-AA4C-280CD510E837",
+            "containerName": "SQL_Server_Docker"
+        }
+    ],
+    "settingsSync.ignoredExtensions": [],
+    "chat.viewSessions.orientation": "stacked",
+    "gitlens.ai.model": "vscode",
+    "gitlens.ai.vscode.model": "copilot:gpt-4.1",
+    "aws.cloudformation.telemetry.enabled": true,
+    "redhat.telemetry.enabled": true,
+    "vs-kubernetes": {
+        "vscode-kubernetes.helm-path-mac": "/Users/nouradin/.vs-kubernetes/tools/helm/darwin-arm64/helm",
+        "vscode-kubernetes.minikube-path-mac": "/Users/nouradin/.vs-kubernetes/tools/minikube/darwin-arm64/minikube"
+    },
+    "github.copilot.nextEditSuggestions.enabled": true,
+    "chat.agent.maxRequests": 1000,
+    "chat.checkpoints.showFileChanges": true,
+    "chat.allowAnonymousAccess": true,
+    "mssql.autoDisableNonTSqlLanguageService": false,
+    "chat.tools.terminal.autoApprove": {
+        "dart": true,
+        "npx supabase": true,
+        "/^node test-rpc\\.mjs 2>&1$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "git add": true
+    },
+    "claudeCode.preferredLocation": "panel",
+    "terminal.integrated.mouseWheelScrollSensitivity": 3
+}
