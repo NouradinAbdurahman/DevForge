@@ -82,7 +82,7 @@ done < <(find "$DEV_SETUP_ROOT" -name "*.json" -not -path "*/node_modules/*" -no
 
 log_section "YAML files"
 
-# shellcheck disable=SC2329 # invoked indirectly via run_step "$@"
+# shellcheck disable=SC2317,SC2329 # invoked indirectly via run_step "$@"; body is not actually unreachable
 _yq_validate() { yq eval '.' "$1" > /dev/null; }
 
 if command_exists yq; then

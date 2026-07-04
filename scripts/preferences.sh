@@ -36,7 +36,7 @@ fi
 # Exports the live domain to a temp file; if a backup already exists and
 # differs, asks for confirmation before overwriting (fs_safe_copy then
 # additionally preserves the previous backup as a timestamped .backup file).
-# shellcheck disable=SC2329 # invoked indirectly via run_step/run_step_optional "$@"
+# shellcheck disable=SC2317,SC2329 # invoked indirectly via run_step/run_step_optional "$@"; body is not actually unreachable
 _backup_domain() {
     local domain="$1" filename="$2" dest tmp
     dest="$PREFERENCES_DIR/$filename"
@@ -58,7 +58,7 @@ _backup_domain() {
 }
 
 # _restore_domain <domain> <filename>
-# shellcheck disable=SC2329 # invoked indirectly via run_step/run_step_optional "$@"
+# shellcheck disable=SC2317,SC2329 # invoked indirectly via run_step/run_step_optional "$@"; body is not actually unreachable
 _restore_domain() {
     local domain="$1" filename="$2" src
     src="$PREFERENCES_DIR/$filename"
