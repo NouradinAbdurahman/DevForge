@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=SCRIPTDIR/common.sh
 source "$SCRIPT_DIR/common.sh"
 
-log_section "Health check"
+log_section "DevForge Health Check"
 
 # check_cli <label> <binary> [version-flag]
 # FAIL if the binary is entirely missing, PASS otherwise.

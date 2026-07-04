@@ -18,7 +18,8 @@ case "${1:-}" in
     *) log_error "Unknown option: $1"; exit 1 ;;
 esac
 
-log_section "Doctor: deep diagnostics"
+log_section "DevForge Doctor"
+log_info "Running deep diagnostics"
 
 # --------------------------------------------------------------------------
 # PATH hygiene

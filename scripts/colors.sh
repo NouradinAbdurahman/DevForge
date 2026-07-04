@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared ANSI color codes and status symbols for all dev-setup scripts.
+# Shared ANSI color codes and status symbols for all DevForge scripts.
 # Colors are disabled automatically when stdout is not a terminal (CI, piping, log files).
 
 if [[ -z "${NO_COLOR:-}" && -t 1 ]]; then

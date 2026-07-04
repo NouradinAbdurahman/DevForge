@@ -1,7 +1,7 @@
 # Supabase starter template
 
 A minimal Supabase project layout - copy this directory out to start a new
-project. Requires the Supabase CLI (already installed by this repo's
+project. Requires the Supabase CLI (already installed by DevForge's
 `Brewfile`) and Docker running locally (Supabase's local stack runs in
 containers).
 

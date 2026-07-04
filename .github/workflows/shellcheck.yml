@@ -1,4 +1,4 @@
-name: ShellCheck
+name: DevForge ShellCheck
 
 on:
   push:

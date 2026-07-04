@@ -40,7 +40,8 @@ if [[ ! -f "$BREWFILE_PATH" ]]; then
 fi
 
 START_TIME="$(timer_start)"
-log_section "Installing Homebrew packages"
+log_section "DevForge Install"
+log_info "Installing Homebrew packages"
 log_info "Profile: $PROFILE ($BREWFILE_PATH)"
 
 run_step "Homebrew installed" ensure_homebrew

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Reclaims disk space: Homebrew, Flutter, npm/pnpm, mise, and Docker caches,
-# plus stray temp files and old dev-setup logs/backups.
+# plus stray temp files and old DevForge logs/backups.
 #
 # Usage: ./scripts/cleanup.sh
 set -Eeuo pipefail
@@ -10,7 +10,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 START_TIME="$(timer_start)"
-log_section "Cleaning up caches and temporary files"
+log_section "DevForge Clean"
+log_info "Cleaning up caches and temporary files"
 
 if command_exists brew; then
     run_step_optional "brew cleanup -s" brew cleanup -s
@@ -52,7 +53,7 @@ fi
 log_step "Removing stray temp files..."
 run_step_optional "Remove .DS_Store files under \$HOME (top level)" find "$HOME" -maxdepth 2 -name ".DS_Store" -delete
 
-log_step "Pruning dev-setup config backups older than 30 days..."
+log_step "Pruning DevForge config backups older than 30 days..."
 run_step_optional "Prune old *.backup-* files" find "$DEV_SETUP_ROOT" -name "*.backup-*" -mtime +30 -delete
 
 if print_summary; then

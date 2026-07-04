@@ -20,7 +20,7 @@ usage() {
 
 case "$1" in
     list)
-        log_section "Available profiles"
+        log_section "DevForge Profiles"
         printf '%-9s - %s\n' "full" "everything in Brewfile (default)"
         for dir in "$PROFILES_DIR"/*/; do
             [[ -d "$dir" ]] || continue

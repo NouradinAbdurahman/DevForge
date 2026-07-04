@@ -1,6 +1,9 @@
 # GitHub Actions
 
-All workflows live in `.github/workflows/`.
+All workflows live in `.github/workflows/`. Each workflow's display name in
+the Actions tab is prefixed `DevForge` (e.g. `bootstrap.yml` shows as
+"DevForge Bootstrap") - the table below uses filenames since those don't
+change.
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
@@ -8,8 +11,8 @@ All workflows live in `.github/workflows/`.
 | `shellcheck.yml` | push/PR touching `*.sh` | `shellcheck -x` on every script |
 | `lint.yml` | push, PR | `bash -n` syntax check, `jq empty` on every JSON file, `markdownlint-cli` on every Markdown file |
 | `update.yml` | weekly (Mon 09:00 UTC), manual | `brew update && brew outdated`, posted to the job summary |
-| `release.yml` | push of tag `v*.*.*` | Verifies `VERSION` matches the tag, runs `validate.sh`, extracts the matching CHANGELOG section, generates a health report, and publishes a GitHub Release with `Brewfile`/`README.md`/`CHANGELOG.md`/`VERSION`/`health-report.txt` attached |
-| `codeql.yml` | push/PR to `main`, weekly | CodeQL static analysis (JavaScript/TypeScript - covers the JS/TS project templates) |
+| `release.yml` | push of tag `v*.*.*` | Verifies `VERSION` matches the tag, runs `validate.sh`, extracts the matching CHANGELOG section, generates a health report, and publishes a GitHub Release (titled "DevForge vX.Y.Z") with `Brewfile`/`README.md`/`CHANGELOG.md`/`VERSION`/`health-report.txt` attached |
+| `codeql.yml` | push/PR to `main`, weekly | CodeQL static analysis across `actions`, `javascript-typescript`, and `python` (see [Architecture.md#codeqls-language-matrix](Architecture.md#codeqls-language-matrix) for why Ruby is deliberately excluded) |
 | `dependency-review.yml` | every PR | Flags high-severity vulnerabilities and disallowed licenses (GPL-3.0, AGPL-3.0) in dependency changes |
 | `scorecard.yml` | push to `main`, weekly, branch protection changes | [OSSF Scorecard](https://github.com/ossf/scorecard) supply-chain security score, uploaded to Code Scanning |
 

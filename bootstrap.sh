@@ -62,7 +62,7 @@ trap '_status=$?; [[ $_status -ne 0 ]] && log_error "Bootstrap aborted unexpecte
 START_TIME="$(timer_start)"
 
 echo "${COLOR_BOLD}=========================================${COLOR_RESET}"
-echo "${COLOR_BOLD}  Development Environment Bootstrap${COLOR_RESET}"
+echo "${COLOR_BOLD}  DevForge Bootstrap${COLOR_RESET}"
 echo "${COLOR_BOLD}=========================================${COLOR_RESET}"
 
 # --------------------------------------------------------------------------

@@ -10,7 +10,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=SCRIPTDIR/common.sh
 source "$SCRIPT_DIR/common.sh"
 
-log_section "Validating repository"
+log_section "DevForge Validate"
+log_info "Validating repository"
 
 # --------------------------------------------------------------------------
 # Shell syntax

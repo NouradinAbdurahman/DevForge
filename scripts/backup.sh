@@ -17,7 +17,8 @@ for arg in "$@"; do
 done
 
 START_TIME="$(timer_start)"
-log_section "Backing up live configuration into $DEV_SETUP_ROOT"
+log_section "DevForge Backup"
+log_info "Capturing live configuration into $DEV_SETUP_ROOT"
 
 # --------------------------------------------------------------------------
 # Plain config files: mise.toml, .zshrc, .gitconfig, .gitignore_global
@@ -66,7 +67,7 @@ git status --short
 
 if confirm "Commit and push these changes?"; then
     git add -A
-    git commit -m "chore: backup dev environment configuration ($(date +%Y-%m-%d))"
+    git commit -m "chore: DevForge backup ($(date +%Y-%m-%d))"
     git push
     log_success "Backup committed and pushed"
 else

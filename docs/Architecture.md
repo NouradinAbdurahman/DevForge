@@ -120,3 +120,18 @@ Two other pieces built on the same shared-function pattern:
   installed-but-not-on-PATH tool directories (Android SDK, pnpm, mise
   shims, GNU coreutils, etc.) and can fix them by appending an idempotent,
   clearly marked block to the live `~/.zshrc` (`scripts/doctor.sh --fix`).
+
+## CodeQL's language matrix
+
+`.github/workflows/codeql.yml` explicitly lists `["actions",
+"javascript-typescript", "python"]` rather than letting GitHub
+auto-detect languages. This repo previously ran both GitHub's auto-managed
+"Default setup" and this custom ("Advanced") workflow at once, which
+GitHub does not support running side by side - Default Setup's language
+auto-detection also produced a transient false-positive "Ruby" scan job
+(there is no Ruby anywhere in this repo). Default Setup is now disabled;
+this workflow's explicit matrix is the only CodeQL configuration, matches
+the languages that actually exist here (GitHub Actions YAML, JS/TS in
+`templates/`, Python in `templates/python`/`templates/fastapi`), and needs
+`actions: read` permission for SARIF upload (see the `permissions:` block
+in the workflow file).

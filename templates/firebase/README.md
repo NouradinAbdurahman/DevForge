@@ -1,7 +1,7 @@
 # Firebase starter template
 
 A minimal Firebase Hosting project - copy this directory out to start a new
-project. Requires the Firebase CLI (already installed by this repo's
+project. Requires the Firebase CLI (already installed by DevForge's
 `Brewfile`).
 
 ## Recommended structure

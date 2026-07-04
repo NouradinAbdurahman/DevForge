@@ -308,18 +308,18 @@ path_manager_fix() {
     fi
 
     if [[ -f "$zshrc" ]]; then
-        sed -i.path-manager-backup '/# >>> dev-setup path-manager >>>/,/# <<< dev-setup path-manager <<</d' "$zshrc"
+        sed -i.path-manager-backup '/# >>> DevForge path-manager >>>/,/# <<< DevForge path-manager <<</d' "$zshrc"
     fi
 
     {
-        echo "# >>> dev-setup path-manager >>>"
+        echo "# >>> DevForge path-manager >>>"
         echo "# Managed by 'scripts/doctor.sh --fix' - safe to delete, will be"
         echo "# regenerated. Do not hand-edit; changes are lost on the next fix."
         for d in "${missing[@]}"; do
             # shellcheck disable=SC2016 # $PATH must stay literal - it's written into ~/.zshrc to expand at shell startup, not now
             printf 'export PATH="%s:$PATH"\n' "$d"
         done
-        echo "# <<< dev-setup path-manager <<<"
+        echo "# <<< DevForge path-manager <<<"
     } >> "$zshrc"
 
     log_success "Added ${#missing[@]} missing PATH entries to ~/.zshrc - restart your shell (or run 'exec zsh') to apply"
