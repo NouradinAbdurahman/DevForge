@@ -1,5 +1,5 @@
 # Minimal, working example - replace with your actual build steps.
-FROM alpine:3.20
+FROM alpine:3.24
 
 WORKDIR /app
 
