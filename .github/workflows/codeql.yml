@@ -12,6 +12,10 @@ on:
 permissions:
   contents: read
   security-events: write
+  # Required for the CodeQL action to look up workflow-run metadata when
+  # uploading results; without it SARIF upload fails with "Resource not
+  # accessible by integration".
+  actions: read
 
 jobs:
   analyze:
@@ -19,14 +23,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # CodeQL's "javascript" language covers both JavaScript and
-        # TypeScript. There is no dedicated CodeQL analyzer for shell,
-        # YAML, JSON, or Markdown - those are covered instead by
-        # shellcheck.yml and lint.yml.
-        language: ["javascript"]
+        # Matches this repo's actual languages: Bash/shell has no CodeQL
+        # analyzer (covered by shellcheck.yml/lint.yml instead), and there
+        # is no Ruby, C/C++, Java, or Go source anywhere in this repo.
+        # "javascript-typescript" and "actions" are CodeQL's modern
+        # unified language identifiers (see github/codeql-action's
+        # CHANGELOG, "language aliases" for CodeQL >= 2.14.4).
+        language: ["actions", "javascript-typescript", "python"]
     steps:
       - uses: actions/checkout@v7
 
+      # No autobuild step: none of the analyzed languages (GitHub Actions
+      # YAML, JS/TS, Python) require a compile step before analysis.
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
