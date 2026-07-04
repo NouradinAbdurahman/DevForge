@@ -30,7 +30,7 @@ case "$1" in
             printf '%-9s - %s\n' "$name" "${desc:-no description}"
         done
         echo
-        echo "Current default: $(resolve_profile)"
+        echo "Current default: $(resolve_profile "")"
         echo "Switch with: ./dev profile use <name>"
         ;;
     show)
