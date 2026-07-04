@@ -1,0 +1,32 @@
+name: Lint
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shell syntax (bash -n)
+        run: |
+          shopt -s globstar
+          for f in bootstrap.sh scripts/*.sh; do
+            echo "Checking $f"
+            bash -n "$f"
+          done
+
+      - name: JSON validity
+        run: |
+          shopt -s globstar
+          for f in **/*.json; do
+            [[ "$f" == *node_modules* ]] && continue
+            echo "Checking $f"
+            jq empty "$f"
+          done
+
+      - name: Markdown lint
+        run: |
+          npx --yes markdownlint-cli "**/*.md" --ignore node_modules

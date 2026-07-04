@@ -1,0 +1,31 @@
+name: Weekly dependency check
+
+on:
+  schedule:
+    # Every Monday at 09:00 UTC
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+jobs:
+  outdated:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for outdated Homebrew packages
+        run: |
+          brew update
+          echo "## Outdated Homebrew packages" >> "$GITHUB_STEP_SUMMARY"
+          outdated="$(brew outdated || true)"
+          if [[ -z "$outdated" ]]; then
+            echo "All Homebrew packages are up to date." >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo '```'
+              echo "$outdated"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Check Brewfile against installed packages
+        run: brew bundle check --file=Brewfile --verbose || true
