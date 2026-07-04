@@ -1,4 +1,4 @@
-# dev-setup
+# DevForge
 
 A production-grade macOS development workstation lifecycle manager: clone
 this repo on any Mac (Apple Silicon or Intel, fresh install or existing
@@ -10,8 +10,8 @@ machine, backs up macOS UI preferences, ships ready-to-copy project
 templates, and manages its own releases.
 
 ```bash
-git clone https://github.com/NouradinAbdurahman/dev-setup.git
-cd dev-setup
+git clone https://github.com/NouradinAbdurahman/DevForge.git
+cd DevForge
 chmod +x bootstrap.sh dev
 ./dev install
 ```
@@ -87,7 +87,7 @@ this repo has already hit and fixed, in
 ## Folder structure
 
 ```text
-dev-setup/
+DevForge/
 ├── dev                        # CLI dispatcher - ./dev <command>
 ├── bootstrap.sh               # main installer
 ├── Brewfile                   # Homebrew formulae, casks, VS Code/Cursor extensions, npm globals
@@ -127,8 +127,8 @@ dev-setup/
 ## Installation
 
 ```bash
-git clone https://github.com/NouradinAbdurahman/dev-setup.git
-cd dev-setup
+git clone https://github.com/NouradinAbdurahman/DevForge.git
+cd DevForge
 chmod +x bootstrap.sh
 ./bootstrap.sh
 ```

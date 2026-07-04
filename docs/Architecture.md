@@ -2,7 +2,7 @@
 
 ## What this repo is
 
-`dev-setup` provisions, backs up, restores, updates, validates, and
+`DevForge` provisions, backs up, restores, updates, validates, and
 releases a complete macOS development workstation. It's not an
 application - there's no build step or runtime; every "feature" is a
 standalone, idempotent shell script sharing one library.
