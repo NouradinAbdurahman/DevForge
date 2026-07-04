@@ -2,7 +2,7 @@
 
 ## What this repo is
 
-`DevForge` provisions, backs up, restores, updates, validates, and
+`DevForgeKit` provisions, backs up, restores, updates, validates, and
 releases a complete macOS development workstation. It's not an
 application - there's no build step or runtime; every "feature" is a
 standalone, idempotent shell script sharing one library.
@@ -97,9 +97,9 @@ Rather than each script hardcoding `$HOME` paths or `defaults` domains,
 Add a new mirrored file/domain in exactly one of those functions, and every
 script that iterates it picks it up automatically.
 
-## The `./dev` CLI
+## The `./devforgekit` CLI
 
-`./dev` (repo root, no extension) is a pure dispatcher - it parses
+`./devforgekit` (repo root, no extension) is a pure dispatcher - it parses
 `$1` as a command, shifts, and `exec`s the matching `bootstrap.sh` or
 `scripts/*.sh` with the remaining args. It contains no logic of its own
 beyond the dispatch table; see [CLI.md](CLI.md). Because it has no `.sh`

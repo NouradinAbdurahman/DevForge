@@ -12,7 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 START_TIME="$(timer_start)"
-log_section "DevForge Restore"
+log_section "DevForgeKit Restore"
 log_info "Restoring configuration from $DEV_SETUP_ROOT"
 
 run_step "Zsh configuration" restore_zsh

@@ -29,7 +29,7 @@ done
 
 cd "$DEV_SETUP_ROOT"
 
-log_section "DevForge Release ($BUMP)"
+log_section "DevForgeKit Release ($BUMP)"
 
 # --------------------------------------------------------------------------
 # Preflight - abort (don't just warn) if any of these fail
@@ -170,7 +170,7 @@ echo "$NEW_VERSION" > VERSION
 
 git add VERSION CHANGELOG.md
 git commit -m "chore(release): v$NEW_VERSION"
-git tag -a "v$NEW_VERSION" -m "DevForge v$NEW_VERSION"
+git tag -a "v$NEW_VERSION" -m "DevForgeKit v$NEW_VERSION"
 
 if confirm "Push commit and tag v$NEW_VERSION to origin?"; then
     git push origin "$CURRENT_BRANCH"

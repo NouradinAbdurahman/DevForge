@@ -7,5 +7,5 @@ own `brew`/`cask`/`vscode`/`npm` lines to it (copy from the root
 ```bash
 ./bootstrap.sh --profile custom
 # or
-./dev install --profile custom
+./devforgekit install --profile custom
 ```

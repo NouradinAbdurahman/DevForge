@@ -91,7 +91,7 @@ _status_domain() {
 
 case "$1" in
     backup)
-        log_section "DevForge Preferences: Backup"
+        log_section "DevForgeKit Preferences: Backup"
         log_info "Backing up macOS preferences to $PREFERENCES_DIR"
         while IFS='|' read -r domain filename optional; do
             [[ -z "$domain" ]] && continue
@@ -103,7 +103,7 @@ case "$1" in
         done < <(preference_domain_pairs)
         ;;
     restore)
-        log_section "DevForge Preferences: Restore"
+        log_section "DevForgeKit Preferences: Restore"
         log_info "Restoring macOS preferences from $PREFERENCES_DIR"
         while IFS='|' read -r domain filename optional; do
             [[ -z "$domain" ]] && continue
@@ -121,7 +121,7 @@ case "$1" in
         log_info "Some changes (Appearance, Stage Manager) may need a logout/restart to fully apply."
         ;;
     status)
-        log_section "DevForge Preferences: Status ($PREFERENCES_DIR)"
+        log_section "DevForgeKit Preferences: Status ($PREFERENCES_DIR)"
         while IFS='|' read -r domain filename optional; do
             [[ -z "$domain" ]] && continue
             _status_domain "$domain" "$filename"

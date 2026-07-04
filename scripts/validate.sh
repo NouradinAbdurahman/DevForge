@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=SCRIPTDIR/common.sh
 source "$SCRIPT_DIR/common.sh"
 
-log_section "DevForge Validate"
+log_section "DevForgeKit Validate"
 log_info "Validating repository"
 
 # --------------------------------------------------------------------------
@@ -19,7 +19,7 @@ log_info "Validating repository"
 
 log_section "Shell syntax (bash -n)"
 
-run_step "Syntax: dev" bash -n "$DEV_SETUP_ROOT/dev"
+run_step "Syntax: devforgekit" bash -n "$DEV_SETUP_ROOT/devforgekit"
 while IFS= read -r -d '' script; do
     run_step "Syntax: ${script#"$DEV_SETUP_ROOT"/}" bash -n "$script"
 done < <(find "$DEV_SETUP_ROOT" \( -name "*.sh" \) -not -path "*/node_modules/*" -not -path "*/.git/*" -print0)
@@ -31,7 +31,7 @@ done < <(find "$DEV_SETUP_ROOT" \( -name "*.sh" \) -not -path "*/node_modules/*"
 log_section "ShellCheck"
 
 if command_exists shellcheck; then
-    run_step "ShellCheck: dev" shellcheck -x "$DEV_SETUP_ROOT/dev"
+    run_step "ShellCheck: devforgekit" shellcheck -x "$DEV_SETUP_ROOT/devforgekit"
     while IFS= read -r -d '' script; do
         run_step "ShellCheck: ${script#"$DEV_SETUP_ROOT"/}" shellcheck -x "$script"
     done < <(find "$DEV_SETUP_ROOT" \( -name "*.sh" \) -not -path "*/node_modules/*" -not -path "*/.git/*" -print0)

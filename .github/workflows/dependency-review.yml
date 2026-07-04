@@ -1,4 +1,4 @@
-name: DevForge Dependency Review
+name: DevForgeKit Dependency Review
 
 on:
   pull_request:

@@ -3,7 +3,7 @@
 Everything in the root [Brewfile](../../Brewfile) - the complete
 workstation this repo was originally built around. This is the default
 when no `--profile`/`--minimal`/`--full` flag is given (and no profile has
-been set via `./dev profile use`).
+been set via `./devforgekit profile use`).
 
 This profile has no `profiles/full/Brewfile` of its own - it always
 resolves to the root `Brewfile` directly (see `profile_brewfile_path` in
@@ -16,5 +16,5 @@ Use with:
 # or
 ./bootstrap.sh --full
 # or
-./dev install --full
+./devforgekit install --full
 ```

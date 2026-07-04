@@ -1,4 +1,4 @@
-name: DevForge Release
+name: DevForgeKit Release
 
 on:
   push:
@@ -60,7 +60,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" \
-            --title "DevForge $GITHUB_REF_NAME" \
+            --title "DevForgeKit $GITHUB_REF_NAME" \
             --notes-file release-notes.md \
             release-assets/Brewfile \
             release-assets/README.md \
@@ -71,7 +71,7 @@ jobs:
       - name: Release summary
         run: |
           {
-            echo "## DevForge $GITHUB_REF_NAME published"
+            echo "## DevForgeKit $GITHUB_REF_NAME published"
             echo
             echo "Assets attached: Brewfile, README.md, CHANGELOG.md, VERSION, health-report.txt"
             echo

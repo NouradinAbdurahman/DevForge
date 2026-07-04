@@ -1,8 +1,8 @@
 # Scripts reference
 
 All scripts live in `scripts/` and share `scripts/common.sh` +
-`scripts/colors.sh`. `bootstrap.sh` and `dev` live at the repo root since
-they're entry points. See [CLI.md](CLI.md) for `./dev`, the dispatcher
+`scripts/colors.sh`. `bootstrap.sh` and `devforgekit` live at the repo root since
+they're entry points. See [CLI.md](CLI.md) for `./devforgekit`, the dispatcher
 that fronts everything below.
 
 | Script | Purpose | Mutates the machine? |
@@ -43,7 +43,7 @@ that fronts everything below.
 ./scripts/release.sh <patch|minor|major> [-y|--yes]
 ```
 
-Or via the CLI (`./dev <command>`, see [CLI.md](CLI.md)) - identical
+Or via the CLI (`./devforgekit <command>`, see [CLI.md](CLI.md)) - identical
 behavior, shorter to type.
 
 `-y`/`--yes` (or `DEV_SETUP_ASSUME_YES=1`) answers every confirmation

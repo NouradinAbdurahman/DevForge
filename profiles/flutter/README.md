@@ -8,5 +8,5 @@ Use with:
 ```bash
 ./bootstrap.sh --profile flutter
 # or
-./dev install --profile flutter
+./devforgekit install --profile flutter
 ```

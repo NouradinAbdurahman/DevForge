@@ -10,5 +10,5 @@ Use with:
 ```bash
 ./bootstrap.sh --minimal
 # or
-./dev install --profile minimal
+./devforgekit install --profile minimal
 ```

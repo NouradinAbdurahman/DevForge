@@ -35,15 +35,15 @@ possible future enhancement, not implemented yet.
 ./bootstrap.sh --full             # shorthand for --profile full
 
 # Or via the CLI
-./dev install --profile backend
+./devforgekit install --profile backend
 
 # List/inspect profiles
-./dev profile list
-./dev profile show backend
+./devforgekit profile list
+./devforgekit profile show backend
 
 # Set a persistent default (stored in .devprofile, gitignored) so future
-# ./bootstrap.sh / ./dev install runs use it without needing --profile
-./dev profile use flutter
+# ./bootstrap.sh / ./devforgekit install runs use it without needing --profile
+./devforgekit profile use flutter
 ./bootstrap.sh              # now installs the flutter profile
 ./bootstrap.sh --full       # explicit flag still overrides the default
 ```
@@ -55,7 +55,7 @@ possible future enhancement, not implemented yet.
    `brew`/`cask`/`vscode`/`npm` lines).
 3. Add `profiles/<name>/README.md` - its first line (a `#` heading, with
    the `#` stripped) is used as the one-line description in
-   `./dev profile list`.
+   `./devforgekit profile list`.
 4. Add a matching entry to `.github/dependabot.yml` if the profile ever
    grows a `package.json`/`Dockerfile` (not applicable to Brewfile-only
    profiles today).

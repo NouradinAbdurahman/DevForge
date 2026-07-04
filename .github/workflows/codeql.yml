@@ -1,4 +1,4 @@
-name: DevForge CodeQL
+name: DevForgeKit CodeQL
 
 on:
   push:

@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
         --skip-services) SKIP_SERVICES=1; shift ;;
         --dry-run) DRY_RUN=1; SKIP_SERVICES=1; shift ;;
         --profile)
-            [[ $# -ge 2 ]] || { log_error "--profile requires a value (see: ./scripts/profile.sh list)"; exit 1; }
+            [[ $# -ge 2 ]] || { log_error "--profile requires a value (see: devforgekit profile list)"; exit 1; }
             PROFILE_ARG="$2"
             shift 2
             ;;
@@ -32,7 +32,7 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             echo "Usage: ./bootstrap.sh [-y|--yes] [--skip-services] [--dry-run] [--profile <name>|--minimal|--full]"
             echo "  --dry-run          validate everything (Brewfile, config presence) without installing or copying anything; used by CI"
-            echo "  --profile <name>   install only that profile's Brewfile subset (see ./scripts/profile.sh list)"
+            echo "  --profile <name>   install only that profile's Brewfile subset (see: devforgekit profile list)"
             echo "  --minimal          shorthand for --profile minimal"
             echo "  --full             shorthand for --profile full (everything in the root Brewfile - the default)"
             exit 0
@@ -62,7 +62,7 @@ trap '_status=$?; [[ $_status -ne 0 ]] && log_error "Bootstrap aborted unexpecte
 START_TIME="$(timer_start)"
 
 echo "${COLOR_BOLD}=========================================${COLOR_RESET}"
-echo "${COLOR_BOLD}  DevForge Bootstrap${COLOR_RESET}"
+echo "${COLOR_BOLD}  Welcome to DevForgeKit${COLOR_RESET}"
 echo "${COLOR_BOLD}=========================================${COLOR_RESET}"
 
 # --------------------------------------------------------------------------
@@ -70,6 +70,7 @@ echo "${COLOR_BOLD}=========================================${COLOR_RESET}"
 # --------------------------------------------------------------------------
 
 log_section "Preflight checks"
+log_info "Preparing your machine..."
 
 if ! os_is_macos; then
     log_error "This bootstrap only supports macOS."
@@ -106,6 +107,7 @@ fi
 
 log_section "Homebrew"
 
+log_info "Installing packages..."
 log_info "Profile: $PROFILE ($BREWFILE_PATH)"
 
 if [[ "$DRY_RUN" -eq 1 ]]; then
@@ -136,6 +138,18 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# Global command
+# --------------------------------------------------------------------------
+
+log_section "Global command"
+
+if [[ "$DRY_RUN" -eq 1 ]]; then
+    log_info "Skipping global command symlink in --dry-run mode"
+else
+    run_step_optional "Install devforgekit as a global command" install_global_command
+fi
+
+# --------------------------------------------------------------------------
 # Services
 # --------------------------------------------------------------------------
 
@@ -153,6 +167,7 @@ fi
 # --------------------------------------------------------------------------
 
 log_section "Report"
+log_info "Running health checks..."
 run_step_optional "Generate system report" "$DEV_SETUP_ROOT/scripts/report.sh"
 
 # --------------------------------------------------------------------------
@@ -204,12 +219,15 @@ _check_tool "Redis" redis-cli
 _check_tool "Supabase CLI" supabase
 _check_tool "VS Code" code
 _check_tool "Cursor" cursor
+_check_tool "DevForgeKit" devforgekit
 echo "${COLOR_BOLD}=========================================${COLOR_RESET}"
 
+print_health_score
+
 if [[ $SUMMARY_OK -eq 0 ]]; then
-    log_success "Bootstrap completed successfully."
+    log_success "DevForgeKit installation completed successfully."
 else
-    log_warn "Bootstrap completed with failures - see summary above."
+    log_warn "DevForgeKit installation completed with failures - see summary above."
 fi
 
 echo "Execution time: $(timer_elapsed "$START_TIME")"

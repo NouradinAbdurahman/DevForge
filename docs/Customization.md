@@ -40,7 +40,7 @@
   `label|directory` line to `path_manager_known_dirs()` in
   `scripts/common.sh` - `scripts/doctor.sh`/`scripts/doctor.sh --fix` pick
   it up automatically.
-- **CLI commands**: `./dev <command>` is a pure dispatcher (see
+- **CLI commands**: `./devforgekit <command>` is a pure dispatcher (see
   [CLI.md](CLI.md)) - add a new command by adding one `case` arm in the
-  `dev` file that `exec`s the relevant script; don't put logic in `dev`
+  `devforgekit` file that `exec`s the relevant script; don't put logic in `devforgekit`
   itself.

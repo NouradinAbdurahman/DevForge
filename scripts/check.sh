@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=SCRIPTDIR/common.sh
 source "$SCRIPT_DIR/common.sh"
 
-log_section "DevForge Health Check"
+log_section "DevForgeKit Health Check"
 
 # check_cli <label> <binary> [version-flag]
 # FAIL if the binary is entirely missing, PASS otherwise.
@@ -121,6 +121,16 @@ if [[ -d "${ANDROID_HOME:-$HOME/Library/Android/sdk}" ]]; then
     record_result PASS "Android SDK"
 else
     record_result WARNING "Android SDK not found at \$ANDROID_HOME"
+fi
+
+# --------------------------------------------------------------------------
+# DevForgeKit itself
+# --------------------------------------------------------------------------
+
+if command_exists devforgekit; then
+    record_result PASS "DevForgeKit"
+else
+    record_result WARNING "DevForgeKit CLI not on PATH (run ./bootstrap.sh to install the global command)"
 fi
 
 # --------------------------------------------------------------------------

@@ -28,7 +28,7 @@ flutter run
 
 This template ships `lib/main.dart` and `pubspec.yaml` only - run
 `flutter create .` in the copied directory first if you need the native
-`ios/`, `android/`, or `web/` platform folders (this repo's DevForge
+`ios/`, `android/`, or `web/` platform folders (this repo's DevForgeKit
 Brewfile/mise already provide the Flutter SDK and Android SDK needed to do
 that).
 

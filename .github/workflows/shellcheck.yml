@@ -1,17 +1,17 @@
-name: DevForge ShellCheck
+name: DevForgeKit ShellCheck
 
 on:
   push:
     paths:
       - "**/*.sh"
       - "bootstrap.sh"
-      - "dev"
+      - "devforgekit"
       - ".github/workflows/shellcheck.yml"
   pull_request:
     paths:
       - "**/*.sh"
       - "bootstrap.sh"
-      - "dev"
+      - "devforgekit"
       - ".github/workflows/shellcheck.yml"
 
 permissions:
@@ -26,4 +26,4 @@ jobs:
       - name: Run ShellCheck
         run: |
           shopt -s globstar
-          shellcheck -x bootstrap.sh dev scripts/*.sh
+          shellcheck -x bootstrap.sh devforgekit scripts/*.sh

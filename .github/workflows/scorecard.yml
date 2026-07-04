@@ -1,4 +1,4 @@
-name: DevForge Scorecard
+name: DevForgeKit Scorecard
 
 on:
   branch_protection_rule:

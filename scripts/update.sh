@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 START_TIME="$(timer_start)"
-log_section "Updating DevForge"
+log_section "Updating DevForgeKit"
 log_info "Upgrading every managed toolchain"
 
 if command_exists brew; then

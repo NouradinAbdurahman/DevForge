@@ -23,23 +23,23 @@ fi
 
 case "$1" in
     start)
-        log_section "DevForge Services: Start"
+        log_section "DevForgeKit Services: Start"
         service_start_all
         sleep 2
         service_verify_all
         ;;
     stop)
-        log_section "DevForge Services: Stop"
+        log_section "DevForgeKit Services: Stop"
         service_stop_all
         ;;
     restart)
-        log_section "DevForge Services: Restart"
+        log_section "DevForgeKit Services: Restart"
         service_restart_all
         sleep 2
         service_verify_all
         ;;
     status)
-        log_section "DevForge Services: Status"
+        log_section "DevForgeKit Services: Status"
         service_status_all || true
         echo
         service_verify_all

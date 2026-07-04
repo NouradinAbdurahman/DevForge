@@ -9,5 +9,5 @@ Use with:
 ```bash
 ./bootstrap.sh --profile backend
 # or
-./dev install --profile backend
+./devforgekit install --profile backend
 ```

@@ -1,4 +1,4 @@
-# DevForge
+# DevForgeKit
 
 A production-grade macOS development workstation lifecycle manager: clone
 this repo on any Mac (Apple Silicon or Intel, fresh install or existing
@@ -10,15 +10,15 @@ machine, backs up macOS UI preferences, ships ready-to-copy project
 templates, and manages its own releases.
 
 ```bash
-git clone https://github.com/NouradinAbdurahman/DevForge.git
-cd DevForge
-chmod +x bootstrap.sh dev
-./dev install
+git clone https://github.com/NouradinAbdurahman/DevForgeKit.git
+cd DevForgeKit
+chmod +x bootstrap.sh devforgekit
+./devforgekit install
 ```
 
-`./dev` is a single CLI over everything in this repo (`./dev doctor`,
-`./dev backup`, `./dev profile list`, ...) - see [CLI.md](docs/CLI.md).
-Want less than everything? `./dev install --profile flutter` (or
+`./devforgekit` is a single CLI over everything in this repo (`./devforgekit doctor`,
+`./devforgekit backup`, `./devforgekit profile list`, ...) - see [CLI.md](docs/CLI.md).
+Want less than everything? `./devforgekit install --profile flutter` (or
 `backend`, `minimal`) installs a curated subset instead - see
 [Profiles.md](docs/Profiles.md).
 
@@ -27,7 +27,7 @@ recopied, or restarted unless it's actually missing or different.
 
 ## Features
 
-- **One CLI, `./dev`** - `install`, `update`, `backup`, `restore`, `check`,
+- **One CLI, `./devforgekit`** - `install`, `update`, `backup`, `restore`, `check`,
   `doctor`, `validate`, `inventory`, `report`, `services`, `clean`,
   `release`, `preferences`, `profile` - one command to remember instead of
   a dozen script names ([CLI.md](docs/CLI.md)).
@@ -87,8 +87,8 @@ this repo has already hit and fixed, in
 ## Folder structure
 
 ```text
-DevForge/
-├── dev                        # CLI dispatcher - ./dev <command>
+DevForgeKit/
+├── devforgekit                # CLI dispatcher - ./devforgekit <command>
 ├── bootstrap.sh               # main installer
 ├── Brewfile                   # Homebrew formulae, casks, VS Code/Cursor extensions, npm globals
 ├── mise.toml                  # pinned runtime versions (Java, Node, Python)
@@ -127,8 +127,8 @@ DevForge/
 ## Installation
 
 ```bash
-git clone https://github.com/NouradinAbdurahman/DevForge.git
-cd DevForge
+git clone https://github.com/NouradinAbdurahman/DevForgeKit.git
+cd DevForgeKit
 chmod +x bootstrap.sh
 ./bootstrap.sh
 ```
@@ -141,22 +141,22 @@ a curated subset instead of everything - see [Profiles](#profiles)).
 ## CLI
 
 ```bash
-./dev <command> [args...]
+./devforgekit <command> [args...]
 ```
 
 A single entry point over everything below - `install`, `update`,
 `backup`, `restore`, `check`, `doctor`, `validate`, `inventory`, `report`,
 `services`, `clean`, `release`, `preferences`, `profile`. Each command is a
-plain `exec` to the matching script (`./dev doctor` == `./scripts/doctor.sh`),
+plain `exec` to the matching script (`./devforgekit doctor` == `./scripts/doctor.sh`),
 so both forms work identically - use whichever you prefer. Full reference
 in [docs/CLI.md](docs/CLI.md).
 
 ## Profiles
 
 ```bash
-./dev install --profile flutter    # or backend, minimal, full (default), custom
-./dev profile list                  # see what's available
-./dev profile use flutter           # set a persistent default
+./devforgekit install --profile flutter    # or backend, minimal, full (default), custom
+./devforgekit profile list                  # see what's available
+./devforgekit profile use flutter           # set a persistent default
 ```
 
 Profiles are Brewfile subsets under `profiles/<name>/` - `flutter` and
@@ -326,10 +326,10 @@ contain machine-identifying details. See [docs/Security.md](docs/Security.md).
 Yes - `templates/` is fully independent; `cp -r` one out and it's a
 self-contained starter project.
 
-**Do I have to use `./dev`, or can I keep calling scripts directly?**
-Either works, permanently - `./dev` is a thin dispatcher with no logic of
+**Do I have to use `./devforgekit`, or can I keep calling scripts directly?**
+Either works, permanently - `./devforgekit` is a thin dispatcher with no logic of
 its own (see [docs/CLI.md](docs/CLI.md)); `./scripts/doctor.sh` and
-`./dev doctor` do exactly the same thing.
+`./devforgekit doctor` do exactly the same thing.
 
 **What does a profile actually skip?**
 Only Homebrew formulae/casks/VS Code bundle entries. Dotfiles and full

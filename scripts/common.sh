@@ -206,7 +206,7 @@ EOF
 # --------------------------------------------------------------------------
 
 # Local, gitignored file recording the profile last selected via
-# `./dev profile use <name>` / `scripts/profile.sh use <name>`. When present,
+# `./devforgekit profile use <name>` / `scripts/profile.sh use <name>`. When present,
 # bootstrap.sh/scripts/install.sh use it as the default profile instead of
 # "full", unless overridden with an explicit --profile/--minimal/--full flag.
 PROFILE_STATE_FILE="$DEV_SETUP_ROOT/.devprofile"
@@ -308,18 +308,18 @@ path_manager_fix() {
     fi
 
     if [[ -f "$zshrc" ]]; then
-        sed -i.path-manager-backup '/# >>> DevForge path-manager >>>/,/# <<< DevForge path-manager <<</d' "$zshrc"
+        sed -i.path-manager-backup '/# >>> DevForgeKit path-manager >>>/,/# <<< DevForgeKit path-manager <<</d' "$zshrc"
     fi
 
     {
-        echo "# >>> DevForge path-manager >>>"
+        echo "# >>> DevForgeKit path-manager >>>"
         echo "# Managed by 'scripts/doctor.sh --fix' - safe to delete, will be"
         echo "# regenerated. Do not hand-edit; changes are lost on the next fix."
         for d in "${missing[@]}"; do
             # shellcheck disable=SC2016 # $PATH must stay literal - it's written into ~/.zshrc to expand at shell startup, not now
             printf 'export PATH="%s:$PATH"\n' "$d"
         done
-        echo "# <<< DevForge path-manager <<<"
+        echo "# <<< DevForgeKit path-manager <<<"
     } >> "$zshrc"
 
     log_success "Added ${#missing[@]} missing PATH entries to ~/.zshrc - restart your shell (or run 'exec zsh') to apply"
@@ -388,6 +388,35 @@ ensure_homebrew() {
         brew_load_shellenv
     fi
     command_exists brew
+}
+
+# install_global_command - symlinks this repo's `devforgekit` CLI into the
+# Homebrew prefix's bin directory (already on PATH via brew shellenv) so it
+# can be run as a plain `devforgekit` command from anywhere, not just
+# `./devforgekit` from inside the repo. Never invokes sudo automatically -
+# that would hang a non-interactive/CI run waiting on a password prompt -
+# if the target directory isn't writable, it just tells you the command to
+# run yourself.
+install_global_command() {
+    local target_dir target link_path
+    target_dir="$(os_brew_prefix)/bin"
+    target="$DEV_SETUP_ROOT/devforgekit"
+    link_path="$target_dir/devforgekit"
+
+    if [[ ! -w "$target_dir" ]]; then
+        log_warn "$target_dir is not writable - install the global command yourself with:"
+        log_warn "  sudo ln -sf \"$target\" \"$link_path\""
+        return 1
+    fi
+
+    if [[ -L "$link_path" && "$(readlink "$link_path")" == "$target" ]]; then
+        log_step "Up to date: $link_path -> $target"
+        return 0
+    fi
+
+    fs_ensure_dir "$target_dir"
+    ln -sf "$target" "$link_path"
+    log_success "Linked $link_path -> $target (run 'devforgekit' from anywhere)"
 }
 
 # --------------------------------------------------------------------------

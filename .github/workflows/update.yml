@@ -1,4 +1,4 @@
-name: DevForge Weekly Dependency Check
+name: DevForgeKit Weekly Dependency Check
 
 on:
   schedule:

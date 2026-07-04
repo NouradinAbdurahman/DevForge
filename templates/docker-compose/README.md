@@ -27,5 +27,5 @@ docker compose down
 
 `docker-compose.yml` defines an `app` service (replace its `image`/`build`
 with your own) and a `db` service (Postgres, matching the `postgresql@17`
-DevForge's own `Brewfile` installs locally) wired together with an
+DevForgeKit's own `Brewfile` installs locally) wired together with an
 `.env`-driven connection string.

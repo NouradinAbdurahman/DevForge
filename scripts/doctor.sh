@@ -18,7 +18,7 @@ case "${1:-}" in
     *) log_error "Unknown option: $1"; exit 1 ;;
 esac
 
-log_section "DevForge Doctor"
+log_section "DevForgeKit Doctor"
 log_info "Running deep diagnostics"
 
 # --------------------------------------------------------------------------
@@ -69,7 +69,7 @@ if path_manager_check; then
 elif [[ "$FIX" -eq 1 ]]; then
     path_manager_fix
 else
-    log_info "Run './scripts/doctor.sh --fix' (or './dev doctor --fix') to add these to ~/.zshrc automatically."
+    log_info "Run './scripts/doctor.sh --fix' (or './devforgekit doctor --fix') to add these to ~/.zshrc automatically."
 fi
 
 # --------------------------------------------------------------------------
