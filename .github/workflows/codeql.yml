@@ -8,6 +8,7 @@ on:
   schedule:
     # Every Wednesday at 03:00 UTC
     - cron: "0 3 * * 3"
+  workflow_dispatch:
 
 permissions:
   contents: read
