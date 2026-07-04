@@ -64,8 +64,11 @@ log_section "Restarting services"
 run_step_optional "Restart PostgreSQL, MySQL, Redis" service_restart_all
 run_step_optional "Verify services are healthy" service_verify_all
 
-print_summary
-STATUS=$?
+if print_summary; then
+    STATUS=0
+else
+    STATUS=1
+fi
 
 echo "Execution time: $(timer_elapsed "$START_TIME")"
 exit $STATUS

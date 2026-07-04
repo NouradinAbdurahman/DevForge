@@ -17,8 +17,11 @@ log_section "Installing Homebrew packages"
 run_step "Homebrew installed" ensure_homebrew
 run_step "Homebrew packages (brew bundle)" brew bundle --file="$DEV_SETUP_ROOT/Brewfile"
 
-print_summary
-STATUS=$?
+if print_summary; then
+    STATUS=0
+else
+    STATUS=1
+fi
 
 echo "Execution time: $(timer_elapsed "$START_TIME")"
 exit $STATUS

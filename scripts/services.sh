@@ -40,7 +40,7 @@ case "$1" in
         ;;
     status)
         log_section "Service status"
-        service_status_all
+        service_status_all || true
         echo
         service_verify_all
         ;;

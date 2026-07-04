@@ -97,5 +97,8 @@ else
     done < <(find "$DEV_SETUP_ROOT" -name "*.md" -not -path "*/node_modules/*" -not -path "*/.git/*" -print0)
 fi
 
-print_summary
-exit $?
+if print_summary; then
+    exit 0
+else
+    exit 1
+fi

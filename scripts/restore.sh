@@ -20,8 +20,11 @@ run_step_optional "mise runtimes" restore_mise
 run_step "VS Code configuration" restore_editor vscode
 run_step "Cursor configuration" restore_editor cursor
 
-print_summary
-STATUS=$?
+if print_summary; then
+    STATUS=0
+else
+    STATUS=1
+fi
 
 echo "Execution time: $(timer_elapsed "$START_TIME")"
 echo

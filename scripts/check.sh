@@ -139,5 +139,8 @@ check_optional_app "Xcode" "/Applications/Xcode.app"
 log_section "Services"
 service_verify_all || true
 
-print_summary
-exit $?
+if print_summary; then
+    exit 0
+else
+    exit 1
+fi

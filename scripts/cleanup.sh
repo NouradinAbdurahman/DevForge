@@ -55,8 +55,11 @@ run_step_optional "Remove .DS_Store files under \$HOME (top level)" find "$HOME"
 log_step "Pruning dev-setup config backups older than 30 days..."
 run_step_optional "Prune old *.backup-* files" find "$DEV_SETUP_ROOT" -name "*.backup-*" -mtime +30 -delete
 
-print_summary
-STATUS=$?
+if print_summary; then
+    STATUS=0
+else
+    STATUS=1
+fi
 
 echo "Execution time: $(timer_elapsed "$START_TIME")"
 exit $STATUS

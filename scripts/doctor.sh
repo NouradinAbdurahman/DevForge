@@ -194,5 +194,8 @@ if command_exists brew; then
     fi
 fi
 
-print_summary
-exit $?
+if print_summary; then
+    exit 0
+else
+    exit 1
+fi

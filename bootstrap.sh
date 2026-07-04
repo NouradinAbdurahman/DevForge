@@ -30,7 +30,13 @@ for arg in "$@"; do
     esac
 done
 
-trap 'log_error "Bootstrap aborted unexpectedly at line $LINENO"' ERR
+# An EXIT trap (not ERR) so this only fires when the script is actually
+# terminating with a failure - an ERR trap would also fire for failures
+# already handled inside run_step/run_step_optional (they run under
+# `set +e` internally, but bash still invokes an inherited ERR trap for
+# the failing command itself, which is misleading noise for tolerated steps).
+# shellcheck disable=SC2154 # _status is assigned earlier in this same trap string
+trap '_status=$?; [[ $_status -ne 0 ]] && log_error "Bootstrap aborted unexpectedly (exit $_status)"' EXIT
 
 START_TIME="$(timer_start)"
 
@@ -130,8 +136,14 @@ run_step_optional "Generate system report" "$DEV_SETUP_ROOT/scripts/report.sh"
 # Summary
 # --------------------------------------------------------------------------
 
-print_summary
-SUMMARY_OK=$?
+# Not a bare `print_summary; X=$?`: print_summary's exit status reflects
+# whether any step FAILed, and under `set -e` a bare failing statement here
+# would abort the script before the checklist/timing below ever printed.
+if print_summary; then
+    SUMMARY_OK=0
+else
+    SUMMARY_OK=1
+fi
 
 echo
 echo "${COLOR_BOLD}=========================================${COLOR_RESET}"
@@ -143,7 +155,13 @@ _check_result() {
         printf '%s%s%s %s\n' "$COLOR_ERROR" "$SYMBOL_FAIL" "$COLOR_RESET" "$label"
     fi
 }
-_check_tool() { command_exists "$2"; _check_result "$1" $?; }
+_check_tool() {
+    if command_exists "$2"; then
+        _check_result "$1" 0
+    else
+        _check_result "$1" 1
+    fi
+}
 _check_tool "Homebrew" brew
 _check_tool "Git" git
 _check_tool "GitHub CLI" gh
