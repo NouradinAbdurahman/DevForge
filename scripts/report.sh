@@ -13,15 +13,6 @@ source "$SCRIPT_DIR/common.sh"
 fs_ensure_dir "$REPORTS_DIR"
 REPORT_FILE="$REPORTS_DIR/system-report.txt"
 
-version_of() {
-    local bin="$1"
-    if command_exists "$bin"; then
-        "$@" 2>&1 | head -n1
-    else
-        echo "not installed"
-    fi
-}
-
 {
     echo "==========================================="
     echo "dev-setup system report"

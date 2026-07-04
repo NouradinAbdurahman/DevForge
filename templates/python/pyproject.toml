@@ -1,0 +1,9 @@
+[project]
+name = "python-template"
+version = "0.1.0"
+description = "A minimal Python starter project."
+requires-python = ">=3.11"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

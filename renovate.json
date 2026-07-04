@@ -1,0 +1,68 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits", ":dependencyDashboard"],
+  "timezone": "UTC",
+  "schedule": ["before 6am on monday"],
+  "rebaseWhen": "conflicted",
+  "dependencyDashboard": true,
+  "semanticCommits": "enabled",
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps",
+  "labels": ["dependencies"],
+  "reviewers": ["NouradinAbdurahman"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "npm": {
+    "enabled": true
+  },
+  "dockerfile": {
+    "enabled": true
+  },
+  "docker-compose": {
+    "enabled": true
+  },
+  "github-actions": {
+    "enabled": true
+  },
+  "terraform": {
+    "enabled": true
+  },
+  "pub": {
+    "enabled": true,
+    "description": "Manages Flutter/Dart pubspec.yaml dependencies in templates/flutter"
+  },
+  "homebrew": {
+    "enabled": true,
+    "description": "Brewfile entries here are unpinned (`brew \"name\"` with no version), so this manager has little to act on today - kept enabled for when pinned formulas are added"
+  },
+  "packageRules": [
+    {
+      "description": "Group all GitHub Actions updates into a single PR",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions"
+    },
+    {
+      "description": "Group each template's npm dependencies into one PR per template",
+      "matchManagers": ["npm"],
+      "groupName": "{{packageFileDir}} dependencies"
+    },
+    {
+      "description": "Auto-merge patch updates only, after CI passes",
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "description": "Never auto-merge minor updates - review required",
+      "matchUpdateTypes": ["minor"],
+      "automerge": false
+    },
+    {
+      "description": "Never auto-merge major updates - review required",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "major-update"]
+    }
+  ]
+}

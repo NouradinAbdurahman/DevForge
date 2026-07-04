@@ -1,0 +1,243 @@
+#!/usr/bin/env bash
+# Generates a full machine inventory as Markdown files under reports/:
+# system.md, hardware.md, software.md, brew.md, fonts.md, extensions.md,
+# services.md, databases.md, network.md.
+#
+# Usage: ./scripts/inventory.sh
+set -Eeuo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=SCRIPTDIR/common.sh
+source "$SCRIPT_DIR/common.sh"
+
+fs_ensure_dir "$REPORTS_DIR"
+
+# _sp_field <system_profiler-dataType> <field-label>
+# Fixed-string (non-regex) lookup of a "Label: value" line, since several
+# field labels contain parentheses (e.g. "Serial Number (system)").
+_sp_field() {
+    local datatype="$1" label="$2"
+    system_profiler "$datatype" 2>/dev/null | grep -F "$label:" | head -1 | sed 's/^[^:]*: *//'
+}
+
+# _mask_serial <serial> -> all but the last 4 characters replaced with '*'
+_mask_serial() {
+    local s="$1" len keep masked=""
+    len=${#s}
+    if [[ $len -le 4 ]]; then
+        printf '%s' "$s"
+        return
+    fi
+    keep="${s: -4}"
+    for ((i = 0; i < len - 4; i++)); do
+        masked+="*"
+    done
+    printf '%s%s' "$masked" "$keep"
+}
+
+# --------------------------------------------------------------------------
+# system.md
+# --------------------------------------------------------------------------
+
+{
+    echo "# System"
+    echo
+    echo "Generated: $(date '+%Y-%m-%d %H:%M:%S %Z')"
+    echo
+    echo "| Field | Value |"
+    echo "| --- | --- |"
+    echo "| Hostname | $(hostname) |"
+    echo "| macOS product | $(sw_vers -productName 2>/dev/null) |"
+    echo "| macOS version | $(os_macos_version) |"
+    echo "| macOS build | $(sw_vers -buildVersion 2>/dev/null) |"
+    echo "| Architecture | $(os_arch) |"
+    echo "| Model name | $(_sp_field SPHardwareDataType "Model Name") |"
+    echo "| Model identifier | $(_sp_field SPHardwareDataType "Model Identifier") |"
+    echo "| Current user | $(whoami) |"
+    echo "| Timezone | $(sudo -n systemsetup -gettimezone 2>/dev/null | sed 's/^Time Zone: //' || date +%Z) |"
+    echo "| Uptime | $(uptime | sed 's/^ *//') |"
+} > "$REPORTS_DIR/system.md"
+log_success "Wrote $REPORTS_DIR/system.md"
+
+# --------------------------------------------------------------------------
+# hardware.md
+# --------------------------------------------------------------------------
+
+{
+    echo "# Hardware"
+    echo
+    echo "| Field | Value |"
+    echo "| --- | --- |"
+    echo "| Chip | $(_sp_field SPHardwareDataType "Chip") |"
+    echo "| Cores | $(_sp_field SPHardwareDataType "Total Number of Cores") |"
+    echo "| Memory | $(_sp_field SPHardwareDataType "Memory") |"
+    echo "| GPU | $(_sp_field SPDisplaysDataType "Chipset Model") |"
+    serial="$(_sp_field SPHardwareDataType "Serial Number (system)")"
+    echo "| Serial (masked) | $(_mask_serial "$serial") |"
+    echo
+    echo "## Storage"
+    echo
+    echo '```text'
+    df -h /
+    echo '```'
+} > "$REPORTS_DIR/hardware.md"
+log_success "Wrote $REPORTS_DIR/hardware.md"
+
+# --------------------------------------------------------------------------
+# software.md
+# --------------------------------------------------------------------------
+
+{
+    echo "# Installed applications"
+    echo
+    echo "Applications found in /Applications and ~/Applications:"
+    echo
+    {
+        find /Applications -maxdepth 1 -name "*.app" -print0 2>/dev/null || true
+        find "$HOME/Applications" -maxdepth 1 -name "*.app" -print0 2>/dev/null || true
+    } | xargs -0 -n1 basename 2>/dev/null | sed 's/\.app$//' | sort -u | sed 's/^/- /'
+} > "$REPORTS_DIR/software.md"
+log_success "Wrote $REPORTS_DIR/software.md"
+
+# --------------------------------------------------------------------------
+# brew.md
+# --------------------------------------------------------------------------
+
+{
+    echo "# Homebrew packages"
+    echo
+    if command_exists brew; then
+        echo "## Formulae"
+        echo
+        echo '```text'
+        brew list --formula --versions
+        echo '```'
+        echo
+        echo "## Casks"
+        echo
+        echo '```text'
+        brew list --cask --versions
+        echo '```'
+    else
+        echo "Homebrew not installed."
+    fi
+} > "$REPORTS_DIR/brew.md"
+log_success "Wrote $REPORTS_DIR/brew.md"
+
+# --------------------------------------------------------------------------
+# fonts.md
+# --------------------------------------------------------------------------
+
+{
+    echo "# Fonts"
+    echo
+    echo "User/admin-installed fonts (/Library/Fonts, ~/Library/Fonts)."
+    echo "Default macOS fonts under /System/Library/Fonts are omitted as noise."
+    echo
+    {
+        find /Library/Fonts -maxdepth 1 -type f -print0 2>/dev/null || true
+        find "$HOME/Library/Fonts" -maxdepth 1 -type f -print0 2>/dev/null || true
+    } | xargs -0 -n1 basename 2>/dev/null | sort -u | sed 's/^/- /'
+} > "$REPORTS_DIR/fonts.md"
+log_success "Wrote $REPORTS_DIR/fonts.md"
+
+# --------------------------------------------------------------------------
+# extensions.md
+# --------------------------------------------------------------------------
+
+{
+    echo "# Editor extensions"
+    echo
+    echo "## VS Code"
+    echo
+    if command_exists code; then
+        echo '```text'
+        code --list-extensions || echo "(unable to list extensions)"
+        echo '```'
+    else
+        echo "VS Code CLI not found."
+    fi
+    echo
+    echo "## Cursor"
+    echo
+    if command_exists cursor; then
+        echo '```text'
+        cursor --list-extensions || echo "(unable to list extensions)"
+        echo '```'
+    else
+        echo "Cursor CLI not found."
+    fi
+} > "$REPORTS_DIR/extensions.md"
+log_success "Wrote $REPORTS_DIR/extensions.md"
+
+# --------------------------------------------------------------------------
+# services.md
+# --------------------------------------------------------------------------
+
+{
+    echo "# Services"
+    echo
+    echo '```text'
+    service_status_all 2>&1 || echo "unavailable"
+    echo '```'
+} > "$REPORTS_DIR/services.md"
+log_success "Wrote $REPORTS_DIR/services.md"
+
+# --------------------------------------------------------------------------
+# databases.md
+# --------------------------------------------------------------------------
+
+{
+    echo "# Databases"
+    echo
+    echo "| Engine | Version | Accepting connections |"
+    echo "| --- | --- | --- |"
+
+    if command_exists psql; then
+        pg_status="no"
+        command_exists pg_isready && pg_isready -q && pg_status="yes"
+        echo "| PostgreSQL | $(version_of psql --version) | $pg_status |"
+    else
+        echo "| PostgreSQL | not installed | - |"
+    fi
+
+    if command_exists mysql; then
+        mysql_status="no"
+        command_exists mysqladmin && mysqladmin ping --silent && mysql_status="yes"
+        echo "| MySQL | $(version_of mysql --version) | $mysql_status |"
+    else
+        echo "| MySQL | not installed | - |"
+    fi
+
+    if command_exists redis-server; then
+        redis_status="no"
+        [[ "$(redis-cli ping 2>/dev/null)" == "PONG" ]] && redis_status="yes"
+        echo "| Redis | $(version_of redis-server --version) | $redis_status |"
+    else
+        echo "| Redis | not installed | - |"
+    fi
+} > "$REPORTS_DIR/databases.md"
+log_success "Wrote $REPORTS_DIR/databases.md"
+
+# --------------------------------------------------------------------------
+# network.md
+# --------------------------------------------------------------------------
+
+{
+    echo "# Network"
+    echo
+    echo "| Field | Value |"
+    echo "| --- | --- |"
+    echo "| Local IP (en0) | $(ipconfig getifaddr en0 2>/dev/null || echo "n/a") |"
+    echo "| Wi-Fi SSID | $(networksetup -getairportnetwork en0 2>/dev/null | sed 's/^Current Wi-Fi Network: //' || echo "n/a") |"
+    echo "| Default gateway | $(route -n get default 2>/dev/null | awk '/gateway:/{print $2}') |"
+    echo
+    echo "## DNS servers"
+    echo
+    echo '```text'
+    scutil --dns 2>/dev/null | grep 'nameserver\[[0-9]*\]' | sort -u || true
+    echo '```'
+} > "$REPORTS_DIR/network.md"
+log_success "Wrote $REPORTS_DIR/network.md"
+
+log_info "Full inventory written to $REPORTS_DIR/"

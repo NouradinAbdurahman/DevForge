@@ -27,6 +27,15 @@ jobs:
             jq empty "$f"
           done
 
+      - name: YAML validity
+        run: |
+          shopt -s globstar nullglob
+          for f in **/*.yml **/*.yaml; do
+            [[ "$f" == *node_modules* ]] && continue
+            echo "Checking $f"
+            yq eval '.' "$f" > /dev/null
+          done
+
       - name: Markdown lint
         run: |
           npx --yes markdownlint-cli "**/*.md" --ignore node_modules

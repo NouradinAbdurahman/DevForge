@@ -1,0 +1,187 @@
+version: 2
+
+updates:
+  # ---------------------------------------------------------------------
+  # GitHub Actions used in .github/workflows/
+  # ---------------------------------------------------------------------
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "NouradinAbdurahman"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # ---------------------------------------------------------------------
+  # npm / pnpm - one entry per JS/TS starter template that ships a
+  # package.json (Dependabot's "npm" ecosystem understands pnpm lockfiles too)
+  # ---------------------------------------------------------------------
+  - package-ecosystem: "npm"
+    directory: "/templates/nodejs"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "NouradinAbdurahman"
+    labels:
+      - "dependencies"
+      - "templates"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      nodejs-template:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "npm"
+    directory: "/templates/express"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "NouradinAbdurahman"
+    labels:
+      - "dependencies"
+      - "templates"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      express-template:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "npm"
+    directory: "/templates/nestjs"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "NouradinAbdurahman"
+    labels:
+      - "dependencies"
+      - "templates"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      nestjs-template:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "npm"
+    directory: "/templates/nextjs"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "NouradinAbdurahman"
+    labels:
+      - "dependencies"
+      - "templates"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      nextjs-template:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "npm"
+    directory: "/templates/react"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "NouradinAbdurahman"
+    labels:
+      - "dependencies"
+      - "templates"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      react-template:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "npm"
+    directory: "/templates/react-native"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "NouradinAbdurahman"
+    labels:
+      - "dependencies"
+      - "templates"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      react-native-template:
+        patterns:
+          - "*"
+
+  # ---------------------------------------------------------------------
+  # Docker
+  # ---------------------------------------------------------------------
+  - package-ecosystem: "docker"
+    directory: "/templates/docker"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "NouradinAbdurahman"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  - package-ecosystem: "docker"
+    directory: "/templates/docker-compose"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "NouradinAbdurahman"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  # ---------------------------------------------------------------------
+  # Terraform
+  # ---------------------------------------------------------------------
+  - package-ecosystem: "terraform"
+    directory: "/templates/terraform"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "NouradinAbdurahman"
+    labels:
+      - "dependencies"
+      - "terraform"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+# Note: Homebrew has no native Dependabot ecosystem, so `Brewfile` isn't
+# listed here. Homebrew package staleness is instead covered by the
+# weekly .github/workflows/update.yml job and scripts/update.sh.

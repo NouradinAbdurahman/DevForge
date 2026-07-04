@@ -53,6 +53,18 @@ timer_elapsed() {
 
 command_exists() { command -v "$1" >/dev/null 2>&1; }
 
+# version_of <binary> [args...] -> first line of `binary args...` output,
+# or "not installed" if the binary is missing. Used by report.sh/inventory.sh
+# to render tool-version tables without each duplicating the same guard.
+version_of() {
+    local bin="$1"
+    if command_exists "$bin"; then
+        "$@" 2>&1 | head -n1
+    else
+        echo "not installed"
+    fi
+}
+
 os_is_macos() { [[ "$(uname -s)" == "Darwin" ]]; }
 
 # Prints "arm64" or "x86_64".
@@ -161,6 +173,31 @@ vscode/settings.json|$HOME/Library/Application Support/Code/User/settings.json
 vscode/keybindings.json|$HOME/Library/Application Support/Code/User/keybindings.json
 cursor/settings.json|$HOME/Library/Application Support/Cursor/User/settings.json
 cursor/keybindings.json|$HOME/Library/Application Support/Cursor/User/keybindings.json
+EOF
+}
+
+# --------------------------------------------------------------------------
+# macOS preference domain mapping (single source of truth for
+# scripts/preferences.sh). Many of the UI categories users think of
+# (Mission Control, Hot Corners, Stage Manager) are actually stored in the
+# com.apple.dock domain; Menu Bar and Control Center both live in
+# com.apple.controlcenter; Keyboard/Mouse/Dark Mode live in NSGlobalDomain.
+# Format: "defaults-domain|backup-filename|optional(0/1)"
+# optional=1 domains (Trackpad, Safari) commonly fail on machines without
+# that hardware, or without Full Disk Access - failures there are warnings,
+# not errors.
+# --------------------------------------------------------------------------
+
+preference_domain_pairs() {
+    cat <<EOF
+NSGlobalDomain|global.plist|0
+com.apple.dock|dock.plist|0
+com.apple.finder|finder.plist|0
+com.apple.screencapture|screenshots.plist|0
+com.apple.Terminal|terminal.plist|0
+com.apple.controlcenter|controlcenter.plist|0
+com.apple.AppleMultitouchTrackpad|trackpad.plist|1
+com.apple.Safari|safari.plist|1
 EOF
 }
 

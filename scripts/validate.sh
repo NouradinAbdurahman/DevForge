@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Static validation of everything in this repo: shell syntax, ShellCheck,
-# Brewfile, mise.toml, JSON, and Markdown. Used locally and in CI
+# Brewfile, mise.toml, JSON, YAML, and Markdown. Used locally and in CI
 # (.github/workflows/shellcheck.yml, lint.yml).
 #
 # Usage: ./scripts/validate.sh
@@ -75,6 +75,23 @@ log_section "JSON files"
 while IFS= read -r -d '' file; do
     run_step "JSON: ${file#"$DEV_SETUP_ROOT"/}" jq empty "$file"
 done < <(find "$DEV_SETUP_ROOT" -name "*.json" -not -path "*/node_modules/*" -not -path "*/.git/*" -print0)
+
+# --------------------------------------------------------------------------
+# YAML files (GitHub workflows, dependabot.yml, docker-compose templates...)
+# --------------------------------------------------------------------------
+
+log_section "YAML files"
+
+# shellcheck disable=SC2329 # invoked indirectly via run_step "$@"
+_yq_validate() { yq eval '.' "$1" > /dev/null; }
+
+if command_exists yq; then
+    while IFS= read -r -d '' file; do
+        run_step "YAML: ${file#"$DEV_SETUP_ROOT"/}" _yq_validate "$file"
+    done < <(find "$DEV_SETUP_ROOT" \( -name "*.yml" -o -name "*.yaml" \) -not -path "*/node_modules/*" -not -path "*/.git/*" -print0)
+else
+    log_warn "yq not installed - skipping YAML validation"
+fi
 
 # --------------------------------------------------------------------------
 # Markdown files (best effort - only if a linter is available)

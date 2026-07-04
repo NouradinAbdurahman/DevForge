@@ -1,8 +1,14 @@
 # macOS
 .DS_Store
 
-# Generated reports (machine-specific, regenerate with scripts/report.sh)
+# Generated reports (machine-specific, regenerate with scripts/report.sh
+# and scripts/inventory.sh)
 reports/*.txt
+reports/*.md
+
+# macOS preference backups (scripts/preferences.sh) - personal desktop
+# settings, kept local by default; remove this line if you want to version them
+preferences/*.plist
 
 # Config backups created by scripts/common.sh's fs_safe_copy
 *.backup-*
@@ -10,3 +16,8 @@ reports/*.txt
 # Local secrets - never commit real values, only .env.example
 .env
 .env.local
+
+# Terraform local state (templates/terraform and any project using that template)
+.terraform/
+*.tfstate
+*.tfstate.backup
