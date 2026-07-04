@@ -8,6 +8,6 @@
     "start": "node src/index.js"
   },
   "dependencies": {
-    "express": "^4.19.0"
+    "express": "^5.2.1"
   }
 }
