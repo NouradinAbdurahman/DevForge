@@ -8,7 +8,7 @@ jobs:
   dry-run:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Run bootstrap.sh in dry-run mode
         run: |
@@ -16,7 +16,7 @@ jobs:
           ./bootstrap.sh --yes --dry-run
 
       - name: Upload generated report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: system-report
           path: reports/system-report.txt
