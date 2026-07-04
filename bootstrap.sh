@@ -4,6 +4,7 @@
 # or different, and no single failed step aborts the rest of the run.
 #
 # Usage: ./bootstrap.sh [-y|--yes] [--skip-services] [--dry-run]
+#                        [--profile <name>|--minimal|--full]
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -12,23 +13,43 @@ source "$SCRIPT_DIR/scripts/common.sh"
 
 SKIP_SERVICES=0
 DRY_RUN=0
+PROFILE_ARG=""
 
-for arg in "$@"; do
-    case "$arg" in
-        -y|--yes) export DEV_SETUP_ASSUME_YES=1 ;;
-        --skip-services) SKIP_SERVICES=1 ;;
-        --dry-run) DRY_RUN=1; SKIP_SERVICES=1 ;;
+# A while/shift loop (not `for arg in "$@"`) because --profile takes a
+# following value.
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -y|--yes) export DEV_SETUP_ASSUME_YES=1; shift ;;
+        --skip-services) SKIP_SERVICES=1; shift ;;
+        --dry-run) DRY_RUN=1; SKIP_SERVICES=1; shift ;;
+        --profile)
+            [[ $# -ge 2 ]] || { log_error "--profile requires a value (see: ./scripts/profile.sh list)"; exit 1; }
+            PROFILE_ARG="$2"
+            shift 2
+            ;;
+        --minimal) PROFILE_ARG="minimal"; shift ;;
+        --full) PROFILE_ARG="full"; shift ;;
         -h|--help)
-            echo "Usage: ./bootstrap.sh [-y|--yes] [--skip-services] [--dry-run]"
-            echo "  --dry-run  validate everything (Brewfile, config presence) without installing or copying anything; used by CI"
+            echo "Usage: ./bootstrap.sh [-y|--yes] [--skip-services] [--dry-run] [--profile <name>|--minimal|--full]"
+            echo "  --dry-run          validate everything (Brewfile, config presence) without installing or copying anything; used by CI"
+            echo "  --profile <name>   install only that profile's Brewfile subset (see ./scripts/profile.sh list)"
+            echo "  --minimal          shorthand for --profile minimal"
+            echo "  --full             shorthand for --profile full (everything in the root Brewfile - the default)"
             exit 0
             ;;
         *)
-            log_error "Unknown option: $arg"
+            log_error "Unknown option: $1"
             exit 1
             ;;
     esac
 done
+
+PROFILE="$(resolve_profile "$PROFILE_ARG")"
+BREWFILE_PATH="$(profile_brewfile_path "$PROFILE")"
+if [[ ! -f "$BREWFILE_PATH" ]]; then
+    log_error "Unknown profile '$PROFILE' (no such file: $BREWFILE_PATH). Run './scripts/profile.sh list' to see available profiles."
+    exit 1
+fi
 
 # An EXIT trap (not ERR) so this only fires when the script is actually
 # terminating with a failure - an ERR trap would also fire for failures
@@ -85,12 +106,14 @@ fi
 
 log_section "Homebrew"
 
+log_info "Profile: $PROFILE ($BREWFILE_PATH)"
+
 if [[ "$DRY_RUN" -eq 1 ]]; then
     run_step "Homebrew present" command_exists brew
-    run_step_optional "Brewfile is valid (brew bundle check)" brew bundle check --file="$DEV_SETUP_ROOT/Brewfile" --no-upgrade
+    run_step_optional "Brewfile is valid (brew bundle check)" brew bundle check --file="$BREWFILE_PATH" --no-upgrade
 else
     run_step "Homebrew installed" ensure_homebrew
-    run_step "Homebrew packages (brew bundle)" brew bundle --file="$DEV_SETUP_ROOT/Brewfile"
+    run_step "Homebrew packages (brew bundle)" brew bundle --file="$BREWFILE_PATH"
 fi
 
 # --------------------------------------------------------------------------

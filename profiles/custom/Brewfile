@@ -1,0 +1,12 @@
+# Custom profile - your own starting point.
+#
+# Copy any `brew "..."`, `cask "..."`, `vscode "..."`, or `npm "..."` line
+# from the root Brewfile (or add new ones) and this profile will install
+# exactly that set via:
+#
+#   ./bootstrap.sh --profile custom
+#   # or
+#   ./dev install --profile custom
+#
+# Empty by default - `brew bundle` against an empty Brewfile is a safe
+# no-op, it just installs nothing.

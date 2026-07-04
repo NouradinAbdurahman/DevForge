@@ -140,7 +140,9 @@ log_section "Services"
 service_verify_all || true
 
 if print_summary; then
-    exit 0
+    STATUS=0
 else
-    exit 1
+    STATUS=1
 fi
+print_health_score
+exit $STATUS

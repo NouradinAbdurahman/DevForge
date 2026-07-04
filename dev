@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# Unified CLI for dev-setup - dispatches to bootstrap.sh/scripts/*.sh so you
+# don't have to remember individual script names.
+#
+# Usage: ./dev <command> [args...]
+set -Eeuo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+usage() {
+    cat <<'EOF'
+Usage: ./dev <command> [args...]
+
+Commands:
+  install [options]      Full provision (forwards to ./bootstrap.sh)
+                         options: -y|--yes, --skip-services, --dry-run,
+                                  --profile <name>, --minimal, --full
+  update                 Upgrade the managed toolchain, restart services
+  backup                 Capture live config into the repo, commit+push
+  restore                Restore dotfiles/editors from the repo
+  check                  Fast PASS/WARNING/FAIL health check
+  doctor [--fix]         Deep diagnostics + health score
+  validate                Validate this repo's own scripts/configs
+  inventory               Generate machine inventory reports
+  report                  Generate a system report
+  services <action>       start|stop|restart|status for local services
+  clean                   Reclaim disk space
+  release <bump>          patch|minor|major version release
+  preferences <action>    backup|restore|status for macOS UI preferences
+  profile <action>        list|show|use - manage install profiles
+  uninstall               Not yet implemented
+  help                    Show this message
+
+Examples:
+  ./dev install --profile flutter
+  ./dev doctor --fix
+  ./dev profile list
+  ./dev services status
+EOF
+}
+
+if [[ $# -eq 0 ]]; then
+    usage
+    exit 1
+fi
+
+cmd="$1"
+shift
+
+case "$cmd" in
+    install) exec "$SCRIPT_DIR/bootstrap.sh" "$@" ;;
+    update) exec "$SCRIPT_DIR/scripts/update.sh" "$@" ;;
+    backup) exec "$SCRIPT_DIR/scripts/backup.sh" "$@" ;;
+    restore) exec "$SCRIPT_DIR/scripts/restore.sh" "$@" ;;
+    check) exec "$SCRIPT_DIR/scripts/check.sh" "$@" ;;
+    doctor) exec "$SCRIPT_DIR/scripts/doctor.sh" "$@" ;;
+    validate) exec "$SCRIPT_DIR/scripts/validate.sh" "$@" ;;
+    inventory) exec "$SCRIPT_DIR/scripts/inventory.sh" "$@" ;;
+    report) exec "$SCRIPT_DIR/scripts/report.sh" "$@" ;;
+    services) exec "$SCRIPT_DIR/scripts/services.sh" "$@" ;;
+    clean|cleanup) exec "$SCRIPT_DIR/scripts/cleanup.sh" "$@" ;;
+    release) exec "$SCRIPT_DIR/scripts/release.sh" "$@" ;;
+    preferences|prefs) exec "$SCRIPT_DIR/scripts/preferences.sh" "$@" ;;
+    profile) exec "$SCRIPT_DIR/scripts/profile.sh" "$@" ;;
+    uninstall)
+        echo "'./dev uninstall' is not implemented yet." >&2
+        echo "For now, review and remove packages manually, e.g.:" >&2
+        echo "  brew bundle cleanup --file=Brewfile        # lists what brew bundle would remove" >&2
+        echo "  brew bundle cleanup --file=Brewfile --force # actually removes it" >&2
+        exit 1
+        ;;
+    -h|--help|help) usage ;;
+    *)
+        echo "Unknown command: $cmd" >&2
+        echo >&2
+        usage >&2
+        exit 1
+        ;;
+esac

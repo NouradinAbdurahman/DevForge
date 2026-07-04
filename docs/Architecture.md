@@ -96,3 +96,27 @@ Rather than each script hardcoding `$HOME` paths or `defaults` domains,
 
 Add a new mirrored file/domain in exactly one of those functions, and every
 script that iterates it picks it up automatically.
+
+## The `./dev` CLI
+
+`./dev` (repo root, no extension) is a pure dispatcher - it parses
+`$1` as a command, shifts, and `exec`s the matching `bootstrap.sh` or
+`scripts/*.sh` with the remaining args. It contains no logic of its own
+beyond the dispatch table; see [CLI.md](CLI.md). Because it has no `.sh`
+extension, it's checked explicitly (not via a `*.sh` glob) in
+`scripts/validate.sh` and `.github/workflows/shellcheck.yml`/`lint.yml`.
+
+## Profiles and the PATH manager
+
+Two other pieces built on the same shared-function pattern:
+
+- **Profiles** (`profiles/<name>/Brewfile` + `README.md`) are Brewfile
+  subsets. `profile_brewfile_path()`/`resolve_profile()` in `common.sh` are
+  the single source of truth `bootstrap.sh`, `scripts/install.sh`, and
+  `scripts/profile.sh` all call - see [Profiles.md](Profiles.md).
+- **PATH manager** (`path_manager_known_dirs`/`_check`/`_fix` in
+  `common.sh`) is the inverse of `doctor.sh`'s existing PATH-hygiene check:
+  instead of flagging stale/duplicate entries already on `$PATH`, it flags
+  installed-but-not-on-PATH tool directories (Android SDK, pnpm, mise
+  shims, GNU coreutils, etc.) and can fix them by appending an idempotent,
+  clearly marked block to the live `~/.zshrc` (`scripts/doctor.sh --fix`).

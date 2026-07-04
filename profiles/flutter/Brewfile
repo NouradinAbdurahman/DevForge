@@ -1,0 +1,11 @@
+# Flutter/mobile profile - Flutter/Dart + Android toolchain, plus core
+# git tooling.
+brew "git"
+brew "gh"
+brew "git-lfs"
+brew "mise"
+brew "cocoapods"
+cask "android-studio"
+cask "flutter"
+vscode "dart-code.dart-code"
+vscode "dart-code.flutter"

@@ -3,12 +3,20 @@
 # GitHub auth, Docker daemon state, and the doctor commands each toolchain
 # ships with (brew doctor, mise doctor, flutter doctor).
 #
-# Usage: ./scripts/doctor.sh
+# Usage: ./scripts/doctor.sh [--fix]
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=SCRIPTDIR/common.sh
 source "$SCRIPT_DIR/common.sh"
+
+FIX=0
+case "${1:-}" in
+    --fix) FIX=1 ;;
+    -h|--help) echo "Usage: $0 [--fix]"; exit 0 ;;
+    "") ;;
+    *) log_error "Unknown option: $1"; exit 1 ;;
+esac
 
 log_section "Doctor: deep diagnostics"
 
@@ -46,6 +54,21 @@ if [[ ${#missing[@]} -eq 0 ]]; then
     record_result PASS "All PATH entries exist on disk"
 else
     record_result WARNING "PATH entries pointing to nonexistent directories: ${missing[*]}"
+fi
+
+# --------------------------------------------------------------------------
+# PATH manager - installed tools that aren't on PATH (the inverse check:
+# stale entries above vs. missing-but-needed entries here)
+# --------------------------------------------------------------------------
+
+log_section "PATH manager"
+
+if path_manager_check; then
+    log_success "Nothing to fix"
+elif [[ "$FIX" -eq 1 ]]; then
+    path_manager_fix
+else
+    log_info "Run './scripts/doctor.sh --fix' (or './dev doctor --fix') to add these to ~/.zshrc automatically."
 fi
 
 # --------------------------------------------------------------------------
@@ -195,7 +218,9 @@ if command_exists brew; then
 fi
 
 if print_summary; then
-    exit 0
+    STATUS=0
 else
-    exit 1
+    STATUS=1
 fi
+print_health_score
+exit $STATUS

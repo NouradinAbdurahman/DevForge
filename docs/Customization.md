@@ -32,3 +32,15 @@
   repo - add a new stack by creating `templates/<name>/` with a `README.md`,
   `.gitignore`, `.editorconfig`, `LICENSE`, and a genuinely working minimal
   example (see [Templates.md](Templates.md)).
+- **Install profiles**: add `profiles/<name>/Brewfile` + `README.md` - no
+  code changes needed, `profile_brewfile_path()` in `scripts/common.sh`
+  picks up any name with a matching `profiles/<name>/Brewfile` (see
+  [Profiles.md](Profiles.md)).
+- **PATH entries the PATH manager should know about**: add a
+  `label|directory` line to `path_manager_known_dirs()` in
+  `scripts/common.sh` - `scripts/doctor.sh`/`scripts/doctor.sh --fix` pick
+  it up automatically.
+- **CLI commands**: `./dev <command>` is a pure dispatcher (see
+  [CLI.md](CLI.md)) - add a new command by adding one `case` arm in the
+  `dev` file that `exec`s the relevant script; don't put logic in `dev`
+  itself.

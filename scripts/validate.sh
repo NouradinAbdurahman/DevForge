@@ -18,6 +18,7 @@ log_section "Validating repository"
 
 log_section "Shell syntax (bash -n)"
 
+run_step "Syntax: dev" bash -n "$DEV_SETUP_ROOT/dev"
 while IFS= read -r -d '' script; do
     run_step "Syntax: ${script#"$DEV_SETUP_ROOT"/}" bash -n "$script"
 done < <(find "$DEV_SETUP_ROOT" \( -name "*.sh" \) -not -path "*/node_modules/*" -not -path "*/.git/*" -print0)
@@ -29,6 +30,7 @@ done < <(find "$DEV_SETUP_ROOT" \( -name "*.sh" \) -not -path "*/node_modules/*"
 log_section "ShellCheck"
 
 if command_exists shellcheck; then
+    run_step "ShellCheck: dev" shellcheck -x "$DEV_SETUP_ROOT/dev"
     while IFS= read -r -d '' script; do
         run_step "ShellCheck: ${script#"$DEV_SETUP_ROOT"/}" shellcheck -x "$script"
     done < <(find "$DEV_SETUP_ROOT" \( -name "*.sh" \) -not -path "*/node_modules/*" -not -path "*/.git/*" -print0)
@@ -44,6 +46,9 @@ log_section "Brewfile"
 
 if command_exists brew; then
     run_step_optional "brew bundle check" brew bundle check --file="$DEV_SETUP_ROOT/Brewfile" --no-upgrade
+    while IFS= read -r -d '' profile_brewfile; do
+        run_step_optional "brew bundle check: ${profile_brewfile#"$DEV_SETUP_ROOT"/}" brew bundle check --file="$profile_brewfile" --no-upgrade
+    done < <(find "$DEV_SETUP_ROOT/profiles" -mindepth 2 -maxdepth 2 -name "Brewfile" -print0)
 else
     log_warn "Homebrew not installed - skipping Brewfile check"
 fi

@@ -12,15 +12,28 @@ templates, and manages its own releases.
 ```bash
 git clone https://github.com/NouradinAbdurahman/dev-setup.git
 cd dev-setup
-chmod +x bootstrap.sh
-./bootstrap.sh
+chmod +x bootstrap.sh dev
+./dev install
 ```
+
+`./dev` is a single CLI over everything in this repo (`./dev doctor`,
+`./dev backup`, `./dev profile list`, ...) - see [CLI.md](docs/CLI.md).
+Want less than everything? `./dev install --profile flutter` (or
+`backend`, `minimal`) installs a curated subset instead - see
+[Profiles.md](docs/Profiles.md).
 
 Every script here is safe to run more than once: nothing is reinstalled,
 recopied, or restarted unless it's actually missing or different.
 
 ## Features
 
+- **One CLI, `./dev`** - `install`, `update`, `backup`, `restore`, `check`,
+  `doctor`, `validate`, `inventory`, `report`, `services`, `clean`,
+  `release`, `preferences`, `profile` - one command to remember instead of
+  a dozen script names ([CLI.md](docs/CLI.md)).
+- **Install profiles** - `--profile flutter`/`backend`/`minimal` (or the
+  default `full`) install a curated Brewfile subset instead of everything;
+  `--profile custom` is a blank template ([Profiles.md](docs/Profiles.md)).
 - **One-command bootstrap** with macOS/CPU-architecture/internet/disk
   preflight checks, fault-tolerant steps (one failure doesn't kill the
   run), and a `--dry-run` mode that validates everything with zero side
@@ -31,8 +44,11 @@ recopied, or restarted unless it's actually missing or different.
 - **Two-way config sync** - `scripts/backup.sh` captures your live
   configuration back into the repo and pushes it; `scripts/restore.sh` (or
   `bootstrap.sh`) puts it back on any machine.
-- **Diagnostics** - `scripts/check.sh` for a fast health check,
-  `scripts/doctor.sh` for deep diagnostics.
+- **Diagnostics with a health score** - `scripts/check.sh` for a fast
+  health check, `scripts/doctor.sh` for deep diagnostics (including a PATH
+  manager that detects and, with `--fix`, repairs missing PATH entries for
+  installed tools) - both end with a 0-100% health score and a
+  Ready/Needs Attention verdict.
 - **Machine inventory** - `scripts/inventory.sh` writes 9 Markdown reports
   (hardware, software, fonts, extensions, services, databases, network...).
 - **macOS preferences backup** - `scripts/preferences.sh` backs up/restores
@@ -72,27 +88,31 @@ this repo has already hit and fixed, in
 
 ```text
 dev-setup/
-├── bootstrap.sh              # main installer
-├── Brewfile                  # Homebrew formulae, casks, VS Code/Cursor extensions, npm globals
-├── mise.toml                 # pinned runtime versions (Java, Node, Python)
+├── dev                        # CLI dispatcher - ./dev <command>
+├── bootstrap.sh               # main installer
+├── Brewfile                   # Homebrew formulae, casks, VS Code/Cursor extensions, npm globals
+├── mise.toml                  # pinned runtime versions (Java, Node, Python)
 ├── .zshrc / .gitconfig / .gitignore_global
-├── .env.example              # template for local secrets (never commit .env)
+├── .env.example               # template for local secrets (never commit .env)
 ├── VERSION / CHANGELOG.md / LICENSE
-├── vscode/ cursor/            # settings.json, keybindings.json, extensions.txt
+├── vscode/ cursor/             # settings.json, keybindings.json, extensions.txt
+├── profiles/
+│   ├── minimal/ flutter/ backend/ full/ custom/  # Brewfile subset + README per profile
 ├── scripts/
 │   ├── common.sh / colors.sh   # shared library
-│   ├── install.sh               # Homebrew + Brewfile only
+│   ├── install.sh               # Homebrew + Brewfile (or profile) only
 │   ├── restore.sh                # dotfiles + editors only
 │   ├── backup.sh                  # live config -> repo, commit + push
 │   ├── update.sh                   # upgrade every managed toolchain
-│   ├── check.sh                     # PASS/WARNING/FAIL health check
-│   ├── doctor.sh                     # deep diagnostics
+│   ├── check.sh                     # PASS/WARNING/FAIL health check + score
+│   ├── doctor.sh                     # deep diagnostics + PATH manager + score
 │   ├── services.sh                    # start|stop|restart|status
 │   ├── validate.sh                     # shell/JSON/YAML/Brewfile/mise/Markdown validation
 │   ├── cleanup.sh                       # reclaim disk space
 │   ├── report.sh                         # reports/system-report.txt
 │   ├── inventory.sh                       # reports/*.md (9 files)
 │   ├── preferences.sh                      # macOS UI preferences backup/restore
+│   ├── profile.sh                          # list|show|use install profiles
 │   └── release.sh                          # version bump, changelog, tag, push
 ├── reports/                   # generated reports (gitignored)
 ├── preferences/                # generated preference backups (gitignored)
@@ -115,7 +135,37 @@ chmod +x bootstrap.sh
 
 Flags: `-y`/`--yes` (assume yes to every prompt), `--skip-services` (don't
 start Postgres/MySQL/Redis), `--dry-run` (validate everything, change
-nothing - what CI runs).
+nothing - what CI runs), `--profile <name>`/`--minimal`/`--full` (install
+a curated subset instead of everything - see [Profiles](#profiles)).
+
+## CLI
+
+```bash
+./dev <command> [args...]
+```
+
+A single entry point over everything below - `install`, `update`,
+`backup`, `restore`, `check`, `doctor`, `validate`, `inventory`, `report`,
+`services`, `clean`, `release`, `preferences`, `profile`. Each command is a
+plain `exec` to the matching script (`./dev doctor` == `./scripts/doctor.sh`),
+so both forms work identically - use whichever you prefer. Full reference
+in [docs/CLI.md](docs/CLI.md).
+
+## Profiles
+
+```bash
+./dev install --profile flutter    # or backend, minimal, full (default), custom
+./dev profile list                  # see what's available
+./dev profile use flutter           # set a persistent default
+```
+
+Profiles are Brewfile subsets under `profiles/<name>/` - `flutter` and
+`backend` install just what those stacks need, `minimal` is bare-essentials
+CLI tooling, `custom` is a blank template, and `full` (default) is
+everything in the root `Brewfile`. Dotfiles and editor
+settings/extensions are always restored in full regardless of profile.
+Details, including how to add your own, in
+[docs/Profiles.md](docs/Profiles.md).
 
 ## Bootstrap
 
@@ -162,18 +212,22 @@ A fast PASS/WARNING/FAIL sweep across Git, GitHub, SSH, Docker, Flutter,
 Dart, Android SDK, Java, Node, npm, pnpm, Python, mise, Homebrew,
 PostgreSQL, MySQL, Redis, Supabase, Firebase, AWS, Terraform, kubectl,
 Helm, VS Code, Cursor, Android Studio, Xcode, CocoaPods, Git LFS, fzf, jq,
-yq, and SQLite.
+yq, and SQLite - ending in a 0-100% health score (PASS = full credit,
+WARNING = half credit, FAIL = none) and a Ready/Needs Attention verdict.
 
 ## Doctor
 
 ```bash
-./scripts/doctor.sh
+./scripts/doctor.sh [--fix]
 ```
 
-Deep diagnostics - PATH duplicates/dangling entries, shell integration,
-broken symlinks, permissions, Git/SSH/GitHub auth, Docker daemon state,
+Deep diagnostics - PATH duplicates/dangling entries, a **PATH manager**
+that flags installed-but-not-on-PATH tool directories (Android SDK, pnpm,
+mise shims, GNU coreutils, ...) and fixes them with `--fix` (appends an
+idempotent block to the live `~/.zshrc`), shell integration, broken
+symlinks, permissions, Git/SSH/GitHub auth, Docker daemon state,
 `brew doctor`/`mise doctor`/`flutter doctor`, service status, outdated
-packages.
+packages - also ending in a health score.
 
 ## Services
 
@@ -272,11 +326,41 @@ contain machine-identifying details. See [docs/Security.md](docs/Security.md).
 Yes - `templates/` is fully independent; `cp -r` one out and it's a
 self-contained starter project.
 
+**Do I have to use `./dev`, or can I keep calling scripts directly?**
+Either works, permanently - `./dev` is a thin dispatcher with no logic of
+its own (see [docs/CLI.md](docs/CLI.md)); `./scripts/doctor.sh` and
+`./dev doctor` do exactly the same thing.
+
+**What does a profile actually skip?**
+Only Homebrew formulae/casks/VS Code bundle entries. Dotfiles and full
+editor settings/extensions restore regardless of profile - see
+[docs/Profiles.md](docs/Profiles.md) for why.
+
 ## Roadmap
 
+Broader platform ambitions that were deliberately scoped out of the
+current CLI/profiles/PATH-manager work to keep this pass verifiable rather
+than shipping thin, untested scaffolding:
+
+- **Plugin system** - pluggable `install`/`update`/`check`/`backup`/
+  `restore`/`validate` hooks per tool (Docker, Postgres, Redis, Supabase,
+  Terraform, cloud providers), instead of everything living in
+  `Brewfile`/`common.sh`.
+- **Multi-editor support** - Zed, Windsurf, Neovim, JetBrains, alongside
+  the existing VS Code/Cursor restore.
+- **Multi-shell support** - bash and fish, alongside the existing zsh.
+- **Secrets managers** - 1Password CLI, Bitwarden CLI, macOS Keychain
+  integration for `.env` population.
+- **Machine migration** (`dev migrate`) - export/import the full
+  environment (apps, fonts, preferences, shell, editors, databases,
+  services) between two Macs in one step.
+- **HTML report/dashboard** output, alongside the existing Markdown
+  reports.
+- **GitHub community program** - issue/PR templates, discussion
+  templates, stale bot, contributor guide.
+- **Config wizard** - an interactive first-run prompt (role, editor,
+  languages, cloud providers) that picks/builds a profile automatically.
 - Broaden CodeQL coverage as more languages get added to `templates/`.
-- Consider a `scripts/migrate.sh` for repo-layout version migrations if
-  `bootstrap.sh`'s CLI ever needs a breaking change.
 - Revisit whether Dependabot or Renovate should be the sole default once
   real-world PR volume from both is observed.
 

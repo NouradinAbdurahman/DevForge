@@ -16,7 +16,7 @@ jobs:
       - name: Shell syntax (bash -n)
         run: |
           shopt -s globstar
-          for f in bootstrap.sh scripts/*.sh; do
+          for f in bootstrap.sh dev scripts/*.sh; do
             echo "Checking $f"
             bash -n "$f"
           done

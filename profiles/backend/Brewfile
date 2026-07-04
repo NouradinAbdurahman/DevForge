@@ -1,0 +1,22 @@
+tap "hashicorp/tap"
+# Backend/infra profile - databases, cloud CLIs, and container/orchestration
+# tooling, plus matching VS Code extensions.
+brew "git"
+brew "gh"
+brew "mise"
+brew "jq"
+brew "postgresql@17", restart_service: :changed, link: true
+brew "mysql", restart_service: :changed
+brew "redis", restart_service: :changed
+brew "supabase"
+brew "awscli"
+brew "kubernetes-cli"
+brew "helm"
+brew "hashicorp/tap/terraform", trusted: true
+vscode "ms-azuretools.vscode-docker"
+vscode "ms-azuretools.vscode-containers"
+vscode "ms-kubernetes-tools.vscode-kubernetes-tools"
+vscode "hashicorp.terraform"
+vscode "mtxr.sqltools"
+vscode "mtxr.sqltools-driver-mysql"
+vscode "mtxr.sqltools-driver-pg"

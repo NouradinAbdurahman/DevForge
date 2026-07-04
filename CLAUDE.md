@@ -8,12 +8,17 @@ A production-grade macOS development workstation lifecycle manager ("dotfiles" r
 
 ## Commands
 
+Every command below also works as `./dev <name>` (`./dev doctor` ==
+`./scripts/doctor.sh`) - `dev` (repo root, no extension) is a pure
+dispatcher, see the Architecture section.
+
 ```bash
 ./bootstrap.sh                 # full provision: Homebrew, mise, dotfiles, editors, services
 ./bootstrap.sh --dry-run --yes # validate everything with no side effects (what CI runs)
-./scripts/validate.sh          # bash -n + ShellCheck + Brewfile + mise.toml + JSON + YAML + Markdown
-./scripts/check.sh             # fast PASS/WARNING/FAIL sweep across the whole toolchain
-./scripts/doctor.sh            # deep diagnostics: PATH hygiene, symlinks, perms, daemons
+./bootstrap.sh --profile flutter  # or --minimal/--full/--profile <name> - install a Brewfile subset
+./scripts/validate.sh          # bash -n + ShellCheck + Brewfile (+ profiles) + mise.toml + JSON + YAML + Markdown
+./scripts/check.sh             # fast PASS/WARNING/FAIL sweep + health score
+./scripts/doctor.sh [--fix]    # deep diagnostics + PATH manager + health score; --fix repairs missing PATH entries
 ./scripts/backup.sh            # capture live config into the repo, commit+push if changed
 ./scripts/restore.sh           # dotfiles/editors only, no packages/services
 ./scripts/update.sh            # upgrade every managed toolchain, restart services
@@ -22,6 +27,7 @@ A production-grade macOS development workstation lifecycle manager ("dotfiles" r
 ./scripts/report.sh            # writes reports/system-report.txt
 ./scripts/inventory.sh         # writes reports/{system,hardware,software,brew,fonts,extensions,services,databases,network}.md
 ./scripts/preferences.sh <backup|restore|status>  # macOS UI preferences (Dock, Finder, etc.)
+./scripts/profile.sh <list|show|use> [name]       # manage install profiles (profiles/<name>/Brewfile)
 ./scripts/release.sh <patch|minor|major>          # bump VERSION, draft CHANGELOG, commit, tag, push
 ```
 
@@ -48,6 +54,10 @@ Prefer an `EXIT` trap over an `ERR` trap for "something went wrong" banners: wit
 - **`scripts/common.sh`** — the shared library every other script sources. Provides: logging (`log_info`/`log_success`/`log_warn`/`log_error`/`log_section`/`log_step`), timers, OS/arch detection (`os_is_macos`, `os_arch`, `os_brew_prefix` — handles Apple Silicon `/opt/homebrew` vs Intel `/usr/local`), `net_has_internet`, `confirm` (honors `DEV_SETUP_ASSUME_YES=1` and non-interactive shells), `version_of` (first line of `<bin> --version`-style output, or "not installed"), the idempotent `fs_safe_copy` (skips identical files, backs up differing ones as `<file>.backup-<timestamp>` before overwriting), `config_file_pairs`/`preference_domain_pairs` (single source of truth for which repo file maps to which `$HOME` path, and which `defaults` domain maps to which preference backup file), `restore_zsh`/`restore_git`/`restore_mise`/`restore_editor`/`backup_editor`, the `SERVICE_LIST` array and `service_start_all`/`stop_all`/`restart_all`/`status_all`/`verify_all`, and the fault-tolerant step runner (`run_step`, `run_step_optional`, `record_result`, `print_summary`) that every script uses to report PASS/WARNING/FAIL without one failed step killing the whole run.
 - **`bootstrap.sh`** — sources `common.sh` and orchestrates, in order: preflight (macOS/arch/internet/disk checks) → Homebrew (`ensure_homebrew` + `brew bundle`) → runtimes/config (`restore_mise`/`restore_zsh`/`restore_git`/`restore_editor` for both editors) → services (start + verify) → `scripts/report.sh` → colored summary with execution time. Supports `--dry-run` (validates without installing/copying/starting anything — this is what CI runs), `--skip-services`, `-y/--yes`.
 - **`scripts/*.sh`** are thin, single-purpose entry points built on the same `common.sh` functions — `install.sh` (Homebrew+Brewfile only), `restore.sh` (config only), `backup.sh` (reverse direction: live config → repo, then commit/push only if `git status --porcelain` is non-empty), `update.sh`, `check.sh`, `doctor.sh`, `services.sh`, `validate.sh`, `cleanup.sh`, `report.sh` (writes `reports/system-report.txt`), `inventory.sh` (writes 9 Markdown files under `reports/`: system/hardware/software/brew/fonts/extensions/services/databases/network), `preferences.sh` (`backup|restore|status` for macOS `defaults` domains, stored under `preferences/`), `release.sh` (semver bump + CHANGELOG draft + commit + tag + push — deliberately does *not* call `gh release create` itself since `release.yml` already does that when the tag lands). None of them duplicate logic that belongs in `common.sh`.
+- **`dev`** (repo root, no extension) — pure CLI dispatcher: parses `$1` as a command, shifts, `exec`s the matching `bootstrap.sh`/`scripts/*.sh` with the rest of the args. Contains no logic beyond the dispatch table. Because it has no `.sh` extension, it's checked explicitly (not via `*.sh` globs) in `scripts/validate.sh` and `shellcheck.yml`/`lint.yml` — remember to add new scripts there too if they're ever extensionless.
+- **`profiles/<name>/`** — Brewfile subsets (`minimal`, `flutter`, `backend`, `custom`; `full` has no file of its own, always resolves to the root `Brewfile`). `profile_brewfile_path()`/`resolve_profile()` in `common.sh` are the single source of truth; `bootstrap.sh --profile <name>`/`--minimal`/`--full`, `scripts/install.sh`, and `scripts/profile.sh` all call them. `.devprofile` (gitignored) stores the persistent default set via `./dev profile use <name>`. Profiles only affect Brewfile-installed packages — dotfiles/editor extensions always restore in full.
+- **PATH manager** (`path_manager_known_dirs`/`_check`/`_fix` in `common.sh`, wired into `scripts/doctor.sh`) — the inverse of doctor.sh's existing PATH-hygiene check: flags installed-but-not-on-PATH tool directories (Android SDK, pnpm, mise shims, GNU coreutils) instead of stale/duplicate entries already on PATH. `doctor.sh --fix` appends missing entries to the live `~/.zshrc` inside an idempotent `# >>> dev-setup path-manager >>>` marker block (removed and regenerated each time, never accumulates).
+- **`print_health_score`** (`common.sh`) — call after `print_summary` in `check.sh`/`doctor.sh`: reads the same `STEP_RESULTS` array, computes a 0-100 score (PASS=full credit, WARNING=half, FAIL=none), prints a Ready/Needs Attention verdict.
 - **`vscode/`** and **`cursor/`** are parallel, independent directory pairs (`settings.json`, `keybindings.json`, `extensions.txt`) — not symlinked or generated from a shared source. Update both when a change should apply to both editors.
 - **`templates/`** — 14 independent, copyable starter projects (Flutter, Next.js, React, React Native, Node.js, Express, NestJS, Python, FastAPI, Docker, Docker Compose, Terraform, Supabase, Firebase). Not referenced by `bootstrap.sh` or any script; each is self-contained (`README.md`, `.gitignore`, `.editorconfig`, MIT `LICENSE`, a working minimal example). See `docs/Templates.md`.
 - **`reports/`** and **`preferences/`** hold generated output (`*.txt`/`*.md` reports, `*.plist` preference backups) — gitignored by default since they can contain machine-identifying data; only `.gitkeep` is tracked.
@@ -61,3 +71,6 @@ Prefer an `EXIT` trap over an `ERR` trap for "something went wrong" banners: wit
 - When adding a new script, source `scripts/common.sh` the same way every existing script does (`SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"` then `source "$SCRIPT_DIR/common.sh"`), use `run_step`/`run_step_optional`/`record_result` for anything worth reporting, and end with `if print_summary; then exit 0; else exit 1; fi` (never a bare `print_summary; exit $?` — see the `set -e`/`pipefail` section above).
 - Adding a new mirrored config file or `defaults` domain: add one line to `config_file_pairs()` or `preference_domain_pairs()` in `common.sh` — every script that iterates it (`backup.sh`/`restore.sh`, or `preferences.sh`) picks it up automatically. Don't hardcode the path/domain a second time in the calling script.
 - Adding a new project template: create `templates/<name>/` with `README.md`, `.gitignore`, `.editorconfig`, `LICENSE` (copy verbatim from an existing template), and an example that actually runs — not a placeholder. If it has a `package.json`/`Dockerfile`/`.tf` file, add a matching entry to `.github/dependabot.yml`.
+- Adding a new install profile: create `profiles/<name>/Brewfile` + `README.md` (first line becomes the one-line description in `./dev profile list`) — no code changes needed, `profile_brewfile_path()` picks up any name with a matching file.
+- Adding a directory the PATH manager should know about: one `label|directory` line in `path_manager_known_dirs()` (`common.sh`) — `doctor.sh`/`doctor.sh --fix` pick it up automatically.
+- Adding a new `./dev` command: one `case` arm in the `dev` file that `exec`s the relevant script — never put actual logic in `dev` itself.

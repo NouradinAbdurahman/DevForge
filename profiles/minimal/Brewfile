@@ -1,0 +1,15 @@
+# Minimal profile: bare-essentials CLI tooling for any developer - no
+# casks, no editor extensions, no databases.
+brew "git"
+brew "gh"
+brew "git-lfs"
+brew "mise"
+brew "jq"
+brew "yq"
+brew "fzf"
+brew "ripgrep"
+brew "coreutils"
+brew "gnu-sed"
+brew "findutils"
+brew "wget"
+brew "tree"

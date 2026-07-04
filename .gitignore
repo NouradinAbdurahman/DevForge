@@ -13,6 +13,9 @@ preferences/*.plist
 # Config backups created by scripts/common.sh's fs_safe_copy
 *.backup-*
 
+# Local default-profile selection (./dev profile use <name>) - machine-specific
+.devprofile
+
 # Local secrets - never commit real values, only .env.example
 .env
 .env.local

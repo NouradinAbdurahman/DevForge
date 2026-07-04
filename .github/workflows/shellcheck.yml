@@ -5,11 +5,13 @@ on:
     paths:
       - "**/*.sh"
       - "bootstrap.sh"
+      - "dev"
       - ".github/workflows/shellcheck.yml"
   pull_request:
     paths:
       - "**/*.sh"
       - "bootstrap.sh"
+      - "dev"
       - ".github/workflows/shellcheck.yml"
 
 permissions:
@@ -24,4 +26,4 @@ jobs:
       - name: Run ShellCheck
         run: |
           shopt -s globstar
-          shellcheck -x bootstrap.sh scripts/*.sh
+          shellcheck -x bootstrap.sh dev scripts/*.sh

@@ -202,6 +202,130 @@ EOF
 }
 
 # --------------------------------------------------------------------------
+# Install profiles (subsets of Brewfile - see profiles/)
+# --------------------------------------------------------------------------
+
+# Local, gitignored file recording the profile last selected via
+# `./dev profile use <name>` / `scripts/profile.sh use <name>`. When present,
+# bootstrap.sh/scripts/install.sh use it as the default profile instead of
+# "full", unless overridden with an explicit --profile/--minimal/--full flag.
+PROFILE_STATE_FILE="$DEV_SETUP_ROOT/.devprofile"
+
+# profile_brewfile_path <profile-name> -> absolute path to that profile's
+# Brewfile. "full" (or an empty name) resolves to the root Brewfile; any
+# other name resolves to profiles/<name>/Brewfile. Does not check the file
+# actually exists - callers should validate that themselves so they can
+# give a clear "unknown profile" error.
+profile_brewfile_path() {
+    local name="${1:-full}"
+    if [[ -z "$name" || "$name" == "full" ]]; then
+        echo "$DEV_SETUP_ROOT/Brewfile"
+    else
+        echo "$DEV_SETUP_ROOT/profiles/$name/Brewfile"
+    fi
+}
+
+# resolve_profile [explicit-profile] -> the profile to use: the explicit
+# argument if given, else the last profile set via PROFILE_STATE_FILE, else
+# "full".
+resolve_profile() {
+    local explicit="${1:-}"
+    if [[ -n "$explicit" ]]; then
+        echo "$explicit"
+    elif [[ -f "$PROFILE_STATE_FILE" ]]; then
+        tr -d '[:space:]' < "$PROFILE_STATE_FILE"
+    else
+        echo "full"
+    fi
+}
+
+# --------------------------------------------------------------------------
+# PATH manager
+# --------------------------------------------------------------------------
+
+# Prints "label|directory" pairs for well-known dev-tool directories that
+# commonly need to be on PATH. A directory is only relevant if it actually
+# exists on disk (meaning the tool is installed); path_manager_check/_fix
+# silently skip labels whose directory doesn't exist rather than treating
+# "not installed" as a problem.
+path_manager_known_dirs() {
+    local brew_prefix
+    brew_prefix="$(os_brew_prefix)"
+    cat <<EOF
+Android SDK platform-tools|$HOME/Library/Android/sdk/platform-tools
+Android SDK cmdline-tools|$HOME/Library/Android/sdk/cmdline-tools/latest/bin
+Android SDK emulator|$HOME/Library/Android/sdk/emulator
+pnpm|$HOME/Library/pnpm
+mise shims|$HOME/.local/share/mise/shims
+Homebrew bin|$brew_prefix/bin
+GNU coreutils|$brew_prefix/opt/coreutils/libexec/gnubin
+GNU findutils|$brew_prefix/opt/findutils/libexec/gnubin
+GNU sed|$brew_prefix/opt/gnu-sed/libexec/gnubin
+GNU tar|$brew_prefix/opt/gnu-tar/libexec/gnubin
+GNU time|$brew_prefix/opt/gnu-time/libexec/gnubin
+GNU awk (gawk)|$brew_prefix/opt/gawk/libexec/gnubin
+GNU grep|$brew_prefix/opt/grep/libexec/gnubin
+EOF
+}
+
+# path_manager_check - PASS when a known, installed tool directory is on
+# PATH; WARNING when it's installed but missing from PATH. Returns non-zero
+# if anything is missing (so callers can decide whether to offer a fix).
+path_manager_check() {
+    local label dir missing=0
+    while IFS='|' read -r label dir; do
+        [[ -z "$label" ]] && continue
+        [[ -d "$dir" ]] || continue
+        case ":$PATH:" in
+            *":$dir:"*) record_result PASS "$label is on PATH" ;;
+            *)
+                record_result WARNING "$label installed at $dir but not on PATH"
+                missing=1
+                ;;
+        esac
+    done < <(path_manager_known_dirs)
+    return $missing
+}
+
+# path_manager_fix - appends any missing-but-installed directories to a
+# clearly marked, idempotent block in the live ~/.zshrc (removing any
+# previous block first, so re-running never accumulates duplicates).
+path_manager_fix() {
+    local label dir zshrc="$HOME/.zshrc" missing=() d
+
+    while IFS='|' read -r label dir; do
+        [[ -z "$label" ]] && continue
+        [[ -d "$dir" ]] || continue
+        case ":$PATH:" in
+            *":$dir:"*) ;;
+            *) missing+=("$dir") ;;
+        esac
+    done < <(path_manager_known_dirs)
+
+    if [[ ${#missing[@]} -eq 0 ]]; then
+        log_success "Nothing to fix - all installed tools are already on PATH"
+        return 0
+    fi
+
+    if [[ -f "$zshrc" ]]; then
+        sed -i.path-manager-backup '/# >>> dev-setup path-manager >>>/,/# <<< dev-setup path-manager <<</d' "$zshrc"
+    fi
+
+    {
+        echo "# >>> dev-setup path-manager >>>"
+        echo "# Managed by 'scripts/doctor.sh --fix' - safe to delete, will be"
+        echo "# regenerated. Do not hand-edit; changes are lost on the next fix."
+        for d in "${missing[@]}"; do
+            # shellcheck disable=SC2016 # $PATH must stay literal - it's written into ~/.zshrc to expand at shell startup, not now
+            printf 'export PATH="%s:$PATH"\n' "$d"
+        done
+        echo "# <<< dev-setup path-manager <<<"
+    } >> "$zshrc"
+
+    log_success "Added ${#missing[@]} missing PATH entries to ~/.zshrc - restart your shell (or run 'exec zsh') to apply"
+}
+
+# --------------------------------------------------------------------------
 # Fault-tolerant step runner
 # --------------------------------------------------------------------------
 
@@ -464,4 +588,43 @@ print_summary() {
     printf '\n%d passed, %d warnings, %d failed\n' "$pass" "$warn" "$fail"
 
     [[ $fail -eq 0 ]]
+}
+
+# print_health_score - a 0-100 score computed from the same STEP_RESULTS
+# print_summary just reported on (PASS = full credit, WARNING = half
+# credit, FAIL = no credit), plus a Ready/Needs Attention verdict. Call
+# after print_summary, e.g.:
+#   if print_summary; then STATUS=0; else STATUS=1; fi
+#   print_health_score
+#   exit $STATUS
+print_health_score() {
+    local pass=0 warn=0 fail=0 entry status total score
+
+    for entry in "${STEP_RESULTS[@]}"; do
+        status="${entry%%|*}"
+        case "$status" in
+            PASS)    ((pass++)) ;;
+            WARNING) ((warn++)) ;;
+            FAIL)    ((fail++)) ;;
+        esac
+    done
+
+    total=$((pass + warn + fail))
+    if [[ $total -eq 0 ]]; then
+        score=100
+    else
+        score=$(((pass * 100 + warn * 50) / total))
+    fi
+
+    echo
+    if [[ $score -ge 90 ]]; then
+        printf '%sHealth Score: %d%%%s\n' "$COLOR_SUCCESS" "$score" "$COLOR_RESET"
+        printf '%sMachine Ready%s\n' "$COLOR_SUCCESS" "$COLOR_RESET"
+    elif [[ $score -ge 70 ]]; then
+        printf '%sHealth Score: %d%%%s\n' "$COLOR_WARNING" "$score" "$COLOR_RESET"
+        printf '%sMachine Mostly Ready - see warnings above%s\n' "$COLOR_WARNING" "$COLOR_RESET"
+    else
+        printf '%sHealth Score: %d%%%s\n' "$COLOR_ERROR" "$score" "$COLOR_RESET"
+        printf '%sMachine Needs Attention%s\n' "$COLOR_ERROR" "$COLOR_RESET"
+    fi
 }
