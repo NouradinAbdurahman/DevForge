@@ -433,7 +433,7 @@ and version numbers follow [Semantic Versioning](https://semver.org/).
   `KeyValue` (used by nearly every page's detail panels), and the
   Global search page's and Logs page's per-row rendering.
 
-### Changed
+### Changed (Dashboard polish)
 
 - **Persistent dashboard header (v1.4.1)** - the DevForgeKit ASCII
   logo is no longer a startup splash that disappears; the same logo/
@@ -491,7 +491,7 @@ and version numbers follow [Semantic Versioning](https://semver.org/).
   has no `backgroundColor` support (only `<Text>` does), a real
   upstream limitation, not an oversight. See `docs/TUI.md`.
 
-### Added
+### Added (Prior releases)
 
 - **Animated startup sequence (v1.2.6)** - launching the dashboard
   (`devforgekit` with no arguments, or `dashboard`/`ui`) now plays a

@@ -5,6 +5,9 @@ import {
     osInfo, hardwareInfo, memoryGb, diskUsage, uptimeString, softwareUpdateStatus
 } from "../src/commands/stats.js";
 
+const isMacOS = process.platform === "darwin";
+const macOnly = isMacOS ? test : test.skip;
+
 test("componentInstallStats returns a PASS/WARNING entry for every validate-able package", async () => {
     const results = await componentInstallStats();
     assert.ok(results.length > 0);
@@ -28,7 +31,7 @@ test("outdatedPackages returns an array (possibly empty) of package names", asyn
 // --- Device probes (Dashboard's "Device" panel) - real, live values
 // from this machine, never fabricated. -----------------------------
 
-test("osInfo reports a real macOS name/version/build from sw_vers", async () => {
+macOnly("osInfo reports a real macOS name/version/build from sw_vers", async () => {
     const info = await osInfo();
     assert.equal(typeof info.name, "string");
     assert.ok(info.name.length > 0);
@@ -36,13 +39,13 @@ test("osInfo reports a real macOS name/version/build from sw_vers", async () => 
     assert.notEqual(info.build, "unknown");
 });
 
-test("hardwareInfo reports a real model and chip/processor from system_profiler", async () => {
+macOnly("hardwareInfo reports a real model and chip/processor from system_profiler", async () => {
     const info = await hardwareInfo();
     assert.notEqual(info.model, "unknown");
     assert.notEqual(info.chip, "unknown");
 });
 
-test("memoryGb returns a real, positive, plausible amount of installed RAM", async () => {
+macOnly("memoryGb returns a real, positive, plausible amount of installed RAM", async () => {
     const gb = await memoryGb();
     assert.ok(Number.isFinite(gb));
     assert.ok(gb > 0 && gb <= 1024, `memoryGb() = ${gb} is outside a plausible range`);

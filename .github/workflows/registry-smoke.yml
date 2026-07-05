@@ -42,9 +42,13 @@ jobs:
             echo "::group::$pkg"
             node bin/devforgekit.js component install "$pkg"
             node bin/devforgekit.js component validate "$pkg"
+            # Record the brew prefix path before uninstall
+            brew_prefix="$(brew --prefix)/bin/$pkg"
             node bin/devforgekit.js component uninstall "$pkg"
-            if node bin/devforgekit.js component validate "$pkg"; then
-              echo "::error::$pkg still validates as installed after uninstall"
+            # Check that the brew-installed binary is gone (GitHub runners
+            # may have system-level copies outside Homebrew that remain on PATH)
+            if [[ -x "$brew_prefix" ]]; then
+              echo "::error::$pkg still present at $brew_prefix after uninstall"
               exit 1
             fi
             echo "::endgroup::"

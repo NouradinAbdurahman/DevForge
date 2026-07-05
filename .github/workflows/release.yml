@@ -55,18 +55,29 @@ jobs:
           cp VERSION release-assets/VERSION
           cp health-report.txt release-assets/health-report.txt
 
-      - name: Create GitHub release
+      - name: Create or update GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            --title "DevForgeKit $GITHUB_REF_NAME" \
-            --notes-file release-notes.md \
-            release-assets/Brewfile \
-            release-assets/README.md \
-            release-assets/CHANGELOG.md \
-            release-assets/VERSION \
-            release-assets/health-report.txt
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists — updating assets"
+            gh release upload "$GITHUB_REF_NAME" \
+              release-assets/Brewfile \
+              release-assets/README.md \
+              release-assets/CHANGELOG.md \
+              release-assets/VERSION \
+              release-assets/health-report.txt \
+              --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --title "DevForgeKit $GITHUB_REF_NAME" \
+              --notes-file release-notes.md \
+              release-assets/Brewfile \
+              release-assets/README.md \
+              release-assets/CHANGELOG.md \
+              release-assets/VERSION \
+              release-assets/health-report.txt
+          fi
 
       - name: Release summary
         run: |
