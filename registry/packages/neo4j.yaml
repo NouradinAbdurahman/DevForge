@@ -1,0 +1,21 @@
+schemaVersion: 1
+name: neo4j
+description: Neo4j - a native graph database
+category: databases
+platforms: [macos]
+install: { method: brew-formula, id: neo4j }
+dependencies: [java]
+validate: neo4j --version
+repair: brew services restart neo4j
+update: brew upgrade neo4j
+uninstall: { method: brew-formula, id: neo4j }
+post_install:
+  - "brew services start neo4j"
+homepage: "https://neo4j.com"
+repository: "https://github.com/neo4j/neo4j"
+license: GPL-3.0
+maintainer: DevForgeKit Registry
+tags: [database, graph]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

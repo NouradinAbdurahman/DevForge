@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: cloud
+description: Multi-cloud CLI tooling
+components: [aws-cli, azure-cli, gcloud, docker, terraform]

@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: asdf
+description: A universal version manager for multiple language runtimes
+category: package-managers
+platforms: [macos, linux]
+install: { method: brew-formula, id: asdf }
+dependencies: []
+validate: asdf --version
+repair: brew reinstall asdf
+update: brew upgrade asdf
+uninstall: { method: brew-formula, id: asdf }
+post_install: []
+homepage: "https://asdf-vm.com"
+repository: "https://github.com/asdf-vm/asdf"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [package-manager, version-manager]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

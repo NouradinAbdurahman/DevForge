@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: direnv
+description: Loads and unloads environment variables based on the current directory
+category: utilities
+platforms: [macos, linux]
+install: { method: brew-formula, id: direnv }
+dependencies: []
+validate: direnv --version
+repair: brew reinstall direnv
+update: brew upgrade direnv
+uninstall: { method: brew-formula, id: direnv }
+post_install: []
+homepage: "https://direnv.net"
+repository: "https://github.com/direnv/direnv"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [utility, shell, environment]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

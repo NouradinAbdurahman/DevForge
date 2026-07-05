@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: bazelisk
+description: A version manager for the Bazel build system
+category: build-systems
+platforms: [macos, linux]
+install: { method: brew-formula, id: bazelisk }
+dependencies: []
+validate: bazel --version
+repair: brew reinstall bazelisk
+update: brew upgrade bazelisk
+uninstall: { method: brew-formula, id: bazelisk }
+post_install: []
+homepage: "https://bazel.build"
+repository: "https://github.com/bazelbuild/bazelisk"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [build-tool]
+aliases: [bazel]
+stability: stable
+lastVerified: "2026-07-05"

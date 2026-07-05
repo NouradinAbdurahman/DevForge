@@ -1,0 +1,7 @@
+schemaVersion: 1
+name: react
+description: React web app development
+collections: [react]
+settings:
+  editor: vscode
+  browser: chrome

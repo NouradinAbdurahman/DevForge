@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: backend
+description: A typical backend service stack - runtime, database, cache, containers
+collections: [backend]
+settings:
+  editor: vscode

@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: ruby
+description: General Ruby development
+components: [ruby, gem, git, vscode]
+settings:
+  editor: vscode

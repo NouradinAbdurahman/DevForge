@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: software-engineering
+description: Software engineering coursework and team projects
+components: [git, github-cli, vscode, docker, node, python]
+settings:
+  editor: vscode

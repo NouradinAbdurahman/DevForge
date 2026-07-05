@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: meson
+description: A fast and user-friendly build system
+category: build-systems
+platforms: [macos, linux]
+install: { method: brew-formula, id: meson }
+dependencies: []
+validate: meson --version
+repair: brew reinstall meson
+update: brew upgrade meson
+uninstall: { method: brew-formula, id: meson }
+post_install: []
+homepage: "https://mesonbuild.com"
+repository: "https://github.com/mesonbuild/meson"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [build-tool]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

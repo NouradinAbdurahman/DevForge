@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: cypress
+description: A JavaScript end-to-end testing framework
+category: testing
+platforms: [macos, linux]
+install: { method: npm, id: cypress }
+dependencies: [node]
+validate: "cypress --version"
+repair: "npm install -g cypress@latest"
+update: "npm install -g cypress@latest"
+uninstall: { method: npm, id: cypress }
+post_install: []
+homepage: "https://www.cypress.io"
+repository: "https://github.com/cypress-io/cypress"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [testing, web, e2e]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

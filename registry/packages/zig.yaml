@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: zig
+description: The Zig programming language
+category: languages
+platforms: [macos, linux]
+install: { method: brew-formula, id: zig }
+dependencies: []
+validate: zig version
+repair: brew reinstall zig
+update: brew upgrade zig
+uninstall: { method: brew-formula, id: zig }
+post_install: []
+homepage: "https://ziglang.org"
+repository: "https://github.com/ziglang/zig"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [language, systems]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: soc-analyst
+description: Security Operations Center analyst tooling - traffic and log inspection
+components: [wireshark, nmap, openssl, git]

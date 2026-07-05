@@ -1,0 +1,8 @@
+schemaVersion: 1
+name: incompatible-plugin
+version: 0.1.0
+description: A plugin that requires a DevForgeKit version that will never match
+engine: ">=999.0.0"
+commands:
+  - name: never-runs
+    run: ./never.sh

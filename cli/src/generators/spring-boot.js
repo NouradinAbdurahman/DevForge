@@ -1,0 +1,111 @@
+// Spring Boot generator (v1.2.2 Tier 2): scaffolds via the official
+// Spring Initializr REST API (https://start.spring.io) rather than
+// requiring a local Java/Maven toolchain just to generate files - only
+// `curl` and `unzip` are needed to scaffold; Java/Maven are only needed
+// afterward, to actually build/run.
+import { existsSync, mkdirSync, rmSync } from "node:fs";
+import path from "node:path";
+import { runShellCommand, commandExists } from "../core/shell.js";
+import { confirm } from "../lib/prompts.js";
+import { DevForgeError } from "../core/errors.js";
+import { vscodeSettings, vscodeExtensions } from "./shared.js";
+
+async function promptOptions(flags) {
+    const docker = flags.docker ?? await confirm("Include a Dockerfile?", true);
+    return { docker };
+}
+
+function dockerfile() {
+    return `FROM eclipse-temurin:21-jdk-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN ./mvnw -q -DskipTests package
+
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
+EXPOSE 8080
+CMD ["java", "-jar", "app.jar"]
+`;
+}
+
+function ciWorkflow() {
+    return `name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - run: ./mvnw -B verify
+`;
+}
+
+export const springBootGenerator = {
+    id: "spring-boot",
+    label: "Spring Boot",
+    description: "Scaffolded via the Spring Initializr API (start.spring.io), Docker, CI",
+    requiresTool: { command: "curl", hint: "curl is required to call the Spring Initializr API (start.spring.io)." },
+    promptOptions,
+
+    async scaffold({ name, parentDir, dir }) {
+        if (!(await commandExists("unzip"))) {
+            throw new DevForgeError("'unzip' is not installed or not on PATH - required to extract the Spring Initializr response.");
+        }
+
+        const zipPath = path.join(parentDir, `${name}.zip`);
+        const params = [
+            "type=maven-project",
+            "language=java",
+            "bootVersion=3.4.1",
+            "javaVersion=21",
+            "packaging=jar",
+            `groupId=com.example`,
+            `artifactId=${name}`,
+            `name=${name}`,
+            `baseDir=${name}`,
+            "dependencies=web,data-jpa,postgresql,lombok,validation"
+        ].map((p) => `-d ${p}`).join(" ");
+
+        const downloadCode = await runShellCommand(
+            `curl -fsS https://start.spring.io/starter.zip ${params} -o "${zipPath}"`,
+            { silent: true }
+        );
+        if (downloadCode !== 0) return downloadCode;
+
+        mkdirSync(parentDir, { recursive: true });
+        const extractCode = await runShellCommand(`unzip -q "${zipPath}" -d "${parentDir}"`, { silent: true });
+        rmSync(zipPath, { force: true });
+
+        if (extractCode === 0 && !existsSync(dir)) {
+            throw new DevForgeError(`Spring Initializr response did not contain the expected ${name}/ directory`);
+        }
+        return extractCode;
+    },
+
+    generate({ options }) {
+        const files = [
+            { path: ".vscode/settings.json", content: vscodeSettings({ "java.compile.nullAnalysis.mode": "automatic" }) },
+            { path: ".vscode/extensions.json", content: vscodeExtensions(["vscjava.vscode-java-pack"]) },
+            { path: ".github/workflows/ci.yml", content: ciWorkflow() }
+        ];
+        if (options.docker) {
+            files.push({ path: "Dockerfile", content: dockerfile() }, { path: ".dockerignore", content: "target\n.git\n" });
+        }
+        return files;
+    },
+
+    nextSteps({ name }) {
+        return [`cd ${name}`, "./mvnw spring-boot:run"];
+    }
+};

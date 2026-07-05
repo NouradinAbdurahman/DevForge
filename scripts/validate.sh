@@ -120,6 +120,19 @@ else
     done < <(find "$DEV_SETUP_ROOT" -name "*.md" -not -path "*/node_modules/*" -not -path "*/.git/*" -print0)
 fi
 
+# --------------------------------------------------------------------------
+# Node CLI (cli/ - see docs/PlatformArchitecture.md)
+# --------------------------------------------------------------------------
+
+log_section "Node CLI"
+
+if command_exists node && command_exists npm && [[ -d "$DEV_SETUP_ROOT/cli/node_modules" ]]; then
+    run_step_optional "Node CLI lint" npm run lint --prefix "$DEV_SETUP_ROOT/cli"
+    run_step_optional "Node CLI tests" npm test --prefix "$DEV_SETUP_ROOT/cli"
+else
+    log_warn "node/npm not found or cli/node_modules missing - skipping Node CLI lint/test (run bootstrap.sh or 'npm install --prefix cli' first)"
+fi
+
 if print_summary; then
     exit 0
 else

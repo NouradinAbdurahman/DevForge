@@ -1,0 +1,15 @@
+schemaVersion: 1
+name: docker
+# docker-desktop and colima are modeled in registry/packages/docker.yaml as two
+# *variants* of the same package (only one is ever installed through
+# DevForgeKit itself), so a normal cross-package `conflicts` rule can't express
+# "these two don't work together" - both variants share the name "docker".
+# variantConflicts + variantProbes exist specifically for this: a user can
+# still end up with both a real Docker Desktop install and a real Colima
+# install side by side (e.g. one installed outside DevForgeKit), and they do
+# genuinely conflict (both try to own the default Docker context/socket).
+variantConflicts:
+  - [docker-desktop, colima]
+variantProbes:
+  docker-desktop: "test -d '/Applications/Docker.app'"
+  colima: "command -v colima"

@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: buildah
+description: A tool for building OCI container images
+category: containers
+platforms: [macos, linux]
+install: { method: brew-formula, id: buildah }
+dependencies: []
+validate: buildah --version
+repair: brew reinstall buildah
+update: brew upgrade buildah
+uninstall: { method: brew-formula, id: buildah }
+post_install: []
+homepage: "https://buildah.io"
+repository: "https://github.com/containers/buildah"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [containers, devops]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

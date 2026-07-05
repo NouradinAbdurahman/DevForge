@@ -1,0 +1,279 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://devforgekit.dev/schema/workspace.schema.json",
+  "title": "DevForgeKit workspace manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "name", "description", "createdAt", "modifiedAt"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 2 },
+    "name": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "description": { "type": "string" },
+    "createdAt": { "type": "string", "minLength": 1 },
+    "modifiedAt": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "minLength": 1 },
+    "owner": { "type": "string" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "status": { "type": "string", "enum": ["active", "archived"] },
+    "profile": { "type": ["string", "null"] },
+    "collections": { "type": "array", "items": { "type": "string" } },
+    "recipes": { "type": "array", "items": { "type": "string" } },
+    "components": { "type": "array", "items": { "type": "string" } },
+    "plugins": { "type": "array", "items": { "type": "string" } },
+    "templates": { "type": "array", "items": { "type": "string" } },
+    "projectHistory": { "type": "array", "items": { "$ref": "#/$defs/projectHistoryEntry" } },
+    "variables": { "type": "object", "additionalProperties": { "type": "string" } },
+    "git": { "$ref": "#/$defs/git" },
+    "ssh": { "$ref": "#/$defs/ssh" },
+    "env": { "$ref": "#/$defs/env" },
+    "docker": { "$ref": "#/$defs/docker" },
+    "kubernetes": { "$ref": "#/$defs/kubernetes" },
+    "cloud": { "$ref": "#/$defs/cloud" },
+    "ai": { "$ref": "#/$defs/ai" },
+    "editor": { "$ref": "#/$defs/editor" },
+    "browser": { "$ref": "#/$defs/browser" },
+    "shell": { "$ref": "#/$defs/shell" },
+    "packageManagers": { "$ref": "#/$defs/packageManagers" },
+    "sync": { "$ref": "#/$defs/sync" },
+    "compatibility": { "$ref": "#/$defs/compatibility" }
+  },
+  "$defs": {
+    "projectHistoryEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stack", "name", "dir", "createdAt"],
+      "properties": {
+        "stack": { "type": "string" },
+        "name": { "type": "string" },
+        "dir": { "type": "string" },
+        "createdAt": { "type": "string", "minLength": 1 }
+      }
+    },
+    "git": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "email": { "type": ["string", "null"] },
+        "signingKey": { "type": ["string", "null"] },
+        "defaultBranch": { "type": ["string", "null"] },
+        "hooksPath": { "type": ["string", "null"] },
+        "aliases": { "type": "object", "additionalProperties": { "type": "string" } },
+        "credentialHelper": { "type": ["string", "null"] },
+        "lfs": { "type": "boolean" }
+      }
+    },
+    "sshIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["host"],
+      "properties": {
+        "provider": { "type": "string", "enum": ["github", "gitlab", "bitbucket", "custom"] },
+        "host": { "type": "string" },
+        "hostAlias": { "type": ["string", "null"] },
+        "user": { "type": ["string", "null"] },
+        "identityFile": { "type": ["string", "null"] },
+        "port": { "type": ["integer", "null"] }
+      }
+    },
+    "ssh": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "identities": { "type": "array", "items": { "$ref": "#/$defs/sshIdentity" } },
+        "knownHosts": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "env": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "variables": { "type": "object", "additionalProperties": { "type": "string" } },
+        "secretKeys": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "docker": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "context": { "type": ["string", "null"] },
+        "composeFiles": { "type": "array", "items": { "type": "string" } },
+        "networks": { "type": "array", "items": { "type": "string" } },
+        "volumes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "kubernetes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "context": { "type": ["string", "null"] },
+        "namespace": { "type": ["string", "null"] },
+        "clusters": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "cloudRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ref": { "type": ["string", "null"] },
+        "region": { "type": ["string", "null"] }
+      }
+    },
+    "cloud": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "aws": { "$ref": "#/$defs/cloudRef" },
+        "azure": { "$ref": "#/$defs/cloudRef" },
+        "gcp": { "$ref": "#/$defs/cloudRef" },
+        "firebase": { "$ref": "#/$defs/cloudRef" },
+        "supabase": { "$ref": "#/$defs/cloudRef" },
+        "cloudflare": { "$ref": "#/$defs/cloudRef" },
+        "vercel": { "$ref": "#/$defs/cloudRef" },
+        "netlify": { "$ref": "#/$defs/cloudRef" }
+      }
+    },
+    "ai": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": { "type": "string", "enum": ["none", "ollama", "openai", "anthropic", "gemini", "groq", "openrouter", "local"] },
+        "model": { "type": ["string", "null"] },
+        "endpoint": { "type": ["string", "null"] },
+        "temperature": { "type": ["number", "null"] },
+        "apiKeyRef": { "type": ["string", "null"] }
+      }
+    },
+    "editor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "app": { "type": "string", "enum": ["none", "vscode", "cursor"] },
+        "theme": { "type": ["string", "null"] },
+        "extensions": { "type": "array", "items": { "type": "string" } },
+        "snippetsProfile": { "type": ["string", "null"] }
+      }
+    },
+    "browser": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "app": { "type": ["string", "null"] },
+        "profile": { "type": ["string", "null"] },
+        "extensions": { "type": "array", "items": { "type": "string" } },
+        "bookmarksExportPath": { "type": ["string", "null"] }
+      }
+    },
+    "shell": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "shell": { "type": ["string", "null"] },
+        "aliases": { "type": "object", "additionalProperties": { "type": "string" } },
+        "functions": { "type": "object", "additionalProperties": { "type": "string" } },
+        "prompt": { "type": ["string", "null"] },
+        "theme": { "type": ["string", "null"] },
+        "pathAdditions": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "packageManagers": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "brew": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "brewfile": { "type": ["string", "null"] } }
+        },
+        "mise": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "tools": { "type": "object", "additionalProperties": { "type": "string" } } }
+        },
+        "npm": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "registry": { "type": ["string", "null"] } }
+        },
+        "pnpm": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "registry": { "type": ["string", "null"] } }
+        },
+        "pip": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "indexUrl": { "type": ["string", "null"] } }
+        },
+        "cargo": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "registry": { "type": ["string", "null"] } }
+        },
+        "go": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "proxy": { "type": ["string", "null"] } }
+        },
+        "composer": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "repository": { "type": ["string", "null"] } }
+        },
+        "gem": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "source": { "type": ["string", "null"] } }
+        },
+        "nuget": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "source": { "type": ["string", "null"] } }
+        }
+      }
+    },
+    "sync": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "remoteId": { "type": ["string", "null"] },
+        "provider": { "type": ["string", "null"] },
+        "lastSyncedAt": { "type": ["string", "null"] }
+      }
+    },
+    "compatibilityScanEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timestamp", "score", "verdict"],
+      "properties": {
+        "timestamp": { "type": "string", "minLength": 1 },
+        "score": { "type": "integer" },
+        "verdict": { "type": "string" },
+        "pass": { "type": "integer" },
+        "recommend": { "type": "integer" },
+        "warn": { "type": "integer" },
+        "critical": { "type": "integer" },
+        "unsupported": { "type": "integer" }
+      }
+    },
+    "compatibilityRepairEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timestamp", "actionCount"],
+      "properties": {
+        "timestamp": { "type": "string", "minLength": 1 },
+        "actionCount": { "type": "integer" },
+        "succeeded": { "type": "integer" },
+        "failed": { "type": "integer" }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scanHistory": { "type": "array", "items": { "$ref": "#/$defs/compatibilityScanEntry" } },
+        "repairHistory": { "type": "array", "items": { "$ref": "#/$defs/compatibilityRepairEntry" } }
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: azure
+description: Azure-focused cloud development
+components: [azure-cli, docker, terraform, git, vscode]
+settings:
+  editor: vscode

@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: tmux
+description: A terminal multiplexer
+category: terminals
+platforms: [macos, linux]
+install: { method: brew-formula, id: tmux }
+dependencies: []
+validate: tmux -V
+repair: brew reinstall tmux
+update: brew upgrade tmux
+uninstall: { method: brew-formula, id: tmux }
+post_install: []
+homepage: "https://github.com/tmux/tmux"
+repository: "https://github.com/tmux/tmux"
+license: ISC
+maintainer: DevForgeKit Registry
+tags: [terminal, multiplexer]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

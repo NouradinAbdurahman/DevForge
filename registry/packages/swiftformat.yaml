@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: swiftformat
+description: A code formatter for Swift
+category: apple-development
+platforms: [macos]
+install: { method: brew-formula, id: swiftformat }
+dependencies: []
+validate: swiftformat --version
+repair: brew reinstall swiftformat
+update: brew upgrade swiftformat
+uninstall: { method: brew-formula, id: swiftformat }
+post_install: []
+homepage: "https://github.com/nicklockwood/SwiftFormat"
+repository: "https://github.com/nicklockwood/SwiftFormat"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [apple-development, code-quality, formatter]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

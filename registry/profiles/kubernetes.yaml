@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: kubernetes
+description: Kubernetes cluster operations
+components: [kubectl, helm, k9s, kubectx, docker, git, vscode]
+settings:
+  editor: vscode

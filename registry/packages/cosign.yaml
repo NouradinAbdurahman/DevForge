@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: cosign
+description: Container signing, verification, and storage in an OCI registry
+category: package-signing
+platforms: [macos, linux]
+install: { method: brew-formula, id: cosign }
+dependencies: []
+validate: cosign version
+repair: brew reinstall cosign
+update: brew upgrade cosign
+uninstall: { method: brew-formula, id: cosign }
+post_install: []
+homepage: "https://docs.sigstore.dev/cosign/overview"
+repository: "https://github.com/sigstore/cosign"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [security, signing, containers]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

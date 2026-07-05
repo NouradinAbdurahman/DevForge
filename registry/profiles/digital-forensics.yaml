@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: digital-forensics
+description: Digital forensics investigation tooling
+components: [wireshark, openssl, git]

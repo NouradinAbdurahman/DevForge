@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: railway
+description: The Railway deployment platform's command-line interface
+category: cloud
+platforms: [macos, linux]
+install: { method: brew-formula, id: railway }
+dependencies: []
+validate: railway --version
+repair: brew reinstall railway
+update: brew upgrade railway
+uninstall: { method: brew-formula, id: railway }
+post_install: []
+homepage: "https://railway.app"
+repository: "https://github.com/railwayapp/cli"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [cloud, deployment, paas]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

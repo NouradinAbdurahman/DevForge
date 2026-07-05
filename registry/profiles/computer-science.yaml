@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: computer-science
+description: Computer science coursework - languages, algorithms, and fundamentals
+components: [git, vscode, python, java, go]
+settings:
+  editor: vscode

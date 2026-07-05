@@ -5,6 +5,15 @@
 # it works identically as `./devforgekit` (from the repo) or a plain
 # `devforgekit` (from anywhere, once installed).
 #
+# Layer 2 delegation (see docs/PlatformArchitecture.md): every command
+# except install/bootstrap is handed off to the Node CLI under cli/ once
+# it has been set up by bootstrap.sh (ensure_cli_dependencies in
+# scripts/common.sh). Until then - or on a machine where Node setup
+# failed/was skipped - this file falls back to the original bash
+# dispatch table below verbatim, so behavior never regresses. install/
+# bootstrap never delegate to Node: bootstrap.sh must work before Node
+# exists at all (mise installs Node, not the other way around).
+#
 # Usage: devforgekit <command> [args...]
 set -Eeuo pipefail
 
@@ -26,12 +35,22 @@ usage() {
     cat <<EOF
 Usage: $SELF <command> [args...]
 
+Run with no arguments to open the interactive terminal dashboard
+(requires the Node CLI; falls back to this help text otherwise -
+see docs/TUI.md).
+
 Commands:
   install [options]     Full provision (forwards to bootstrap.sh)
   bootstrap [options]   Alias for install
                         options: -y|--yes, --skip-services, --dry-run,
                                  --profile <name>, --minimal, --full
   update                Upgrade the managed toolchain, restart services
+  self-update           Update DevForgeKit itself (git pull, deps, config, plugins)
+  snapshot <action>     Environment Snapshot & Restore (create, restore, list, inspect, verify, diff)
+  benchmark <action>    Benchmark Engine (quick, full, standard, compare, history, export)
+  repair <action>       Intelligent Repair Engine (scan, plan, run, verify, rollback, history)
+  package <action>      Package Intelligence & Analytics (analyze, info, tree, orphan, duplicates)
+  graph <action>        Development Environment Graph (open, search, impact, path, stats, export)
   backup                Capture live config into the repo, commit+push
   restore               Restore dotfiles/editors from the repo
   check                 Fast PASS/WARNING/FAIL health check
@@ -47,15 +66,43 @@ Commands:
   uninstall              Not yet implemented
   help                   Show this message
 
+The following commands require the Node CLI (installed by bootstrap.sh -
+see docs/PlatformArchitecture.md); they no-op with an "Unknown command"
+error until then:
+  config <action>        get|set|list - manage DevForgeKit configuration
+  component <action>     list|info|install|validate|repair|uninstall
+  plugin <action>         list|info|run - manage DevForgeKit plugins
+  recipe <action>          list|show|install|create|import|search - one-command environment workflows
+  new <stack> [name]       generate a complete project (Flutter, Next.js, Express, ...)
+  dashboard | ui           open the interactive terminal dashboard (docs/TUI.md)
+
 Examples:
   $SELF install --profile flutter
   $SELF doctor --fix
   $SELF profile list
   $SELF services status
+  $SELF component install
+  $SELF recipe install ai-engineer
+  $SELF new nextjs my-app
 EOF
 }
 
+# cli_available - true when the Node CLI has been set up (Node itself is
+# on PATH and cli/'s npm dependencies are installed). Checked fresh on
+# every invocation rather than cached, since either can change between
+# runs (e.g. right after `./bootstrap.sh` finishes).
+cli_available() {
+    command -v node >/dev/null 2>&1 && [[ -d "$SCRIPT_DIR/cli/node_modules" ]]
+}
+
+# No arguments: hand off to the Node CLI with *no* command - it opens
+# the interactive dashboard (v1.2.3, docs/TUI.md) on a capable TTY and
+# falls back to --help output otherwise (bin/devforgekit.js decides).
+# Without the Node CLI, the original usage text keeps working unchanged.
 if [[ $# -eq 0 ]]; then
+    if cli_available; then
+        exec node "$SCRIPT_DIR/cli/bin/devforgekit.js"
+    fi
     usage
     exit 1
 fi
@@ -65,6 +112,17 @@ shift
 
 case "$cmd" in
     install|bootstrap) exec "$SCRIPT_DIR/bootstrap.sh" "$@" ;;
+esac
+
+if cli_available; then
+    exec node "$SCRIPT_DIR/cli/bin/devforgekit.js" "$cmd" "$@"
+fi
+
+# Legacy fallback: the Node CLI isn't set up yet (fresh clone, before the
+# first bootstrap run, or a machine that skipped/failed Node setup) -
+# dispatch directly to the original bash scripts so every command still
+# works exactly as it did before Layer 2 existed.
+case "$cmd" in
     update) exec "$SCRIPT_DIR/scripts/update.sh" "$@" ;;
     backup) exec "$SCRIPT_DIR/scripts/backup.sh" "$@" ;;
     restore) exec "$SCRIPT_DIR/scripts/restore.sh" "$@" ;;

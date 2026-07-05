@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: claude-code
+description: Anthropic's official agentic coding CLI
+category: ai
+platforms: [macos, linux]
+install: { method: npm, id: "@anthropic-ai/claude-code" }
+dependencies: [node]
+validate: claude --version
+repair: "npm install -g @anthropic-ai/claude-code@latest"
+update: "npm install -g @anthropic-ai/claude-code@latest"
+uninstall: { method: npm, id: "@anthropic-ai/claude-code" }
+post_install: []
+homepage: "https://claude.com/claude-code"
+repository: "https://github.com/anthropics/claude-code"
+license: proprietary
+maintainer: DevForgeKit Registry
+tags: [ai, cli, agent]
+aliases: [claude]
+stability: stable
+lastVerified: "2026-07-05"

@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: kotlin
+description: The Kotlin programming language
+category: languages
+platforms: [macos, linux]
+install: { method: brew-formula, id: kotlin }
+dependencies: [java]
+validate: kotlin -version
+repair: brew reinstall kotlin
+update: brew upgrade kotlin
+uninstall: { method: brew-formula, id: kotlin }
+post_install: []
+homepage: "https://kotlinlang.org"
+repository: "https://github.com/JetBrains/kotlin"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [language, jvm, mobile]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

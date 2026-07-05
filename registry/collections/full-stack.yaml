@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: full-stack
+description: A complete full-stack web development environment
+components: [node, python, postgres, docker, git, vscode]

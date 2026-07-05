@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: go
+description: General Go development
+components: [go, git, vscode]
+settings:
+  editor: vscode

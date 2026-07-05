@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: yt-dlp
+description: A feature-rich command-line audio/video downloader
+category: media
+platforms: [macos, linux]
+install: { method: brew-formula, id: yt-dlp }
+dependencies: []
+validate: yt-dlp --version
+repair: brew reinstall yt-dlp
+update: brew upgrade yt-dlp
+uninstall: { method: brew-formula, id: yt-dlp }
+post_install: []
+homepage: "https://github.com/yt-dlp/yt-dlp"
+repository: "https://github.com/yt-dlp/yt-dlp"
+license: Unlicense
+maintainer: DevForgeKit Registry
+tags: [media, video, download]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

@@ -1,0 +1,21 @@
+schemaVersion: 1
+name: elasticsearch
+description: Elasticsearch - a distributed search and analytics engine
+category: databases
+platforms: [macos]
+install: { method: brew-formula, id: elasticsearch }
+dependencies: [java]
+validate: elasticsearch --version
+repair: brew services restart elasticsearch
+update: brew upgrade elasticsearch
+uninstall: { method: brew-formula, id: elasticsearch }
+post_install:
+  - "brew services start elasticsearch"
+homepage: "https://www.elastic.co/elasticsearch"
+repository: "https://github.com/elastic/elasticsearch"
+license: SSPL-1.0
+maintainer: DevForgeKit Registry
+tags: [database, search, analytics]
+aliases: [es]
+stability: stable
+lastVerified: "2026-07-05"

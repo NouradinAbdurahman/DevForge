@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: node
+description: JavaScript runtime, managed via mise (see mise.toml)
+category: languages
+platforms: [macos, linux]
+install: { method: mise, id: node }
+dependencies: []
+validate: node --version
+repair: mise install node
+update: mise upgrade node
+uninstall: { method: mise, id: node }
+post_install: []
+homepage: "https://nodejs.org"
+repository: "https://github.com/nodejs/node"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [language, javascript, runtime]
+aliases: [nodejs]
+stability: stable
+lastVerified: "2026-07-05"

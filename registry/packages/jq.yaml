@@ -1,0 +1,21 @@
+schemaVersion: 1
+name: jq
+description: A lightweight command-line JSON processor
+category: utilities
+platforms: [macos, linux]
+install: { method: brew-formula, id: jq }
+dependencies: []
+validate: jq --version
+repair: brew reinstall jq
+update: brew upgrade jq
+uninstall: { method: brew-formula, id: jq }
+post_install: []
+homepage: "https://jqlang.org"
+repository: "https://github.com/jqlang/jq"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [utility, json, cli]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"
+ciVerified: true

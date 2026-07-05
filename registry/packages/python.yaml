@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: python
+description: Python runtime, managed via mise (see mise.toml)
+category: languages
+platforms: [macos, linux]
+install: { method: mise, id: python }
+dependencies: []
+validate: python3 --version
+repair: mise install python
+update: mise upgrade python
+uninstall: { method: mise, id: python }
+post_install: []
+homepage: "https://www.python.org"
+repository: "https://github.com/python/cpython"
+license: PSF-2.0
+maintainer: DevForgeKit Registry
+tags: [language, scripting]
+aliases: [python3, cpython]
+stability: stable
+lastVerified: "2026-07-05"

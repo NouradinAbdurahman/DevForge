@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: full-stack
+description: A complete full-stack web development environment
+collections: [full-stack]
+settings:
+  editor: vscode

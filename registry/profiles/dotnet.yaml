@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: dotnet
+description: General .NET (C#) development
+components: [csharp, git, vscode]
+settings:
+  editor: vscode

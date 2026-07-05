@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: gemini-cli
+description: Google's official Gemini command-line AI agent
+category: ai
+platforms: [macos, linux]
+install: { method: npm, id: "@google/gemini-cli" }
+dependencies: [node]
+validate: gemini --version
+repair: "npm install -g @google/gemini-cli@latest"
+update: "npm install -g @google/gemini-cli@latest"
+uninstall: { method: npm, id: "@google/gemini-cli" }
+post_install: []
+homepage: "https://github.com/google-gemini/gemini-cli"
+repository: "https://github.com/google-gemini/gemini-cli"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [ai, cli, agent]
+aliases: [gemini]
+stability: stable
+lastVerified: "2026-07-05"

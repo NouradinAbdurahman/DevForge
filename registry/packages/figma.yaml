@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: figma
+description: A collaborative interface design tool
+category: design
+platforms: [macos]
+install: { method: brew-cask, id: figma }
+dependencies: []
+validate: "test -d '/Applications/Figma.app'"
+repair: brew reinstall --cask figma
+update: brew upgrade --cask figma
+uninstall: { method: brew-cask, id: figma }
+post_install: []
+homepage: "https://www.figma.com"
+repository: ""
+license: proprietary
+maintainer: DevForgeKit Registry
+tags: [design, ui-ux]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

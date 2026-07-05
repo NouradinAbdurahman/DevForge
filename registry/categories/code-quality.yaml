@@ -1,0 +1,3 @@
+id: code-quality
+label: Code Quality
+description: Linters, formatters, and static analysis tools

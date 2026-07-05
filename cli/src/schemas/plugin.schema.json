@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://devforgekit.dev/schema/plugin.schema.json",
+  "title": "DevForgeKit plugin manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "name", "version", "description", "engine"],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "author": { "type": "string" },
+    "license": { "type": "string" },
+    "homepage": { "type": "string" },
+    "engine": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dependencies": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "commands": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/commandHook" }
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/eventHook" }
+    },
+    "rules": {
+      "type": "object",
+      "description": "Compatibility rules this plugin contributes (Compatibility Engine, v1.2.5) - version ranges for other registry packages this plugin's own tool requires/conflicts with/recommends.",
+      "additionalProperties": false,
+      "properties": {
+        "requires": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/versionRequirement" }
+        },
+        "conflicts": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "recommends": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/versionRequirement" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "commandHook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "run"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "description": { "type": "string" },
+        "run": { "type": "string" },
+        "timeoutMs": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "eventHook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event", "run"],
+      "properties": {
+        "event": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "run": { "type": "string" },
+        "timeoutMs": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "versionRequirement": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["version"],
+          "properties": { "version": { "type": "string", "minLength": 1 } }
+        }
+      ]
+    }
+  }
+}

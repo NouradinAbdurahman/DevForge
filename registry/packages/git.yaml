@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: git
+description: Distributed version control system
+category: languages
+platforms: [macos, linux]
+install: { method: brew-formula, id: git }
+dependencies: []
+validate: git --version
+repair: brew reinstall git
+update: brew upgrade git
+uninstall: { method: brew-formula, id: git }
+post_install: []
+homepage: "https://git-scm.com"
+repository: "https://github.com/git/git"
+license: GPL-2.0
+maintainer: DevForgeKit Registry
+tags: [vcs, version-control]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

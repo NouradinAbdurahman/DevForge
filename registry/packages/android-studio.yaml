@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: android-studio
+description: Google's official IDE for Android app development, including the Android SDK
+category: mobile
+platforms: [macos]
+install: { method: brew-cask, id: android-studio }
+dependencies: [java]
+validate: "test -d '/Applications/Android Studio.app'"
+repair: brew reinstall --cask android-studio
+update: brew upgrade --cask android-studio
+uninstall: { method: brew-cask, id: android-studio }
+post_install: []
+homepage: "https://developer.android.com/studio"
+repository: "https://android.googlesource.com/platform/tools/adt/idea"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [mobile, android, ide]
+aliases: [android-sdk]
+stability: stable
+lastVerified: "2026-07-05"

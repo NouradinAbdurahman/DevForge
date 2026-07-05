@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: sd
+description: An intuitive find-and-replace command-line tool (a sed alternative)
+category: utilities
+platforms: [macos, linux]
+install: { method: brew-formula, id: sd }
+dependencies: []
+validate: sd --version
+repair: brew reinstall sd
+update: brew upgrade sd
+uninstall: { method: brew-formula, id: sd }
+post_install: []
+homepage: "https://github.com/chmln/sd"
+repository: "https://github.com/chmln/sd"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [utility, cli, text-processing]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

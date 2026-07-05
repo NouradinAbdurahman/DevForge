@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: flutter
+description: Google's cross-platform UI toolkit for mobile, web, and desktop
+category: mobile
+platforms: [macos]
+install: { method: brew-cask, id: flutter }
+dependencies: [dart]
+validate: flutter doctor
+repair: flutter doctor --android-licenses
+update: flutter upgrade
+uninstall: { method: brew-cask, id: flutter }
+post_install: []
+homepage: "https://flutter.dev"
+repository: "https://github.com/flutter/flutter"
+license: BSD-3-Clause
+maintainer: DevForgeKit Registry
+tags: [mobile, ui, cross-platform]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

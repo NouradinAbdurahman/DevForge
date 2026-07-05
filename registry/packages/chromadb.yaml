@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: chromadb
+description: An open-source embedding/vector database for AI applications
+category: databases
+platforms: [macos, linux]
+install: { method: pip, id: chromadb }
+dependencies: [python]
+validate: "chroma --version"
+repair: "pip install --upgrade chromadb"
+update: "pip install --upgrade chromadb"
+uninstall: { method: pip, id: chromadb }
+post_install: []
+homepage: "https://www.trychroma.com"
+repository: "https://github.com/chroma-core/chroma"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [database, vector, ai]
+aliases: [chroma]
+stability: stable
+lastVerified: "2026-07-05"

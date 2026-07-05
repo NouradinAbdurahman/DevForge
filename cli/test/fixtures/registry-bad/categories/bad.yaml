@@ -1,0 +1,3 @@
+# Missing required "description" field - should fail category.schema.json
+id: bad-category
+label: Bad Category

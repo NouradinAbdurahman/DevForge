@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: cloud
+description: Multi-cloud CLI tooling
+collections: [cloud]
+settings:
+  editor: vscode

@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: firebase
+description: Firebase app development
+components: [firebase, node, git, vscode]
+settings:
+  editor: vscode

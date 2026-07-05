@@ -24,3 +24,7 @@ preferences/*.plist
 .terraform/
 *.tfstate
 *.tfstate.backup
+
+# DevForgeKit Core CLI (cli/) - installed by bootstrap.sh's
+# ensure_cli_dependencies, reproducible from cli/package-lock.json
+cli/node_modules/

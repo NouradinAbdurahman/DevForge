@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: imagemagick
+description: A software suite to create, edit, and compose bitmap images
+category: media
+platforms: [macos, linux]
+install: { method: brew-formula, id: imagemagick }
+dependencies: []
+validate: "magick --version"
+repair: brew reinstall imagemagick
+update: brew upgrade imagemagick
+uninstall: { method: brew-formula, id: imagemagick }
+post_install: []
+homepage: "https://imagemagick.org"
+repository: "https://github.com/ImageMagick/ImageMagick"
+license: ImageMagick
+maintainer: DevForgeKit Registry
+tags: [media, image]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

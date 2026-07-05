@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: playwright
+description: An end-to-end testing framework for web apps
+category: testing
+platforms: [macos, linux]
+install: { method: npm, id: "@playwright/test" }
+dependencies: [node]
+validate: "playwright --version"
+repair: "npm install -g @playwright/test@latest"
+update: "npm install -g @playwright/test@latest"
+uninstall: { method: npm, id: "@playwright/test" }
+post_install: []
+homepage: "https://playwright.dev"
+repository: "https://github.com/microsoft/playwright"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [testing, web, e2e]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

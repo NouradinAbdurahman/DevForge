@@ -1,0 +1,47 @@
+name: DevForgeKit Core CLI
+
+on:
+  push:
+    paths:
+      - "cli/**"
+      - "registry/**"
+      - "plugins/**"
+      - ".github/workflows/cli.yml"
+  pull_request:
+    paths:
+      - "cli/**"
+      - "registry/**"
+      - "plugins/**"
+      - ".github/workflows/cli.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: Install CLI dependencies
+        run: npm ci
+        working-directory: cli
+
+      - name: Lint
+        run: npm run lint
+        working-directory: cli
+
+      - name: Test
+        run: npm test
+        working-directory: cli
+
+      - name: Registry generate (must produce no diff - commit regenerated files if this fails)
+        run: node bin/devforgekit.js registry generate
+        working-directory: cli
+
+      - name: Fail if registry.json / docs/Registry.md are out of date
+        run: git diff --exit-code registry/registry.json docs/Registry.md

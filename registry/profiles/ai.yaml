@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: ai
+description: General AI application development (the user's literal "profile install ai" example)
+collections: [python-ai, machine-learning]
+settings:
+  aiProvider: ollama

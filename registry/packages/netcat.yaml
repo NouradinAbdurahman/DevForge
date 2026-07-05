@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: netcat
+description: A networking utility for reading/writing across TCP/UDP connections
+category: networking
+platforms: [macos, linux]
+install: { method: brew-formula, id: netcat }
+dependencies: []
+validate: "nc -h"
+repair: brew reinstall netcat
+update: brew upgrade netcat
+uninstall: { method: brew-formula, id: netcat }
+post_install: []
+homepage: "http://netcat.sourceforge.net"
+repository: ""
+license: GPL-2.0
+maintainer: DevForgeKit Registry
+tags: [networking, diagnostics]
+aliases: [nc]
+stability: stable
+lastVerified: "2026-07-05"

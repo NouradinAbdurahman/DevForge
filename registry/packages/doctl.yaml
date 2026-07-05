@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: doctl
+description: The official DigitalOcean command-line interface
+category: cloud
+platforms: [macos, linux]
+install: { method: brew-formula, id: doctl }
+dependencies: []
+validate: doctl version
+repair: brew reinstall doctl
+update: brew upgrade doctl
+uninstall: { method: brew-formula, id: doctl }
+post_install: []
+homepage: "https://docs.digitalocean.com/reference/doctl"
+repository: "https://github.com/digitalocean/doctl"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [cloud, digitalocean]
+aliases: [digitalocean-cli]
+stability: stable
+lastVerified: "2026-07-05"

@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: helm
+description: The package manager for Kubernetes
+category: kubernetes
+platforms: [macos, linux]
+install: { method: brew-formula, id: helm }
+dependencies: [kubectl]
+validate: helm version
+repair: brew reinstall helm
+update: brew upgrade helm
+uninstall: { method: brew-formula, id: helm }
+post_install: []
+homepage: "https://helm.sh"
+repository: "https://github.com/helm/helm"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [kubernetes, package-manager]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

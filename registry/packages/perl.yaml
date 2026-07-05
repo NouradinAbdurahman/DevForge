@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: perl
+description: The Perl programming language
+category: languages
+platforms: [macos, linux]
+install: { method: brew-formula, id: perl }
+dependencies: []
+validate: perl --version
+repair: brew reinstall perl
+update: brew upgrade perl
+uninstall: { method: brew-formula, id: perl }
+post_install: []
+homepage: "https://www.perl.org"
+repository: "https://github.com/Perl/perl5"
+license: Artistic-1.0-Perl
+maintainer: DevForgeKit Registry
+tags: [language, scripting]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

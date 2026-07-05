@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: whois
+description: A client for the WHOIS domain/IP lookup protocol
+category: networking
+platforms: [macos, linux]
+install: { method: brew-formula, id: whois }
+dependencies: []
+validate: "whois --version"
+repair: brew reinstall whois
+update: brew upgrade whois
+uninstall: { method: brew-formula, id: whois }
+post_install: []
+homepage: "https://github.com/rfc1036/whois"
+repository: "https://github.com/rfc1036/whois"
+license: GPL-2.0
+maintainer: DevForgeKit Registry
+tags: [networking, diagnostics]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

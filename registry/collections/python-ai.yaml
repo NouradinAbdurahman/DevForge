@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: python-ai
+description: Python-based AI application development
+components: [python, pipx, ollama, git]

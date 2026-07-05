@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: github-cli
+description: GitHub's official command-line tool
+category: devops
+platforms: [macos, linux]
+install: { method: brew-formula, id: gh }
+dependencies: [git]
+validate: "gh auth status"
+repair: "gh auth login"
+update: brew upgrade gh
+uninstall: { method: brew-formula, id: gh }
+post_install: []
+homepage: "https://cli.github.com"
+repository: "https://github.com/cli/cli"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [git, github, devops]
+aliases: [gh]
+stability: stable
+lastVerified: "2026-07-05"

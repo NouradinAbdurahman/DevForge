@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: nim
+description: The Nim programming language
+category: languages
+platforms: [macos, linux]
+install: { method: brew-formula, id: nim }
+dependencies: []
+validate: nim --version
+repair: brew reinstall nim
+update: brew upgrade nim
+uninstall: { method: brew-formula, id: nim }
+post_install: []
+homepage: "https://nim-lang.org"
+repository: "https://github.com/nim-lang/Nim"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [language, systems]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

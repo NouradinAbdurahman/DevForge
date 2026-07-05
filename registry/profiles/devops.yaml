@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: devops
+description: Infrastructure automation and container orchestration
+collections: [devops]
+settings:
+  editor: vscode

@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: whisper-cpp
+description: Local speech-to-text transcription using OpenAI's Whisper model
+category: ai
+platforms: [macos, linux]
+install: { method: brew-formula, id: "whisper-cpp" }
+dependencies: []
+validate: "whisper-cli --help"
+repair: brew reinstall whisper-cpp
+update: brew upgrade whisper-cpp
+uninstall: { method: brew-formula, id: "whisper-cpp" }
+post_install: []
+homepage: "https://github.com/ggml-org/whisper.cpp"
+repository: "https://github.com/ggml-org/whisper.cpp"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [ai, speech-to-text, local-llm]
+aliases: ["whisper.cpp"]
+stability: stable
+lastVerified: "2026-07-05"

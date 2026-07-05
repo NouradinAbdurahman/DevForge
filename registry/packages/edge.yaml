@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: edge
+description: Microsoft Edge web browser
+category: browsers
+platforms: [macos]
+install: { method: brew-cask, id: microsoft-edge }
+dependencies: []
+validate: "test -d '/Applications/Microsoft Edge.app'"
+repair: brew reinstall --cask microsoft-edge
+update: brew upgrade --cask microsoft-edge
+uninstall: { method: brew-cask, id: microsoft-edge }
+post_install: []
+homepage: "https://www.microsoft.com/edge"
+repository: ""
+license: proprietary
+maintainer: DevForgeKit Registry
+tags: [browser, devtools]
+aliases: [microsoft-edge]
+stability: stable
+lastVerified: "2026-07-05"

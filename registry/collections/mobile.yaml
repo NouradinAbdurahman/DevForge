@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: mobile
+description: Mobile app development (iOS/Android via Flutter)
+components: [flutter, dart, android-studio, java]

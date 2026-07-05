@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: cybersecurity
+description: General security auditing and cryptography tooling
+collections: [cybersecurity]

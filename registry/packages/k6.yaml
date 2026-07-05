@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: k6
+description: A modern load testing tool
+category: testing
+platforms: [macos, linux]
+install: { method: brew-formula, id: k6 }
+dependencies: []
+validate: k6 version
+repair: brew reinstall k6
+update: brew upgrade k6
+uninstall: { method: brew-formula, id: k6 }
+post_install: []
+homepage: "https://k6.io"
+repository: "https://github.com/grafana/k6"
+license: AGPL-3.0
+maintainer: DevForgeKit Registry
+tags: [testing, load-testing, performance]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

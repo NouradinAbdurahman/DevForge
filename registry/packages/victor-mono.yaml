@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: victor-mono
+description: A monospace font with semi-connected italics and programming ligatures
+category: fonts
+platforms: [macos]
+install: { method: brew-cask, id: font-victor-mono }
+dependencies: []
+validate: "test -n \"$(find /Library/Fonts \"$HOME/Library/Fonts\" -iname '*VictorMono*' -print -quit 2>/dev/null)\""
+repair: brew reinstall --cask font-victor-mono
+update: brew upgrade --cask font-victor-mono
+uninstall: { method: brew-cask, id: font-victor-mono }
+post_install: []
+homepage: "https://rubjo.github.io/victor-mono"
+repository: "https://github.com/rubjo/victor-mono"
+license: OFL-1.1
+maintainer: DevForgeKit Registry
+tags: [font, monospace, ligatures]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

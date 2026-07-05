@@ -1,0 +1,21 @@
+schemaVersion: 1
+name: netdata
+description: Real-time performance and health monitoring
+category: monitoring
+platforms: [macos, linux]
+install: { method: brew-formula, id: netdata }
+dependencies: []
+validate: "netdata -v"
+repair: brew reinstall netdata
+update: brew upgrade netdata
+uninstall: { method: brew-formula, id: netdata }
+post_install:
+  - "brew services start netdata"
+homepage: "https://www.netdata.cloud"
+repository: "https://github.com/netdata/netdata"
+license: GPL-3.0
+maintainer: DevForgeKit Registry
+tags: [monitoring, metrics, real-time]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

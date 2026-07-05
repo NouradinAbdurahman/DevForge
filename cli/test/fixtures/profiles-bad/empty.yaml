@@ -1,0 +1,5 @@
+# Missing both 'collections' and 'components' - should be rejected even
+# though it's otherwise schema-valid (name/description/schemaVersion present)
+schemaVersion: 1
+name: empty-profile
+description: A profile declaring neither collections nor components

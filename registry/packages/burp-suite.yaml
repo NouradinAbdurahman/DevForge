@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: burp-suite
+description: A web application security testing toolkit (Community Edition)
+category: security
+platforms: [macos]
+install: { method: brew-cask, id: burp-suite }
+dependencies: []
+validate: "test -d '/Applications/Burp Suite Community Edition.app'"
+repair: brew reinstall --cask burp-suite
+update: brew upgrade --cask burp-suite
+uninstall: { method: brew-cask, id: burp-suite }
+post_install: []
+homepage: "https://portswigger.net/burp"
+repository: ""
+license: proprietary
+maintainer: DevForgeKit Registry
+tags: [security, web, penetration-testing]
+aliases: [burp]
+stability: stable
+lastVerified: "2026-07-05"

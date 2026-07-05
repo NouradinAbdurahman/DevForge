@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: minimal
+description: The bare minimum - version control and an editor
+collections: [minimal]

@@ -1,0 +1,195 @@
+// The dashboard's read-side data layer: thin, *cached* wrappers around
+// the exact services the CLI commands already call (core/registry.js,
+// commands/stats.js helpers, core/plugins.js, generators/) - zero
+// business logic lives here, per the PRD's "no duplicated
+// implementation" rule. Caching exists because Ink re-renders
+// components many times per second while animating; re-parsing 250 YAML
+// manifests on every render would visibly lag the UI. `refreshAll()`
+// drops every cache (wired to the `R` key in App.js).
+import { readdirSync } from "node:fs";
+import path from "node:path";
+import {
+    loadCategories, loadPackages, loadCollections, loadProfiles, loadRecipes,
+    getRegistryStats, searchPackages
+} from "../core/registry.js";
+import { validate } from "../core/installer.js";
+import { outdatedPackages, osInfo, hardwareInfo, memoryGb, diskUsage, uptimeString, softwareUpdateStatus } from "../commands/stats.js";
+import { scoreResults } from "../core/health.js";
+import { discoverPlugins } from "../core/plugins.js";
+import { listGenerators } from "../generators/index.js";
+import { loadConfig } from "../core/config.js";
+import { repoRoot } from "../core/paths.js";
+import { listWorkspaces, getActiveWorkspaceName } from "../core/workspace/store.js";
+import { scanCompatibility } from "../core/compatibility/engine.js";
+
+const cache = new Map();
+
+function cached(key, loader) {
+    if (!cache.has(key)) cache.set(key, loader());
+    return cache.get(key);
+}
+
+export function refreshAll() {
+    cache.clear();
+}
+
+// --- Registry (synchronous underneath, cached for render speed) -------
+export function registrySnapshot() {
+    return cached("registry", () => {
+        const categories = loadCategories();
+        const packages = loadPackages();
+        const collections = loadCollections();
+        const profiles = loadProfiles();
+        const recipes = loadRecipes();
+        const stats = getRegistryStats({ categories, packages, collections, profiles, recipes });
+        return { categories, packages, collections, profiles, recipes, stats };
+    });
+}
+
+export function search(query) {
+    return searchPackages(query);
+}
+
+// --- Machine state (async, slow, cached after first load) -------------
+// installedStatuses runs every package's `validate` command - that's
+// ~250 shell probes, tens of seconds. It's only ever kicked off in the
+// background (Dashboard/Components show "checking..." until it lands)
+// so the dashboard itself launches instantly - the PRD's "no blocking
+// operations". Probes run in small batches with an explicit
+// event-loop yield between them: a plain sequential await-chain of 250
+// spawns starves stdin reads for seconds at a time, which showed up in
+// the PTY smoke test as multiple keypresses coalescing into one input
+// chunk ("cq") that matched no handler - see docs/TUI.md.
+export function installedStatuses() {
+    return cached("installed", async () => {
+        const statuses = new Map();
+        const probeable = registrySnapshot().packages.filter((p) => p.validate);
+        const BATCH = 4;
+        for (let i = 0; i < probeable.length; i += BATCH) {
+            await Promise.all(probeable.slice(i, i + BATCH).map(async (pkg) => {
+                try {
+                    statuses.set(pkg.name, (await validate(pkg)) === 0);
+                } catch {
+                    statuses.set(pkg.name, false);
+                }
+            }));
+            // A timer (not setImmediate) so the loop yields through the
+            // timer phase and pending stdin I/O actually gets read.
+            await new Promise((resolve) => setTimeout(resolve, 15));
+        }
+        return statuses;
+    });
+}
+
+export function machineStats() {
+    return cached("machineStats", async () => {
+        const statuses = await installedStatuses();
+        const results = [...statuses.values()].map((ok) => ({ status: ok ? "PASS" : "WARNING" }));
+        const health = scoreResults(results);
+        return {
+            installed: [...statuses.values()].filter(Boolean).length,
+            checked: statuses.size,
+            health
+        };
+    });
+}
+
+export function outdated() {
+    return cached("outdated", () => outdatedPackages());
+}
+
+// --- Device (real macOS/hardware probes, cached like the other slow
+// background calls above - `R` refresh drops these caches too) --------
+export function deviceOsInfo() {
+    return cached("deviceOsInfo", () => osInfo());
+}
+
+export function deviceHardwareInfo() {
+    return cached("deviceHardwareInfo", () => hardwareInfo());
+}
+
+export function deviceMemoryGb() {
+    return cached("deviceMemoryGb", () => memoryGb());
+}
+
+export function deviceDiskUsage() {
+    return cached("deviceDiskUsage", () => diskUsage());
+}
+
+export function deviceUptime() {
+    return cached("deviceUptime", () => uptimeString());
+}
+
+export function deviceSoftwareUpdate() {
+    return cached("deviceSoftwareUpdate", () => softwareUpdateStatus());
+}
+
+// --- Plugins / generators / config ------------------------------------
+export function plugins() {
+    return cached("plugins", () => discoverPlugins());
+}
+
+export function generators() {
+    return listGenerators();
+}
+
+export function currentConfig() {
+    return loadConfig(); // cheap YAML read; not cached so config edits show immediately
+}
+
+export function templates() {
+    return cached("templates", () => {
+        try {
+            return readdirSync(path.join(repoRoot(), "templates"), { withFileTypes: true })
+                .filter((e) => e.isDirectory())
+                .map((e) => e.name)
+                .sort();
+        } catch {
+            return [];
+        }
+    });
+}
+
+// getPackageSafe(name) -> manifest or null - registry.js's getPackage
+// throws on unknown names, which is right for the CLI but inside a
+// render loop a null is easier to branch on.
+export function getPackageSafe(name) {
+    return registrySnapshot().packages.find((p) => p.name === name) || null;
+}
+
+// --- Workspaces (cheap disk reads; not cached so create/switch/delete
+// show up immediately on the very next render - same reasoning as
+// currentConfig()) ------------------------------------------------------
+export function workspaceList() {
+    return listWorkspaces();
+}
+
+export function activeWorkspaceName() {
+    return getActiveWorkspaceName();
+}
+
+// --- Compatibility (async, reuses the same installedStatuses probe so a
+// component's installed-state check never runs twice). scanCompatibility
+// only spawns an extra shell probe (version detection) for a component
+// that actually has a compatibility rule declared - today a small subset
+// of the registry (see registry/compatibility/) - so this doesn't need
+// installedStatuses' own batched-with-yields treatment yet; revisit if
+// rule coverage grows enough that this becomes a real block. -----------
+export function compatibilitySnapshot() {
+    return cached("compatibility", async () => {
+        const statuses = await installedStatuses();
+        const names = [...statuses.keys()].filter((name) => statuses.get(name));
+        return scanCompatibility(names);
+    });
+}
+
+// --- Inventory reports (read what scripts/inventory.sh last wrote) ----
+export function inventoryReports() {
+    try {
+        return readdirSync(path.join(repoRoot(), "reports"))
+            .filter((f) => f.endsWith(".md") || f.endsWith(".txt"))
+            .sort();
+    } catch {
+        return [];
+    }
+}

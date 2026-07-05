@@ -1,0 +1,8 @@
+schemaVersion: 1
+name: android-studio
+# No versionCommand exists for android-studio (its `validate` is a presence
+# check, not a version string - Android Studio doesn't expose one trivially),
+# so this intentionally has no `versions` block: a per-version rule that can
+# never be matched against a real detected version would be dead weight, not
+# a real capability. The version-independent `recommends` below still applies.
+recommends: [flutter, java]

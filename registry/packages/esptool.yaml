@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: esptool
+description: A command-line tool for flashing and communicating with ESP32/ESP8266 chips
+category: embedded
+platforms: [macos, linux]
+install: { method: pip, id: esptool }
+dependencies: [python]
+validate: "esptool.py version"
+repair: "pip install --upgrade esptool"
+update: "pip install --upgrade esptool"
+uninstall: { method: pip, id: esptool }
+post_install: []
+homepage: "https://docs.espressif.com/projects/esptool"
+repository: "https://github.com/espressif/esptool"
+license: GPL-2.0
+maintainer: DevForgeKit Registry
+tags: [embedded, iot]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: terraform
+description: HashiCorp's infrastructure-as-code tool
+category: devops
+platforms: [macos, linux]
+install: { method: brew-formula, id: "hashicorp/tap/terraform", tap: "hashicorp/tap" }
+dependencies: []
+validate: terraform version
+repair: "brew reinstall hashicorp/tap/terraform"
+update: "brew upgrade hashicorp/tap/terraform"
+uninstall: { method: brew-formula, id: "hashicorp/tap/terraform", tap: "hashicorp/tap" }
+post_install: []
+homepage: "https://www.terraform.io"
+repository: "https://github.com/hashicorp/terraform"
+license: BUSL-1.1
+maintainer: DevForgeKit Registry
+tags: [devops, infrastructure-as-code, hashicorp]
+aliases: [tf]
+stability: stable
+lastVerified: "2026-07-05"

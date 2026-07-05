@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: php
+description: General PHP development
+components: [php, composer, git, vscode]
+settings:
+  editor: vscode

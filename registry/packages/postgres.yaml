@@ -1,0 +1,22 @@
+schemaVersion: 1
+name: postgres
+description: PostgreSQL relational database
+category: databases
+platforms: [macos]
+install: { method: brew-formula, id: "postgresql@17" }
+dependencies: []
+validate: pg_isready
+versionCommand: postgres --version
+repair: brew services restart postgresql@17
+update: brew upgrade postgresql@17
+uninstall: { method: brew-formula, id: "postgresql@17" }
+post_install:
+  - "brew services start postgresql@17"
+homepage: "https://www.postgresql.org"
+repository: "https://github.com/postgres/postgres"
+license: PostgreSQL
+maintainer: DevForgeKit Registry
+tags: [database, relational, sql]
+aliases: [psql, pg]
+stability: stable
+lastVerified: "2026-07-05"

@@ -1,0 +1,9 @@
+schemaVersion: 1
+name: hello-world
+version: 0.1.0
+description: Example plugin proving the DevForgeKit command-hook extension point
+engine: ">=1.0.0"
+commands:
+  - name: hello
+    description: Print a greeting from the hello-world example plugin
+    run: ./hello.sh

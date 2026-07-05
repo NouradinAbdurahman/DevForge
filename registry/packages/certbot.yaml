@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: certbot
+description: A client for the Let's Encrypt certificate authority
+category: web
+platforms: [macos, linux]
+install: { method: brew-formula, id: certbot }
+dependencies: []
+validate: certbot --version
+repair: brew reinstall certbot
+update: brew upgrade certbot
+uninstall: { method: brew-formula, id: certbot }
+post_install: []
+homepage: "https://certbot.eff.org"
+repository: "https://github.com/certbot/certbot"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [web, security, tls]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

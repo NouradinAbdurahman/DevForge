@@ -1,0 +1,21 @@
+schemaVersion: 1
+name: redis
+description: In-memory data structure store, used as a database/cache/broker
+category: databases
+platforms: [macos]
+install: { method: brew-formula, id: redis }
+dependencies: []
+validate: "redis-cli ping"
+repair: brew services restart redis
+update: brew upgrade redis
+uninstall: { method: brew-formula, id: redis }
+post_install:
+  - "brew services start redis"
+homepage: "https://redis.io"
+repository: "https://github.com/redis/redis"
+license: RSALv2
+maintainer: DevForgeKit Registry
+tags: [database, cache, key-value]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

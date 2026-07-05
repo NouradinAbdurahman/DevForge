@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: vlc
+description: A free and open-source cross-platform multimedia player
+category: media
+platforms: [macos]
+install: { method: brew-cask, id: vlc }
+dependencies: []
+validate: "test -d '/Applications/VLC.app'"
+repair: brew reinstall --cask vlc
+update: brew upgrade --cask vlc
+uninstall: { method: brew-cask, id: vlc }
+post_install: []
+homepage: "https://www.videolan.org/vlc"
+repository: "https://github.com/videolan/vlc"
+license: GPL-2.0
+maintainer: DevForgeKit Registry
+tags: [media, video, player]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

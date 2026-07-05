@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: frontend
+description: A typical frontend web development stack
+components: [node, pnpm, vscode, git, chrome]

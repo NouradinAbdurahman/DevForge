@@ -420,6 +420,40 @@ install_global_command() {
 }
 
 # --------------------------------------------------------------------------
+# DevForgeKit Core CLI (Layer 2 - see docs/PlatformArchitecture.md)
+# --------------------------------------------------------------------------
+
+# ensure_cli_dependencies - installs cli/'s own npm dependencies so the
+# root `devforgekit` dispatcher can delegate to it (see cli_available in
+# the `devforgekit` file). Uses `mise exec -- npm` (not a bare `npm`)
+# specifically because the node/npm mise.toml just pinned may not be on
+# *this* process's $PATH yet - restore_mise's `mise install` only
+# installs the tool, it doesn't re-exec the shell - so resolving through
+# `mise exec` works regardless of whether mise's shims are already on
+# PATH. Never fails the caller hard: a missing/failed CLI setup just
+# means the `devforgekit` dispatcher keeps using its bash fallback path.
+ensure_cli_dependencies() {
+    local cli_dir="$DEV_SETUP_ROOT/cli"
+    [[ -f "$cli_dir/package.json" ]] || return 0
+
+    local npm_cmd
+    if command_exists mise; then
+        npm_cmd=(mise exec -- npm)
+    elif command_exists npm; then
+        npm_cmd=(npm)
+    else
+        log_warn "npm not found (mise not installed and npm not on PATH); skipping DevForgeKit CLI setup"
+        return 1
+    fi
+
+    if [[ -f "$cli_dir/package-lock.json" ]]; then
+        (cd "$cli_dir" && "${npm_cmd[@]}" ci --no-audit --no-fund)
+    else
+        (cd "$cli_dir" && "${npm_cmd[@]}" install --no-audit --no-fund)
+    fi
+}
+
+# --------------------------------------------------------------------------
 # Restore helpers (shared by bootstrap.sh and scripts/restore.sh)
 # --------------------------------------------------------------------------
 

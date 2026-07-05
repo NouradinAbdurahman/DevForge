@@ -1,0 +1,7 @@
+schemaVersion: 1
+name: machine-learning
+description: Machine learning experimentation and local model serving
+collections: [machine-learning]
+settings:
+  editor: vscode
+  aiProvider: ollama

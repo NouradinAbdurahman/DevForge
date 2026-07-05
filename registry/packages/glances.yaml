@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: glances
+description: A cross-platform system monitoring tool
+category: monitoring
+platforms: [macos, linux]
+install: { method: brew-formula, id: glances }
+dependencies: []
+validate: glances --version
+repair: brew reinstall glances
+update: brew upgrade glances
+uninstall: { method: brew-formula, id: glances }
+post_install: []
+homepage: "https://nicolargo.github.io/glances"
+repository: "https://github.com/nicolargo/glances"
+license: LGPL-3.0
+maintainer: DevForgeKit Registry
+tags: [monitoring, system, tui]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: http-server
+description: A simple zero-configuration command-line static HTTP server
+category: web
+platforms: [macos, linux]
+install: { method: npm, id: http-server }
+dependencies: [node]
+validate: "http-server --version"
+repair: "npm install -g http-server@latest"
+update: "npm install -g http-server@latest"
+uninstall: { method: npm, id: http-server }
+post_install: []
+homepage: "https://github.com/http-party/http-server"
+repository: "https://github.com/http-party/http-server"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [web, server]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

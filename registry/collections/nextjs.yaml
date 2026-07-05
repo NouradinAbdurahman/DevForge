@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: nextjs
+description: Next.js full-stack web app development, deployable to Vercel
+components: [node, pnpm, vscode, git, vercel]

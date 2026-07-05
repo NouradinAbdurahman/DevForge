@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: docker-compose
+description: Define and run multi-container Docker applications
+category: containers
+platforms: [macos, linux]
+install: { method: brew-formula, id: docker-compose }
+dependencies: [docker]
+validate: docker-compose --version
+repair: brew reinstall docker-compose
+update: brew upgrade docker-compose
+uninstall: { method: brew-formula, id: docker-compose }
+post_install: []
+homepage: "https://docs.docker.com/compose"
+repository: "https://github.com/docker/compose"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [containers, devops]
+aliases: [compose]
+stability: stable
+lastVerified: "2026-07-05"

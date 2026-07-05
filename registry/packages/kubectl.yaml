@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: kubectl
+description: The Kubernetes command-line tool
+category: kubernetes
+platforms: [macos, linux]
+install: { method: brew-formula, id: kubernetes-cli }
+dependencies: []
+validate: "kubectl version --client"
+repair: brew reinstall kubernetes-cli
+update: brew upgrade kubernetes-cli
+uninstall: { method: brew-formula, id: kubernetes-cli }
+post_install: []
+homepage: "https://kubernetes.io/docs/reference/kubectl"
+repository: "https://github.com/kubernetes/kubectl"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [kubernetes, cli]
+aliases: [kubernetes-cli, k8s]
+stability: stable
+lastVerified: "2026-07-05"

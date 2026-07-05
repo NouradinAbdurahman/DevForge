@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: arc
+description: The Browser Company's Arc browser
+category: browsers
+platforms: [macos]
+install: { method: brew-cask, id: arc }
+dependencies: []
+validate: "test -d '/Applications/Arc.app'"
+repair: brew reinstall --cask arc
+update: brew upgrade --cask arc
+uninstall: { method: brew-cask, id: arc }
+post_install: []
+homepage: "https://arc.net"
+repository: ""
+license: proprietary
+maintainer: DevForgeKit Registry
+tags: [browser]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

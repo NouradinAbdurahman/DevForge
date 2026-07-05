@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: firebase
+description: The Firebase command-line tools
+category: cloud
+platforms: [macos, linux]
+install: { method: brew-formula, id: firebase-cli }
+dependencies: []
+validate: firebase --version
+repair: brew reinstall firebase-cli
+update: brew upgrade firebase-cli
+uninstall: { method: brew-formula, id: firebase-cli }
+post_install: []
+homepage: "https://firebase.google.com/docs/cli"
+repository: "https://github.com/firebase/firebase-tools"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [cloud, firebase, backend]
+aliases: [firebase-cli]
+stability: stable
+lastVerified: "2026-07-05"

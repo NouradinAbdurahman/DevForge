@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: hugo
+description: A fast static site generator
+category: documentation
+platforms: [macos, linux]
+install: { method: brew-formula, id: hugo }
+dependencies: []
+validate: hugo version
+repair: brew reinstall hugo
+update: brew upgrade hugo
+uninstall: { method: brew-formula, id: hugo }
+post_install: []
+homepage: "https://gohugo.io"
+repository: "https://github.com/gohugoio/hugo"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [documentation, static-site, web]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

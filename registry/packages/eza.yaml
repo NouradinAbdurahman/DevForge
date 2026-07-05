@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: eza
+description: A modern, maintained replacement for ls
+category: utilities
+platforms: [macos, linux]
+install: { method: brew-formula, id: eza }
+dependencies: []
+validate: eza --version
+repair: brew reinstall eza
+update: brew upgrade eza
+uninstall: { method: brew-formula, id: eza }
+post_install: []
+homepage: "https://eza.rocks"
+repository: "https://github.com/eza-community/eza"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [utility, cli]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

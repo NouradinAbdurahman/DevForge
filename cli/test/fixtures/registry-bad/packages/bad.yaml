@@ -1,0 +1,7 @@
+# Missing required "install"/"variants" and uses an unknown install method
+# - should fail package.schema.json
+schemaVersion: 1
+name: bad-package
+description: A deliberately invalid package manifest
+category: devops
+platforms: [macos]

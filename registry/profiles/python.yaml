@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: python
+description: General Python development
+components: [python, pip, pipx, git, vscode]
+settings:
+  editor: vscode

@@ -1,0 +1,11 @@
+schemaVersion: 1
+name: backend-developer
+description: A typical backend service environment - Node, PostgreSQL, Redis, Docker, and pnpm - installed, configured, and verified in one command
+icon: "🛠"
+tags: [backend, api, databases]
+collections: [backend]
+components: [pnpm]
+configure: [git, vscode, shell]
+verify: true
+settings:
+  editor: vscode

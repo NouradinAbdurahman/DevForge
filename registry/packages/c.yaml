@@ -1,0 +1,19 @@
+schemaVersion: 1
+name: c
+description: The C programming language toolchain, provided by Xcode Command Line Tools (clang)
+category: languages
+platforms: [macos]
+install: { method: shell, command: "xcode-select --install" }
+dependencies: []
+validate: clang --version
+repair: "xcode-select --install"
+uninstall: { method: shell, command: "sudo rm -rf /Library/Developer/CommandLineTools" }
+post_install: []
+homepage: "https://clang.llvm.org"
+repository: "https://github.com/llvm/llvm-project"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [language, systems]
+aliases: [clang]
+stability: stable
+lastVerified: "2026-07-05"

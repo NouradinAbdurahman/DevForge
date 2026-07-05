@@ -1,0 +1,7 @@
+schemaVersion: 1
+name: angular
+description: Angular web app development
+components: [node, pnpm, angular-cli, git, vscode, chrome]
+settings:
+  editor: vscode
+  browser: chrome

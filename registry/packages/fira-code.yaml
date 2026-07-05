@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: fira-code
+description: A monospace font with programming ligatures
+category: fonts
+platforms: [macos]
+install: { method: brew-cask, id: font-fira-code }
+dependencies: []
+validate: "test -n \"$(find /Library/Fonts \"$HOME/Library/Fonts\" -iname '*FiraCode*' -print -quit 2>/dev/null)\""
+repair: brew reinstall --cask font-fira-code
+update: brew upgrade --cask font-fira-code
+uninstall: { method: brew-cask, id: font-fira-code }
+post_install: []
+homepage: "https://github.com/tonsky/FiraCode"
+repository: "https://github.com/tonsky/FiraCode"
+license: OFL-1.1
+maintainer: DevForgeKit Registry
+tags: [font, monospace, ligatures]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

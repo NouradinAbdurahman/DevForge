@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: shellcheck
+description: A static analysis tool for shell scripts
+category: code-quality
+platforms: [macos, linux]
+install: { method: brew-formula, id: shellcheck }
+dependencies: []
+validate: shellcheck --version
+repair: brew reinstall shellcheck
+update: brew upgrade shellcheck
+uninstall: { method: brew-formula, id: shellcheck }
+post_install: []
+homepage: "https://www.shellcheck.net"
+repository: "https://github.com/koalaman/shellcheck"
+license: GPL-3.0
+maintainer: DevForgeKit Registry
+tags: [code-quality, shell, linter]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

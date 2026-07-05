@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: motion-design
+description: Motion and interactive design
+components: [rive, figma, git]

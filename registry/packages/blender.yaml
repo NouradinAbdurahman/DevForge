@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: blender
+description: A free and open-source 3D creation suite, widely used for game assets
+category: game-development
+platforms: [macos]
+install: { method: brew-cask, id: blender }
+dependencies: []
+validate: "test -d '/Applications/Blender.app'"
+repair: brew reinstall --cask blender
+update: brew upgrade --cask blender
+uninstall: { method: brew-cask, id: blender }
+post_install: []
+homepage: "https://www.blender.org"
+repository: "https://github.com/blender/blender"
+license: GPL-2.0
+maintainer: DevForgeKit Registry
+tags: [game-development, 3d, design]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

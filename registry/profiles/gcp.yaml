@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: gcp
+description: Google Cloud-focused cloud development
+components: [gcloud, docker, terraform, git, vscode]
+settings:
+  editor: vscode

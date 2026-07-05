@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: mlops
+description: Machine learning operations - deployment, serving, and infrastructure
+components: [python, pipx, docker, kubectl, terraform, git, vscode]
+settings:
+  editor: vscode

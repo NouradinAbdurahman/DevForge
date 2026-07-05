@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: huggingface-cli
+description: The official Hugging Face Hub command-line interface
+category: ai
+platforms: [macos, linux]
+install: { method: pip, id: "huggingface_hub[cli]" }
+dependencies: [python]
+validate: "huggingface-cli --version"
+repair: "pip install --upgrade huggingface_hub[cli]"
+update: "pip install --upgrade huggingface_hub[cli]"
+uninstall: { method: pip, id: huggingface_hub }
+post_install: []
+homepage: "https://huggingface.co/docs/huggingface_hub"
+repository: "https://github.com/huggingface/huggingface_hub"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [ai, cli, llm, models]
+aliases: [huggingface]
+stability: stable
+lastVerified: "2026-07-05"

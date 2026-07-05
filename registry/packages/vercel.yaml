@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: vercel
+description: The Vercel deployment platform's command-line interface
+category: cloud
+platforms: [macos, linux]
+install: { method: npm, id: vercel }
+dependencies: [node]
+validate: vercel --version
+repair: "npm install -g vercel@latest"
+update: "npm install -g vercel@latest"
+uninstall: { method: npm, id: vercel }
+post_install: []
+homepage: "https://vercel.com"
+repository: "https://github.com/vercel/vercel"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [cloud, deployment, frontend]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

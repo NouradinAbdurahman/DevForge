@@ -1,0 +1,21 @@
+schemaVersion: 1
+name: prometheus
+description: A monitoring system and time-series database
+category: monitoring
+platforms: [macos, linux]
+install: { method: brew-formula, id: prometheus }
+dependencies: []
+validate: "prometheus --version"
+repair: brew reinstall prometheus
+update: brew upgrade prometheus
+uninstall: { method: brew-formula, id: prometheus }
+post_install:
+  - "brew services start prometheus"
+homepage: "https://prometheus.io"
+repository: "https://github.com/prometheus/prometheus"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [monitoring, metrics, time-series]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

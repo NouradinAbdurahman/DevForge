@@ -1,0 +1,9 @@
+schemaVersion: 1
+name: postgres
+versions:
+  "17":
+    compatible: [supabase]
+  "15":
+    compatible: [supabase]
+  "13":
+    deprecated: true

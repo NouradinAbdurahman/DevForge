@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: arduino-cli
+description: The official command-line interface for Arduino development
+category: embedded
+platforms: [macos, linux]
+install: { method: brew-formula, id: arduino-cli }
+dependencies: []
+validate: arduino-cli version
+repair: brew reinstall arduino-cli
+update: brew upgrade arduino-cli
+uninstall: { method: brew-formula, id: arduino-cli }
+post_install: []
+homepage: "https://arduino.github.io/arduino-cli"
+repository: "https://github.com/arduino/arduino-cli"
+license: GPL-3.0
+maintainer: DevForgeKit Registry
+tags: [embedded, iot, arduino]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

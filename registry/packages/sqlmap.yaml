@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: sqlmap
+description: An automatic SQL injection and database takeover testing tool
+category: security
+platforms: [macos, linux]
+install: { method: brew-formula, id: sqlmap }
+dependencies: []
+validate: "sqlmap --version"
+repair: brew reinstall sqlmap
+update: brew upgrade sqlmap
+uninstall: { method: brew-formula, id: sqlmap }
+post_install: []
+homepage: "https://sqlmap.org"
+repository: "https://github.com/sqlmapproject/sqlmap"
+license: GPL-2.0
+maintainer: DevForgeKit Registry
+tags: [security, penetration-testing, web]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

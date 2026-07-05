@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: aws
+description: AWS-focused cloud development
+components: [aws-cli, docker, terraform, git, vscode]
+settings:
+  editor: vscode

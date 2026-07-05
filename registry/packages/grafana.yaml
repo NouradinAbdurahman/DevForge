@@ -1,0 +1,21 @@
+schemaVersion: 1
+name: grafana
+description: An observability and data visualization dashboard platform
+category: monitoring
+platforms: [macos, linux]
+install: { method: brew-formula, id: grafana }
+dependencies: []
+validate: "grafana-server -v"
+repair: brew reinstall grafana
+update: brew upgrade grafana
+uninstall: { method: brew-formula, id: grafana }
+post_install:
+  - "brew services start grafana"
+homepage: "https://grafana.com"
+repository: "https://github.com/grafana/grafana"
+license: AGPL-3.0
+maintainer: DevForgeKit Registry
+tags: [monitoring, dashboard, visualization]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

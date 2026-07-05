@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: ai-research
+description: AI research - experimentation, papers, and reproducible notebooks
+components: [python, pipx, ollama, git, vscode]
+settings:
+  editor: vscode

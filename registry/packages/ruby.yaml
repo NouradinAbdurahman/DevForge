@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: ruby
+description: The Ruby programming language (newer than the version macOS ships)
+category: languages
+platforms: [macos, linux]
+install: { method: brew-formula, id: ruby }
+dependencies: []
+validate: ruby --version
+repair: brew reinstall ruby
+update: brew upgrade ruby
+uninstall: { method: brew-formula, id: ruby }
+post_install: []
+homepage: "https://www.ruby-lang.org"
+repository: "https://github.com/ruby/ruby"
+license: Ruby
+maintainer: DevForgeKit Registry
+tags: [language, scripting]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

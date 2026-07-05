@@ -138,6 +138,21 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# DevForgeKit Core CLI (Layer 2 - see docs/PlatformArchitecture.md)
+# --------------------------------------------------------------------------
+
+log_section "DevForgeKit CLI"
+
+if [[ "$DRY_RUN" -eq 1 ]]; then
+    run_step "cli/package.json present" test -f "$DEV_SETUP_ROOT/cli/package.json"
+else
+    # Optional: a missing/failed Node CLI setup must never fail the whole
+    # bootstrap - the `devforgekit` dispatcher falls back to bash scripts
+    # until this has run successfully once.
+    run_step_optional "DevForgeKit CLI dependencies" ensure_cli_dependencies
+fi
+
+# --------------------------------------------------------------------------
 # Global command
 # --------------------------------------------------------------------------
 

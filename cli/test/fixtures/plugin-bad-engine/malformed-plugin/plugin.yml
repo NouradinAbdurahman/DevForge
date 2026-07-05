@@ -1,0 +1,4 @@
+# Missing required "engine" and "hooks" fields
+name: malformed-plugin
+version: 0.1.0
+description: A plugin manifest missing required fields

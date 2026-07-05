@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: wget
+description: A network utility to retrieve files from the web
+category: utilities
+platforms: [macos, linux]
+install: { method: brew-formula, id: wget }
+dependencies: []
+validate: wget --version
+repair: brew reinstall wget
+update: brew upgrade wget
+uninstall: { method: brew-formula, id: wget }
+post_install: []
+homepage: "https://www.gnu.org/software/wget"
+repository: ""
+license: GPL-3.0
+maintainer: DevForgeKit Registry
+tags: [utility, networking, cli]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

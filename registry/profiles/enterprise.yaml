@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: enterprise
+description: A larger-organization enterprise stack
+components: [git, vscode, java, docker, kubectl, terraform]
+settings:
+  editor: vscode

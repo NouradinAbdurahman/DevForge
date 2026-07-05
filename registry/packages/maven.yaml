@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: maven
+description: A build automation and dependency management tool for Java
+category: package-managers
+platforms: [macos, linux]
+install: { method: brew-formula, id: maven }
+dependencies: [java]
+validate: mvn --version
+repair: brew reinstall maven
+update: brew upgrade maven
+uninstall: { method: brew-formula, id: maven }
+post_install: []
+homepage: "https://maven.apache.org"
+repository: "https://github.com/apache/maven"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [package-manager, java, build-tool]
+aliases: [mvn]
+stability: stable
+lastVerified: "2026-07-05"

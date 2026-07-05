@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: ghidra
+description: A software reverse engineering framework, originally developed by the NSA
+category: security
+platforms: [macos]
+install: { method: brew-cask, id: ghidra }
+dependencies: [java]
+validate: "test -d '/Applications/ghidra'"
+repair: brew reinstall --cask ghidra
+update: brew upgrade --cask ghidra
+uninstall: { method: brew-cask, id: ghidra }
+post_install: []
+homepage: "https://ghidra-sre.org"
+repository: "https://github.com/NationalSecurityAgency/ghidra"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [security, reverse-engineering]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

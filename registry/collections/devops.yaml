@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: devops
+description: Infrastructure automation and container orchestration
+components: [terraform, ansible, docker, kubectl, git]

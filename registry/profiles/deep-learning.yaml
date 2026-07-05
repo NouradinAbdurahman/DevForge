@@ -1,0 +1,7 @@
+schemaVersion: 1
+name: deep-learning
+description: Deep learning research and model training
+components: [python, pipx, ollama, docker, git, vscode]
+settings:
+  editor: vscode
+  aiProvider: ollama

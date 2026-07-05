@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: platformio
+description: A professional collaborative platform for embedded development
+category: embedded
+platforms: [macos, linux]
+install: { method: brew-formula, id: platformio }
+dependencies: []
+validate: pio --version
+repair: brew reinstall platformio
+update: brew upgrade platformio
+uninstall: { method: brew-formula, id: platformio }
+post_install: []
+homepage: "https://platformio.org"
+repository: "https://github.com/platformio/platformio-core"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [embedded, iot]
+aliases: [pio]
+stability: stable
+lastVerified: "2026-07-05"

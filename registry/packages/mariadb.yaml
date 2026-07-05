@@ -1,0 +1,22 @@
+schemaVersion: 1
+name: mariadb
+description: MariaDB - a community-developed fork of MySQL
+category: databases
+platforms: [macos]
+install: { method: brew-formula, id: mariadb }
+dependencies: []
+conflicts: [mysql]
+validate: mysqladmin --version
+repair: brew services restart mariadb
+update: brew upgrade mariadb
+uninstall: { method: brew-formula, id: mariadb }
+post_install:
+  - "brew services start mariadb"
+homepage: "https://mariadb.org"
+repository: "https://github.com/MariaDB/server"
+license: GPL-2.0
+maintainer: DevForgeKit Registry
+tags: [database, relational, sql]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

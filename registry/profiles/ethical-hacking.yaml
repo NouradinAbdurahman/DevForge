@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: ethical-hacking
+description: Ethical hacking fundamentals - reconnaissance, exploitation, and web testing
+components: [nmap, metasploit, burp-suite, wireshark, git]

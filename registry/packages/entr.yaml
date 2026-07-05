@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: entr
+description: Runs arbitrary commands when files change
+category: utilities
+platforms: [macos, linux]
+install: { method: brew-formula, id: entr }
+dependencies: []
+validate: "entr -v"
+repair: brew reinstall entr
+update: brew upgrade entr
+uninstall: { method: brew-formula, id: entr }
+post_install: []
+homepage: "https://eradman.com/entrproject"
+repository: "https://github.com/eradman/entr"
+license: ISC
+maintainer: DevForgeKit Registry
+tags: [utility, file-watching, cli]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

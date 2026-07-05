@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: platform-engineer
+description: Platform engineering - infrastructure, orchestration, and multi-cloud tooling
+components: [terraform, kubectl, helm, docker, aws-cli, git, vscode]
+settings:
+  editor: vscode

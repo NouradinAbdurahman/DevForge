@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: unity-hub
+description: Manage Unity engine installations, projects, and licenses
+category: game-development
+platforms: [macos]
+install: { method: brew-cask, id: unity-hub }
+dependencies: []
+validate: "test -d '/Applications/Unity Hub.app'"
+repair: brew reinstall --cask unity-hub
+update: brew upgrade --cask unity-hub
+uninstall: { method: brew-cask, id: unity-hub }
+post_install: []
+homepage: "https://unity.com/unity-hub"
+repository: ""
+license: proprietary
+maintainer: DevForgeKit Registry
+tags: [game-development, engine]
+aliases: [unity]
+stability: stable
+lastVerified: "2026-07-05"

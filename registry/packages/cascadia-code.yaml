@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: cascadia-code
+description: Microsoft's monospace font for Windows Terminal and developers
+category: fonts
+platforms: [macos]
+install: { method: brew-cask, id: font-cascadia-code }
+dependencies: []
+validate: "test -n \"$(find /Library/Fonts \"$HOME/Library/Fonts\" -iname '*CascadiaCode*' -print -quit 2>/dev/null)\""
+repair: brew reinstall --cask font-cascadia-code
+update: brew upgrade --cask font-cascadia-code
+uninstall: { method: brew-cask, id: font-cascadia-code }
+post_install: []
+homepage: "https://github.com/microsoft/cascadia-code"
+repository: "https://github.com/microsoft/cascadia-code"
+license: OFL-1.1
+maintainer: DevForgeKit Registry
+tags: [font, monospace]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

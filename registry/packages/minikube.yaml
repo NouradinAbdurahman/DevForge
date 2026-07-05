@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: minikube
+description: Run a single-node Kubernetes cluster locally
+category: containers
+platforms: [macos, linux]
+install: { method: brew-formula, id: minikube }
+dependencies: [docker]
+validate: minikube version
+repair: brew reinstall minikube
+update: brew upgrade minikube
+uninstall: { method: brew-formula, id: minikube }
+post_install: []
+homepage: "https://minikube.sigs.k8s.io"
+repository: "https://github.com/kubernetes/minikube"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [containers, kubernetes, local-development]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

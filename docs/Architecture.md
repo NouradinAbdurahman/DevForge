@@ -3,9 +3,12 @@
 ## What this repo is
 
 `DevForgeKit` provisions, backs up, restores, updates, validates, and
-releases a complete macOS development workstation. It's not an
-application - there's no build step or runtime; every "feature" is a
-standalone, idempotent shell script sharing one library.
+releases a complete macOS development workstation. What began as a pure
+shell-script toolkit (this document) is now Layer 1 of a larger platform;
+see [PlatformArchitecture.md](PlatformArchitecture.md) for the Node-based
+Core CLI (`cli/`), the component registry (`registry/`), and the plugin
+system (`plugins/`) built on top of it. Everything in *this* document is
+still accurate and unchanged - Layer 1 was deliberately never rewritten.
 
 ## Layering
 
@@ -23,6 +26,12 @@ bootstrap.sh -> the only script that orchestrates *other* scripts
 Nothing below `common.sh` knows about anything above it. `bootstrap.sh` and
 every `scripts/*.sh` file are peers - `bootstrap.sh` is just the one that
 runs the others in sequence for a full provision.
+
+This is Layer 1 of the full platform. Layer 2 (the Node CLI under `cli/`)
+sits on top of it and is installed *by* it - see
+[PlatformArchitecture.md](PlatformArchitecture.md) section 1 for the full
+four-layer picture (Bootstrap -> Core CLI -> Plugins -> Components) and
+why Layer 1 never depends on anything above it.
 
 ## The step runner pattern
 
@@ -105,6 +114,16 @@ script that iterates it picks it up automatically.
 beyond the dispatch table; see [CLI.md](CLI.md). Because it has no `.sh`
 extension, it's checked explicitly (not via a `*.sh` glob) in
 `scripts/validate.sh` and `.github/workflows/shellcheck.yml`/`lint.yml`.
+
+Since Phase 1 (v1.1), this dispatch table is a *fallback*, not the whole
+story: `install`/`bootstrap` always run `bootstrap.sh` directly (Node may
+not exist yet), but every other command is handed off to the Node CLI
+under `cli/` once `bootstrap.sh` has installed it (`cli_available()` in
+the `devforgekit` file checks that `node` is on `PATH` and
+`cli/node_modules` exists). The original bash case-arm table below only
+runs when that check fails - see
+[PlatformArchitecture.md](PlatformArchitecture.md) sections 1, 2, and 15
+for the full rationale and the compatibility guarantee this depends on.
 
 ## Profiles and the PATH manager
 

@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: nikto
+description: A web server scanner for security vulnerabilities and misconfigurations
+category: security
+platforms: [macos, linux]
+install: { method: brew-formula, id: nikto }
+dependencies: []
+validate: "nikto -Version"
+repair: brew reinstall nikto
+update: brew upgrade nikto
+uninstall: { method: brew-formula, id: nikto }
+post_install: []
+homepage: "https://cirt.net/Nikto2"
+repository: "https://github.com/sullo/nikto"
+license: GPL-2.0
+maintainer: DevForgeKit Registry
+tags: [security, web, auditing]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

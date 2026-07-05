@@ -1,0 +1,9 @@
+schemaVersion: 1
+name: cybersecurity-lab
+description: A security research and penetration testing lab - Nmap, Wireshark, Metasploit, Burp Suite, Hydra, and OpenSSL - installed, configured, and verified in one command
+icon: "🛡"
+tags: [security, penetration-testing, networking]
+collections: [cybersecurity]
+components: [wireshark, metasploit, burp-suite, hydra]
+configure: [git, shell]
+verify: true

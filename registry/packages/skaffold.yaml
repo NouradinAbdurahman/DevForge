@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: skaffold
+description: Continuous development for Kubernetes applications
+category: kubernetes
+platforms: [macos, linux]
+install: { method: brew-formula, id: skaffold }
+dependencies: [kubectl]
+validate: skaffold version
+repair: brew reinstall skaffold
+update: brew upgrade skaffold
+uninstall: { method: brew-formula, id: skaffold }
+post_install: []
+homepage: "https://skaffold.dev"
+repository: "https://github.com/GoogleContainerTools/skaffold"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [kubernetes, ci-cd]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

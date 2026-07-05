@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: pipx
+description: Installs and runs Python CLI applications in isolated environments
+category: package-managers
+platforms: [macos, linux]
+install: { method: brew-formula, id: pipx }
+dependencies: [python]
+validate: pipx --version
+repair: brew reinstall pipx
+update: brew upgrade pipx
+uninstall: { method: brew-formula, id: pipx }
+post_install: []
+homepage: "https://pipx.pypa.io"
+repository: "https://github.com/pypa/pipx"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [package-manager, python]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

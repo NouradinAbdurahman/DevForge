@@ -1,0 +1,12 @@
+schemaVersion: 1
+name: ai-engineer
+description: A complete local-first AI engineering environment - Python, Node, Docker, and Ollama for running LLMs locally - installed, configured, and verified in one command
+icon: "🤖"
+tags: [ai, machine-learning, llm]
+collections: [python-ai, machine-learning]
+components: [node, jetbrains-mono]
+configure: [git, vscode, shell]
+verify: true
+settings:
+  editor: vscode
+  aiProvider: ollama

@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: supabase
+description: Supabase app development
+components: [supabase, node, postgres, git, vscode]
+settings:
+  editor: vscode

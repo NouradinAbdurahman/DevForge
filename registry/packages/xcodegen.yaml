@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: xcodegen
+description: Generates Xcode projects from a project spec
+category: apple-development
+platforms: [macos]
+install: { method: brew-formula, id: xcodegen }
+dependencies: []
+validate: xcodegen --version
+repair: brew reinstall xcodegen
+update: brew upgrade xcodegen
+uninstall: { method: brew-formula, id: xcodegen }
+post_install: []
+homepage: "https://github.com/yonaskolb/XcodeGen"
+repository: "https://github.com/yonaskolb/XcodeGen"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [apple-development, ios, macos]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

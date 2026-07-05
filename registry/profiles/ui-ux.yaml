@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: ui-ux
+description: UI/UX design tooling
+collections: [ui-ux]
+settings:
+  browser: chrome

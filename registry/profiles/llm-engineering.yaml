@@ -1,0 +1,7 @@
+schemaVersion: 1
+name: llm-engineering
+description: Building applications on top of large language models
+components: [python, pipx, node, ollama, claude-code, git, vscode]
+settings:
+  editor: vscode
+  aiProvider: claude-code

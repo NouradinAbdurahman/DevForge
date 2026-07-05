@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: student
+description: A beginner-friendly starter set for learning to code
+components: [git, vscode, python, node]

@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: ansible
+description: An agentless IT automation and configuration management tool
+category: devops
+platforms: [macos, linux]
+install: { method: brew-formula, id: ansible }
+dependencies: [python]
+validate: ansible --version
+repair: brew reinstall ansible
+update: brew upgrade ansible
+uninstall: { method: brew-formula, id: ansible }
+post_install: []
+homepage: "https://www.ansible.com"
+repository: "https://github.com/ansible/ansible"
+license: GPL-3.0
+maintainer: DevForgeKit Registry
+tags: [devops, automation, configuration-management]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

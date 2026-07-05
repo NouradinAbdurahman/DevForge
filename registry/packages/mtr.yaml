@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: mtr
+description: A network diagnostic tool combining ping and traceroute
+category: networking
+platforms: [macos, linux]
+install: { method: brew-formula, id: mtr }
+dependencies: []
+validate: mtr --version
+repair: brew reinstall mtr
+update: brew upgrade mtr
+uninstall: { method: brew-formula, id: mtr }
+post_install: []
+homepage: "https://www.bitwizard.nl/mtr"
+repository: "https://github.com/traviscross/mtr"
+license: GPL-2.0
+maintainer: DevForgeKit Registry
+tags: [networking, diagnostics]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

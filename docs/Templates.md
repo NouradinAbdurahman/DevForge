@@ -4,6 +4,14 @@
 repo to begin a new project - they are not part of `bootstrap.sh` and
 nothing here installs or references them automatically.
 
+Want something more complete and configurable instead of a minimal
+"Hello, X!" copy? [`devforgekit new <stack>`](ProjectGenerator.md)
+(v1.2.2) generates a full project per stack - auth, ORM, state
+management, Docker, CI, tests - scaffolded through the stack's own
+official CLI where one exists, for 16 stacks. The two are independent:
+this page's templates stay exactly as minimal and static as they've
+always been.
+
 | Template | Stack | Minimal example does |
 | --- | --- | --- |
 | `templates/flutter/` | Flutter/Dart | `flutter run` shows a "Hello, Flutter!" screen |

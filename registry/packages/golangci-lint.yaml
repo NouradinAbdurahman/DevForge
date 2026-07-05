@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: golangci-lint
+description: A fast Go linters aggregator
+category: code-quality
+platforms: [macos, linux]
+install: { method: brew-formula, id: golangci-lint }
+dependencies: [go]
+validate: "golangci-lint --version"
+repair: brew reinstall golangci-lint
+update: brew upgrade golangci-lint
+uninstall: { method: brew-formula, id: golangci-lint }
+post_install: []
+homepage: "https://golangci-lint.run"
+repository: "https://github.com/golangci/golangci-lint"
+license: GPL-3.0
+maintainer: DevForgeKit Registry
+tags: [code-quality, go, linter]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

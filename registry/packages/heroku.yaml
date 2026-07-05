@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: heroku
+description: The official Heroku command-line interface
+category: cloud
+platforms: [macos, linux]
+install: { method: brew-formula, id: heroku }
+dependencies: []
+validate: heroku --version
+repair: brew reinstall heroku
+update: brew upgrade heroku
+uninstall: { method: brew-formula, id: heroku }
+post_install: []
+homepage: "https://devcenter.heroku.com/articles/heroku-cli"
+repository: "https://github.com/heroku/cli"
+license: ISC
+maintainer: DevForgeKit Registry
+tags: [cloud, deployment, paas]
+aliases: [heroku-cli]
+stability: stable
+lastVerified: "2026-07-05"

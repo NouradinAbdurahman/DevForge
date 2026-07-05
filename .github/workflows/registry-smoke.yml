@@ -1,0 +1,52 @@
+name: DevForgeKit Registry Smoke Test
+
+# Real install -> validate -> uninstall -> re-validate for a small,
+# fixed allowlist of safe, headless, no-account CLI formulas already in
+# registry/packages/ - not the full ~115-package catalog (GUI casks and
+# account-gated cloud CLIs are excluded by design; see
+# docs/PlatformArchitecture.md's testing-strategy section). Every other
+# manifest is covered by schema + referential-integrity validation in
+# cli.yml, not a live install here.
+
+on:
+  push:
+    paths:
+      - "registry/**"
+      - ".github/workflows/registry-smoke.yml"
+  pull_request:
+    paths:
+      - "registry/**"
+      - ".github/workflows/registry-smoke.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: Install CLI dependencies
+        run: npm ci
+        working-directory: cli
+
+      - name: Smoke test a safe subset (install, validate, uninstall, re-validate)
+        run: |
+          set -e
+          for pkg in jq ripgrep fd bat tree; do
+            echo "::group::$pkg"
+            node bin/devforgekit.js component install "$pkg"
+            node bin/devforgekit.js component validate "$pkg"
+            node bin/devforgekit.js component uninstall "$pkg"
+            if node bin/devforgekit.js component validate "$pkg"; then
+              echo "::error::$pkg still validates as installed after uninstall"
+              exit 1
+            fi
+            echo "::endgroup::"
+          done
+        working-directory: cli

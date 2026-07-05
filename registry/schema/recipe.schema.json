@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://devforgekit.dev/schema/recipe.schema.json",
+  "title": "DevForgeKit registry recipe manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "name", "description"],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "icon": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "collections": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "components": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "configure": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["git", "vscode", "cursor", "shell", "mise"]
+      }
+    },
+    "verify": {
+      "type": "boolean"
+    },
+    "settings": {
+      "type": "object"
+    }
+  }
+}

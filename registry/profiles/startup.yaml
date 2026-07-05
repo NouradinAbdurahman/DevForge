@@ -1,0 +1,7 @@
+schemaVersion: 1
+name: startup
+description: A fast-moving small-team startup stack
+components: [git, github-cli, vscode, docker, node, postgres, vercel]
+settings:
+  editor: vscode
+  defaultProfile: startup

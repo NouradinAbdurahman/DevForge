@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: lima
+description: Linux virtual machines for macOS, with automatic file sharing and port forwarding
+category: containers
+platforms: [macos]
+install: { method: brew-formula, id: lima }
+dependencies: []
+validate: limactl --version
+repair: brew reinstall lima
+update: brew upgrade lima
+uninstall: { method: brew-formula, id: lima }
+post_install: []
+homepage: "https://lima-vm.io"
+repository: "https://github.com/lima-vm/lima"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [containers, virtualization]
+aliases: [limactl]
+stability: stable
+lastVerified: "2026-07-05"

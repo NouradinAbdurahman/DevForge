@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: chrome
+description: Google Chrome web browser
+category: browsers
+platforms: [macos]
+install: { method: brew-cask, id: google-chrome }
+dependencies: []
+validate: "test -d '/Applications/Google Chrome.app'"
+repair: brew reinstall --cask google-chrome
+update: brew upgrade --cask google-chrome
+uninstall: { method: brew-cask, id: google-chrome }
+post_install: []
+homepage: "https://www.google.com/chrome"
+repository: "https://chromium.googlesource.com/chromium/src"
+license: proprietary
+maintainer: DevForgeKit Registry
+tags: [browser, devtools]
+aliases: [google-chrome]
+stability: stable
+lastVerified: "2026-07-05"

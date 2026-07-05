@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: john
+description: John the Ripper - a password security auditing and cracking tool
+category: security
+platforms: [macos, linux]
+install: { method: brew-formula, id: john }
+dependencies: []
+validate: "john --help"
+repair: brew reinstall john
+update: brew upgrade john
+uninstall: { method: brew-formula, id: john }
+post_install: []
+homepage: "https://www.openwall.com/john"
+repository: "https://github.com/openwall/john"
+license: GPL-2.0
+maintainer: DevForgeKit Registry
+tags: [security, auditing, passwords]
+aliases: ["john-the-ripper"]
+stability: stable
+lastVerified: "2026-07-05"

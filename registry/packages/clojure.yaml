@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: clojure
+description: The Clojure programming language (runs on the JVM)
+category: languages
+platforms: [macos, linux]
+install: { method: brew-formula, id: clojure }
+dependencies: [java]
+validate: clojure --version
+repair: brew reinstall clojure
+update: brew upgrade clojure
+uninstall: { method: brew-formula, id: clojure }
+post_install: []
+homepage: "https://clojure.org"
+repository: "https://github.com/clojure/clojure"
+license: EPL-1.0
+maintainer: DevForgeKit Registry
+tags: [language, functional, jvm]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

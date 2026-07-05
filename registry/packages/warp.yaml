@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: warp
+description: A modern, AI-enabled terminal emulator
+category: terminals
+platforms: [macos]
+install: { method: brew-cask, id: warp }
+dependencies: []
+validate: "test -d '/Applications/Warp.app'"
+repair: brew reinstall --cask warp
+update: brew upgrade --cask warp
+uninstall: { method: brew-cask, id: warp }
+post_install: []
+homepage: "https://www.warp.dev"
+repository: ""
+license: proprietary
+maintainer: DevForgeKit Registry
+tags: [terminal, ai]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

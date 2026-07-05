@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: rust
+description: The Rust programming language, installed via the official rustup toolchain manager
+category: languages
+platforms: [macos, linux]
+install: { method: shell, command: "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y" }
+dependencies: []
+validate: rustc --version
+repair: rustup update
+update: rustup update
+uninstall: { method: shell, command: "rustup self uninstall -y" }
+post_install: []
+homepage: "https://www.rust-lang.org"
+repository: "https://github.com/rust-lang/rust"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [language, systems]
+aliases: [rustup, rustc]
+stability: stable
+lastVerified: "2026-07-05"

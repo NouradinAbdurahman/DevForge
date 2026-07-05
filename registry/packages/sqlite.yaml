@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: sqlite
+description: SQLite - a self-contained, serverless SQL database engine
+category: databases
+platforms: [macos, linux]
+install: { method: brew-formula, id: sqlite }
+dependencies: []
+validate: sqlite3 --version
+repair: brew reinstall sqlite
+update: brew upgrade sqlite
+uninstall: { method: brew-formula, id: sqlite }
+post_install: []
+homepage: "https://www.sqlite.org"
+repository: "https://github.com/sqlite/sqlite"
+license: blessing
+maintainer: DevForgeKit Registry
+tags: [database, relational, embedded]
+aliases: [sqlite3]
+stability: stable
+lastVerified: "2026-07-05"

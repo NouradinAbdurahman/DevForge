@@ -1,0 +1,9 @@
+schemaVersion: 1
+name: devops-engineer
+description: Infrastructure automation and container orchestration - Terraform, Ansible, Docker, kubectl, Helm, and the AWS CLI - installed, configured, and verified in one command
+icon: "⚙"
+tags: [devops, infrastructure, kubernetes, cloud]
+collections: [devops]
+components: [helm, aws-cli]
+configure: [git, shell]
+verify: true

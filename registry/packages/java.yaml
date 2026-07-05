@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: java
+description: OpenJDK - the open-source Java Development Kit
+category: languages
+platforms: [macos, linux]
+install: { method: brew-formula, id: openjdk }
+dependencies: []
+validate: java --version
+repair: brew reinstall openjdk
+update: brew upgrade openjdk
+uninstall: { method: brew-formula, id: openjdk }
+post_install: []
+homepage: "https://openjdk.org"
+repository: "https://github.com/openjdk/jdk"
+license: GPL-2.0-with-classpath-exception
+maintainer: DevForgeKit Registry
+tags: [language, jvm]
+aliases: [jdk, openjdk]
+stability: stable
+lastVerified: "2026-07-05"

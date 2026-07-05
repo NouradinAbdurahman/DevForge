@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: miniconda
+description: A minimal installer for the Conda package and environment manager
+category: package-managers
+platforms: [macos, linux]
+install: { method: brew-cask, id: miniconda }
+dependencies: []
+validate: "conda --version"
+repair: brew reinstall --cask miniconda
+update: brew upgrade --cask miniconda
+uninstall: { method: brew-cask, id: miniconda }
+post_install: []
+homepage: "https://docs.conda.io/projects/miniconda"
+repository: "https://github.com/conda/conda"
+license: BSD-3-Clause
+maintainer: DevForgeKit Registry
+tags: [package-manager, python, data-science]
+aliases: [conda]
+stability: stable
+lastVerified: "2026-07-05"

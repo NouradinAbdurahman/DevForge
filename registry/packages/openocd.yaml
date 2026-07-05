@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: openocd
+description: An on-chip debugger for embedded target devices
+category: embedded
+platforms: [macos, linux]
+install: { method: brew-formula, id: open-ocd }
+dependencies: []
+validate: "openocd --version"
+repair: brew reinstall open-ocd
+update: brew upgrade open-ocd
+uninstall: { method: brew-formula, id: open-ocd }
+post_install: []
+homepage: "https://openocd.org"
+repository: "https://github.com/openocd-org/openocd"
+license: GPL-2.0
+maintainer: DevForgeKit Registry
+tags: [embedded, debugging]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

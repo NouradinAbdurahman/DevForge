@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: machine-learning
+description: Machine learning experimentation and local model serving
+components: [python, pipx, ollama, docker]

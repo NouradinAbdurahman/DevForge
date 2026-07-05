@@ -1,0 +1,7 @@
+schemaVersion: 1
+name: vue
+description: Vue.js web app development
+components: [node, pnpm, git, vscode, chrome]
+settings:
+  editor: vscode
+  browser: chrome

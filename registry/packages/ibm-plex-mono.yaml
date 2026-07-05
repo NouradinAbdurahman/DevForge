@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: ibm-plex-mono
+description: IBM's monospace typeface, part of the IBM Plex type system
+category: fonts
+platforms: [macos]
+install: { method: brew-cask, id: font-ibm-plex-mono }
+dependencies: []
+validate: "test -n \"$(find /Library/Fonts \"$HOME/Library/Fonts\" -iname '*IBMPlexMono*' -print -quit 2>/dev/null)\""
+repair: brew reinstall --cask font-ibm-plex-mono
+update: brew upgrade --cask font-ibm-plex-mono
+uninstall: { method: brew-cask, id: font-ibm-plex-mono }
+post_install: []
+homepage: "https://www.ibm.com/plex"
+repository: "https://github.com/IBM/plex"
+license: OFL-1.1
+maintainer: DevForgeKit Registry
+tags: [font, monospace]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

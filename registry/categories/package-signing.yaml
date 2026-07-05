@@ -1,0 +1,3 @@
+id: package-signing
+label: Package Signing
+description: Cryptographic signing and verification tooling

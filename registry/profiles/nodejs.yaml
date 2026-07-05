@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: nodejs
+description: General Node.js backend development
+components: [node, npm, pnpm, git, vscode]
+settings:
+  editor: vscode

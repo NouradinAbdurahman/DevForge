@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://devforgekit.dev/schema/compatibility.schema.json",
+  "title": "DevForgeKit compatibility rule manifest",
+  "description": "One file per tool, layering cross-tool/cross-version compatibility rules on top of that tool's registry/packages/<name>.yaml manifest (see docs/RuleSchema.md).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "name"],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Must match a real registry/packages/<name>.yaml package name (checked by checkRuleIntegrity)."
+    },
+    "conflicts": {
+      "type": "array",
+      "description": "Other package names this tool conflicts with, regardless of version.",
+      "items": { "type": "string" }
+    },
+    "recommends": {
+      "type": "array",
+      "description": "Other package names generally recommended alongside this tool, regardless of version.",
+      "items": { "type": "string" }
+    },
+    "variantConflicts": {
+      "type": "array",
+      "description": "Pairs of this package's own variant ids that are mutually exclusive in practice (e.g. two different backends for the same tool competing for the same resource) even though the registry only ever installs one variant at a time itself.",
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": { "type": "string" }
+      }
+    },
+    "variantProbes": {
+      "type": "object",
+      "description": "variantId -> shell command (exit 0 = present) used only to detect variantConflicts against real machine state, since the registry itself doesn't track which variant of a package is installed.",
+      "additionalProperties": { "type": "string" }
+    },
+    "versions": {
+      "type": "object",
+      "description": "Version string (as it would be reported by the package's versionCommand) -> rule set.",
+      "additionalProperties": { "$ref": "#/$defs/versionRule" }
+    }
+  },
+  "$defs": {
+    "versionRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requires": {
+          "type": "object",
+          "description": "package name -> version range that must be satisfied (a missing dependency or an unsatisfied range is CRITICAL).",
+          "additionalProperties": { "type": "string" }
+        },
+        "recommends": {
+          "type": "object",
+          "description": "package name -> version range that's merely recommended (unsatisfied is a WARNING, not CRITICAL).",
+          "additionalProperties": { "type": "string" }
+        },
+        "compatible": {
+          "type": "array",
+          "description": "Other package names known to work well with this version (informational/PASS).",
+          "items": { "type": "string" }
+        },
+        "conflicts": {
+          "type": "array",
+          "description": "Other package names that conflict with this specific version.",
+          "items": { "type": "string" }
+        },
+        "deprecated": { "type": "boolean" },
+        "experimental": { "type": "boolean" },
+        "unsupported": { "type": "boolean" },
+        "lts": {
+          "type": "boolean",
+          "description": "Marked as an LTS-track version. The engine cannot verify LTS status live (no bundled/self-maintaining release calendar) - reported as an informational note only, never a fabricated pass/fail."
+        },
+        "platforms": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["macos", "linux", "windows"] }
+        },
+        "architectures": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["intel", "apple-silicon", "linux"] }
+        }
+      }
+    }
+  }
+}

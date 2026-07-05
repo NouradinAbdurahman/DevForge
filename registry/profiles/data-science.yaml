@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: data-science
+description: Data science and analytics tooling
+collections: [data-science]
+settings:
+  editor: vscode

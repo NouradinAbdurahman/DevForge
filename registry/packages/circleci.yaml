@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: circleci
+description: The official CircleCI local command-line interface
+category: ci-cd
+platforms: [macos, linux]
+install: { method: brew-formula, id: circleci }
+dependencies: []
+validate: circleci version
+repair: brew reinstall circleci
+update: brew upgrade circleci
+uninstall: { method: brew-formula, id: circleci }
+post_install: []
+homepage: "https://circleci.com/docs/local-cli"
+repository: "https://github.com/CircleCI-Public/circleci-cli"
+license: MIT
+maintainer: DevForgeKit Registry
+tags: [ci-cd, circleci]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

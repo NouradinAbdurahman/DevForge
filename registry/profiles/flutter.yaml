@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: flutter
+description: Cross-platform mobile app development with Flutter
+collections: [flutter]
+settings:
+  editor: vscode

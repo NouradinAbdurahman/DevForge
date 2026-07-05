@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: firefox
+description: Mozilla Firefox web browser
+category: browsers
+platforms: [macos]
+install: { method: brew-cask, id: firefox }
+dependencies: []
+validate: "test -d '/Applications/Firefox.app'"
+repair: brew reinstall --cask firefox
+update: brew upgrade --cask firefox
+uninstall: { method: brew-cask, id: firefox }
+post_install: []
+homepage: "https://www.mozilla.org/firefox"
+repository: "https://github.com/mozilla/gecko-dev"
+license: MPL-2.0
+maintainer: DevForgeKit Registry
+tags: [browser, devtools]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

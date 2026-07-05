@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: sox
+description: A cross-platform command-line audio processing tool
+category: media
+platforms: [macos, linux]
+install: { method: brew-formula, id: sox }
+dependencies: []
+validate: sox --version
+repair: brew reinstall sox
+update: brew upgrade sox
+uninstall: { method: brew-formula, id: sox }
+post_install: []
+homepage: "https://sourceforge.net/projects/sox"
+repository: "https://github.com/chirlu/sox"
+license: GPL-2.0
+maintainer: DevForgeKit Registry
+tags: [media, audio]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

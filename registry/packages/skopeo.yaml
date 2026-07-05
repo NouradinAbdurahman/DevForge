@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: skopeo
+description: A tool for working with container images and registries
+category: containers
+platforms: [macos, linux]
+install: { method: brew-formula, id: skopeo }
+dependencies: []
+validate: skopeo --version
+repair: brew reinstall skopeo
+update: brew upgrade skopeo
+uninstall: { method: brew-formula, id: skopeo }
+post_install: []
+homepage: "https://github.com/containers/skopeo"
+repository: "https://github.com/containers/skopeo"
+license: Apache-2.0
+maintainer: DevForgeKit Registry
+tags: [containers, devops]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

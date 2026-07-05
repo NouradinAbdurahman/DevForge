@@ -1,0 +1,16 @@
+schemaVersion: 1
+name: node
+versions:
+  "22":
+    recommends:
+      pnpm: ">=9"
+      npm: ">=10"
+    compatible: [pnpm, npm, yarn]
+  "20":
+    recommends:
+      pnpm: ">=8"
+    compatible: [pnpm, npm, yarn]
+  "18":
+    deprecated: true
+    recommends:
+      npm: ">=9"

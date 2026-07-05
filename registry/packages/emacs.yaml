@@ -1,0 +1,20 @@
+schemaVersion: 1
+name: emacs
+description: An extensible, customizable text editor
+category: editors
+platforms: [macos, linux]
+install: { method: brew-formula, id: emacs }
+dependencies: []
+validate: emacs --version
+repair: brew reinstall emacs
+update: brew upgrade emacs
+uninstall: { method: brew-formula, id: emacs }
+post_install: []
+homepage: "https://www.gnu.org/software/emacs"
+repository: "https://git.savannah.gnu.org/cgit/emacs.git"
+license: GPL-3.0
+maintainer: DevForgeKit Registry
+tags: [editor]
+aliases: []
+stability: stable
+lastVerified: "2026-07-05"

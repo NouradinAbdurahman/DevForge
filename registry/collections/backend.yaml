@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: backend
+description: A typical backend service stack - runtime, database, cache, containers, and tooling
+components: [node, postgres, redis, docker, git, vscode]
