@@ -2,19 +2,42 @@ schemaVersion: 1
 name: exiftool
 description: Reads, writes, and edits file metadata (EXIF, IPTC, XMP)
 category: media
-platforms: [macos, linux]
-install: { method: brew-formula, id: exiftool }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: exiftool
 dependencies: []
 validate: exiftool -ver
+versionCommand: exiftool --ver
 repair: brew reinstall exiftool
 update: brew upgrade exiftool
-uninstall: { method: brew-formula, id: exiftool }
+uninstall:
+  method: brew-formula
+  id: exiftool
 post_install: []
-homepage: "https://exiftool.org"
-repository: "https://github.com/exiftool/exiftool"
+homepage: https://exiftool.org
+repository: https://github.com/exiftool/exiftool
 license: Artistic-2.0
+documentation: https://exiftool.org/exiftool_pod.html
 maintainer: DevForgeKit Registry
-tags: [media, metadata, image]
-aliases: []
+tags:
+  - media
+  - metadata
+  - image
+aliases:
+  - exiftool-pm
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - imagemagick
+platformInstall:
+  macos:
+    method: brew-formula
+    id: exiftool
+

@@ -7,7 +7,7 @@ import { createOpenAICompatibleProvider } from "./openaiCompatible.js";
 import { createAnthropicProvider } from "./anthropic.js";
 import { createGeminiProvider } from "./gemini.js";
 import { createOllamaProvider } from "./ollama.js";
-import { getSecret } from "../../workspace/env.js";
+import { resolveApiKey as resolveKeyFromManager } from "../credentials/manager.js";
 import { DevForgeError } from "../../errors.js";
 
 // Matches workspace.schema.json's `ai.provider` enum plus "lmstudio" (the
@@ -41,20 +41,12 @@ export function envVarForProvider(providerId) {
     return ENV_VAR_BY_PROVIDER[providerId] || null;
 }
 
-// resolveApiKey(providerId, opts) -> string | null. Resolution order: the
-// provider's own env var -> the active workspace's declared secret named
-// by `ai.apiKeyRef` (core/workspace/env.js's real AES-256-GCM store) ->
-// null ("not configured"). Never guesses, never falls back to a fake key.
-export function resolveApiKey(providerId, { workspace, apiKeyRef } = {}) {
-    const envVar = ENV_VAR_BY_PROVIDER[providerId];
-    if (envVar && process.env[envVar]) return process.env[envVar];
-
-    const ref = apiKeyRef || workspace?.ai?.apiKeyRef;
-    if (workspace && ref) {
-        const value = getSecret(workspace, ref);
-        if (value) return value;
-    }
-    return null;
+// resolveApiKey(providerId, opts) -> string | null. Delegates to the
+// unified credential manager (core/ai/credentials/manager.js), which
+// checks workspace secret → OS keychain → env var in that order.
+// Never guesses, never falls back to a fake key.
+export function resolveApiKey(providerId, opts = {}) {
+    return resolveKeyFromManager(providerId, opts);
 }
 
 // getProvider(providerId, opts) -> AIProvider (see providers/base.js).

@@ -2,19 +2,44 @@ schemaVersion: 1
 name: aircrack-ng
 description: A complete suite for Wi-Fi network security auditing
 category: security
-platforms: [macos, linux]
-install: { method: brew-formula, id: aircrack-ng }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: aircrack-ng
 dependencies: []
-validate: "aircrack-ng --help"
+validate: aircrack-ng --help
+versionCommand: aircrack-ng --version
 repair: brew reinstall aircrack-ng
 update: brew upgrade aircrack-ng
-uninstall: { method: brew-formula, id: aircrack-ng }
+uninstall:
+  method: brew-formula
+  id: aircrack-ng
 post_install: []
-homepage: "https://www.aircrack-ng.org"
-repository: "https://github.com/aircrack-ng/aircrack-ng"
+homepage: https://www.aircrack-ng.org
+repository: https://github.com/aircrack-ng/aircrack-ng
 license: GPL-2.0
+documentation: https://www.aircrack-ng.org/doku.php
 maintainer: DevForgeKit Registry
-tags: [security, networking, wifi, auditing]
-aliases: []
+tags:
+  - security
+  - networking
+  - wifi
+  - auditing
+aliases:
+  - aircrack
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - wireshark
+  - tcpdump
+platformInstall:
+  macos:
+    method: brew-formula
+    id: aircrack-ng
+

@@ -1,0 +1,50 @@
+schemaVersion: 1
+name: starship
+description: A minimal, fast, and customizable prompt for any shell
+category: utilities
+platforms:
+  - macos
+  - linux
+  - windows
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: starship
+dependencies: []
+validate: starship --version
+versionCommand: starship --version
+repair: brew reinstall starship
+update: brew upgrade starship
+uninstall:
+  method: brew-formula
+  id: starship
+post_install: []
+homepage: https://starship.rs
+repository: https://github.com/starship/starship
+license: ISC
+documentation: https://starship.rs/guide/
+maintainer: DevForgeKit Registry
+tags:
+  - shell
+  - prompt
+  - terminal
+aliases:
+  - starship-prompt
+stability: stable
+lastVerified: "2026-07-06"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: starship
+  linux:
+    method: apt
+    id: starship
+  windows:
+    method: winget
+    id: starship.starship
+

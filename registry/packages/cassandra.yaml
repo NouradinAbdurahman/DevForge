@@ -2,19 +2,42 @@ schemaVersion: 1
 name: cassandra
 description: Apache Cassandra - a distributed wide-column NoSQL database
 category: databases
-platforms: [macos]
-install: { method: brew-formula, id: cassandra }
-dependencies: [java]
+platforms:
+  - macos
+architectures:
+  - intel
+  - apple-silicon
+install:
+  method: brew-formula
+  id: cassandra
+dependencies:
+  - java
 validate: cassandra -v
+versionCommand: cassandra --version
 repair: brew reinstall cassandra
 update: brew upgrade cassandra
-uninstall: { method: brew-formula, id: cassandra }
+uninstall:
+  method: brew-formula
+  id: cassandra
 post_install: []
-homepage: "https://cassandra.apache.org"
-repository: "https://github.com/apache/cassandra"
+homepage: https://cassandra.apache.org
+repository: https://github.com/apache/cassandra
 license: Apache-2.0
+documentation: https://cassandra.apache.org/doc/latest/
 maintainer: DevForgeKit Registry
-tags: [database, nosql, distributed]
-aliases: []
+tags:
+  - database
+  - nosql
+  - distributed
+aliases:
+  - cassandra-db
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - mongodb
+  - arangodb
+platformInstall:
+  macos:
+    method: brew-formula
+    id: cassandra
+

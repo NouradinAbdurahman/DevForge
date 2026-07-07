@@ -3,18 +3,25 @@ name: wget
 description: A network utility to retrieve files from the web
 category: utilities
 platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install: { method: brew-formula, id: wget }
+platformInstall:
+  macos: { method: brew-formula, id: wget }
+  linux: { method: apt, id: wget }
 dependencies: []
 validate: wget --version
+versionCommand: "wget --version"
 repair: brew reinstall wget
 update: brew upgrade wget
 uninstall: { method: brew-formula, id: wget }
 post_install: []
 homepage: "https://www.gnu.org/software/wget"
-repository: ""
+repository: "https://git.savannah.gnu.org/cgit/wget.git"
 license: GPL-3.0
+documentation: "https://www.gnu.org/software/wget/manual/wget.html"
 maintainer: DevForgeKit Registry
 tags: [utility, networking, cli]
-aliases: []
+aliases: [wget-download]
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives: [curl, httpie]

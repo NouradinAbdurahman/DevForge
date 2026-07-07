@@ -2,19 +2,39 @@ schemaVersion: 1
 name: netcat
 description: A networking utility for reading/writing across TCP/UDP connections
 category: networking
-platforms: [macos, linux]
-install: { method: brew-formula, id: netcat }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: netcat
 dependencies: []
-validate: "nc -h"
+validate: nc -h
+versionCommand: nc -h | head -1
 repair: brew reinstall netcat
 update: brew upgrade netcat
-uninstall: { method: brew-formula, id: netcat }
+uninstall:
+  method: brew-formula
+  id: netcat
 post_install: []
-homepage: "http://netcat.sourceforge.net"
-repository: ""
+homepage: http://netcat.sourceforge.net
+repository: https://github.com/nmap/nmap
 license: GPL-2.0
+documentation: http://netcat.sourceforge.net
 maintainer: DevForgeKit Registry
-tags: [networking, diagnostics]
-aliases: [nc]
+tags:
+  - networking
+  - diagnostics
+aliases:
+  - nc
 stability: stable
 lastVerified: "2026-07-05"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: netcat
+

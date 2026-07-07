@@ -36,6 +36,16 @@
       "items": { "$ref": "#/$defs/variant" }
     },
     "install": { "$ref": "#/$defs/installStep" },
+    "platformInstall": {
+      "type": "object",
+      "description": "Platform-specific install steps. Keys are platform IDs (macos, linux, windows). The installer picks the entry matching the current platform; falls back to the top-level install field if no match.",
+      "properties": {
+        "macos": { "$ref": "#/$defs/installStep" },
+        "linux": { "$ref": "#/$defs/installStep" },
+        "windows": { "$ref": "#/$defs/installStep" }
+      },
+      "additionalProperties": false
+    },
     "dependencies": {
       "type": "array",
       "items": { "type": "string" }
@@ -69,7 +79,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["intel", "apple-silicon", "linux"]
+        "enum": ["intel", "apple-silicon", "linux", "x64", "arm64"]
       }
     },
     "stability": {
@@ -103,7 +113,7 @@
       "properties": {
         "method": {
           "type": "string",
-          "enum": ["brew-formula", "brew-cask", "npm", "pip", "cargo", "mise", "shell"]
+          "enum": ["brew-formula", "brew-cask", "npm", "pip", "cargo", "mise", "shell", "apt", "dnf", "pacman", "winget", "choco", "scoop"]
         },
         "id": { "type": "string" },
         "command": { "type": "string" },
@@ -117,7 +127,17 @@
       "properties": {
         "id": { "type": "string" },
         "label": { "type": "string" },
-        "install": { "$ref": "#/$defs/installStep" }
+        "install": { "$ref": "#/$defs/installStep" },
+        "platformInstall": {
+          "type": "object",
+          "description": "Platform-specific install steps for this variant.",
+          "properties": {
+            "macos": { "$ref": "#/$defs/installStep" },
+            "linux": { "$ref": "#/$defs/installStep" },
+            "windows": { "$ref": "#/$defs/installStep" }
+          },
+          "additionalProperties": false
+        }
       }
     }
   }

@@ -2,19 +2,41 @@ schemaVersion: 1
 name: cpp
 description: GCC/G++ - a C++ compiler toolchain (Xcode Command Line Tools also ships one by default)
 category: languages
-platforms: [macos, linux]
-install: { method: brew-formula, id: gcc }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: gcc
 dependencies: []
 validate: g++ --version
+versionCommand: g++ --version
 repair: brew reinstall gcc
 update: brew upgrade gcc
-uninstall: { method: brew-formula, id: gcc }
+uninstall:
+  method: brew-formula
+  id: gcc
 post_install: []
-homepage: "https://gcc.gnu.org"
-repository: "https://github.com/gcc-mirror/gcc"
+homepage: https://gcc.gnu.org
+repository: https://github.com/gcc-mirror/gcc
 license: GPL-3.0
+documentation: https://gcc.gnu.org/onlinedocs/
 maintainer: DevForgeKit Registry
-tags: [language, systems]
-aliases: ["c++", gcc, "g++"]
+tags:
+  - language
+  - systems
+aliases:
+  - c++
+  - gcc
+  - g++
 stability: stable
 lastVerified: "2026-07-05"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: gcc
+

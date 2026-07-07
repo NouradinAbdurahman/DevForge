@@ -2,19 +2,49 @@ schemaVersion: 1
 name: zoxide
 description: A smarter cd command that learns your habits
 category: utilities
-platforms: [macos, linux]
-install: { method: brew-formula, id: zoxide }
+platforms:
+  - macos
+  - linux
+  - windows
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: zoxide
 dependencies: []
 validate: zoxide --version
+versionCommand: zoxide --version
 repair: brew reinstall zoxide
 update: brew upgrade zoxide
-uninstall: { method: brew-formula, id: zoxide }
+uninstall:
+  method: brew-formula
+  id: zoxide
 post_install: []
-homepage: "https://github.com/ajeetdsouza/zoxide"
-repository: "https://github.com/ajeetdsouza/zoxide"
+homepage: https://github.com/ajeetdsouza/zoxide
+repository: https://github.com/ajeetdsouza/zoxide
 license: MIT
+documentation: https://github.com/ajeetdsouza/zoxide
 maintainer: DevForgeKit Registry
-tags: [utility, shell, cli]
-aliases: []
+tags:
+  - utility
+  - shell
+  - cli
+aliases:
+  - zoxide-cd
 stability: stable
 lastVerified: "2026-07-05"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: zoxide
+  linux:
+    method: apt
+    id: zoxide
+  windows:
+    method: winget
+    id: ajeetdsouza.zoxide
+

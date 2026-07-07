@@ -2,19 +2,42 @@ schemaVersion: 1
 name: xcode
 description: Apple's IDE and toolchain for macOS/iOS/watchOS/tvOS development, managed via the xcodes CLI
 category: apple-development
-platforms: [macos]
-install: { method: brew-formula, id: xcodes, tap: xcodesorg/made }
+platforms:
+  - macos
+architectures:
+  - intel
+  - apple-silicon
+install:
+  method: brew-formula
+  id: xcodes
+  tap: xcodesorg/made
 dependencies: []
 validate: xcodebuild -version
 versionCommand: xcodebuild -version
 repair: xcodes install --latest --experimental-unxip
-uninstall: { method: brew-formula, id: xcodes, tap: xcodesorg/made }
+update: xcode-select --install
+uninstall:
+  method: brew-formula
+  id: xcodes
+  tap: xcodesorg/made
 post_install: []
-homepage: "https://developer.apple.com/xcode"
-repository: "https://github.com/XcodesOrg/xcodes"
+homepage: https://developer.apple.com/xcode
+repository: https://github.com/XcodesOrg/xcodes
 license: MIT
+documentation: https://developer.apple.com/documentation/xcode
 maintainer: DevForgeKit Registry
-tags: [apple-development, ios, macos, ide]
-aliases: [xcodes]
+tags:
+  - apple-development
+  - ios
+  - macos
+  - ide
+aliases:
+  - xcodes
 stability: stable
 lastVerified: "2026-07-05"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: xcodes
+    tap: xcodesorg/made
+

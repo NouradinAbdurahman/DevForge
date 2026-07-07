@@ -1,6 +1,6 @@
 schemaVersion: 1
 name: flutter
-recommends: [android-studio]
+recommends: [android-studio, firebase]
 versions:
   "3.44":
     requires:

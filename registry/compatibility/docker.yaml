@@ -1,5 +1,6 @@
 schemaVersion: 1
 name: docker
+recommends: [docker-compose]
 # docker-desktop and colima are modeled in registry/packages/docker.yaml as two
 # *variants* of the same package (only one is ever installed through
 # DevForgeKit itself), so a normal cross-package `conflicts` rule can't express

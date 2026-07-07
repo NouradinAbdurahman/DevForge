@@ -9,6 +9,24 @@ installed tools, compatibility status, the active workspace, git status, and con
 answer in that real data; never invent tool names, versions, or file paths that aren't present in it. When
 you don't have enough information in the context to answer precisely, say so plainly instead of guessing.`;
 
+// TUI_SYSTEM_ADDENDUM (AI Chat Rendering & Response Experience, v2.1.3.1)
+// - appended only when a caller passes { surface: "tui" } to buildPrompt.
+// The dashboard's Markdown renderer (tui/components/markdown.js) is a
+// real safety net for whatever formatting still shows up, but a prompt
+// that asks for terminal-shaped output in the first place means less of
+// it is needed - the two work together, not one instead of the other.
+const TUI_SYSTEM_ADDENDUM = `You are responding inside DevForgeKit's terminal dashboard (TUI), not a web chat
+window - there is no browser, no rich HTML rendering, and no infinite scroll. Write accordingly:
+- Plain-text section headings, short bullet/numbered lists, and fenced code blocks are fine and will be
+  rendered properly. Never use Markdown tables, nested/decorative formatting, or any HTML tag (e.g. "<br>").
+- Default to concise: a short paragraph or a short list, not an essay. Only go long if the user explicitly
+  asks for more detail.
+- Never restate facts already visible on screen - the current provider, model, working directory, and health
+  status are always shown in the UI. Only mention one of them if it's directly relevant to the answer.
+- Put every shell command the user should run in its own fenced code block, never inline in a sentence.
+- Skip conversational filler ("Great question!", "As an AI...", "I'd be happy to help!") - be direct,
+  technical, and actionable, like a senior engineer's terminal output, not a chatbot's greeting.`;
+
 // One short, real snippet per domain - not filler. Each nudges the model
 // toward the actual conventions/gotchas of that ecosystem.
 const DOMAIN_PROMPTS = {
@@ -72,6 +90,17 @@ redundant tooling, outdated packages - grounded in the context block's real data
 suggestions first.`,
     repair: () => `Explain the repair plan in the context block in plain language: what each action does, why
 it's needed, its risk, and its estimated time. Do not suggest any action beyond what's already in the plan.`,
+    compare: () => `Compare the two items described in the context block's "comparison" field (each entry already
+contains its real, DevForgeKit-sourced facts - description, category/tags, quality score, dependencies,
+recommended companions, etc.). Summarize the genuine differences and give a plain-language recommendation for
+when to prefer one over the other. Reference ONLY the facts given in "comparison" - never invent a feature,
+version number, or capability that isn't listed there. If a fact isn't present for one side, say it's unknown
+rather than guessing.`,
+    "graph-explain": (input) => `Explain the node "${input}" using the context block's "node"/"impact"/"graphStats"
+fields (the Environment Graph's real, measured relationships - see docs/EnvironmentGraph.md). Cover: why this is
+installed, what depends on it, the real impact of removing it (from "impact"), and any real conflicts already
+present in the data. Never invent a relationship, dependent, or conflict that isn't in the context block - if
+something isn't there, say it's not tracked in the graph rather than guessing.`,
     plan: (input) => `The user's goal is: "${input}". Using ONLY the real collections/recipes/components listed
 in the context block's "registryOptions" field, respond with ONLY a JSON object matching exactly this shape
 (no markdown fences, no extra prose): { "profileName": string, "description": string, "collections": string[],
@@ -80,19 +109,24 @@ exactly match a "name" listed in "registryOptions" - never invent a name that is
 recipes/collections over long ad hoc component lists when one already covers the goal well.`
 };
 
-// buildPrompt(kind, context, input) -> [{ role, content }, ...] ready to
-// pass to an AIProvider's chat()/stream(). Throws for an unknown kind
-// rather than silently falling back to a generic prompt.
-export function buildPrompt(kind, context, input = "") {
+// buildPrompt(kind, context, input, [{ surface }]) -> [{ role, content }, ...]
+// ready to pass to an AIProvider's chat()/stream(). Throws for an unknown
+// kind rather than silently falling back to a generic prompt.
+// `surface: "tui"` layers in TUI_SYSTEM_ADDENDUM above - omitted (the
+// plain CLI path) leaves the system prompt exactly as it always was.
+export function buildPrompt(kind, context, input = "", { surface } = {}) {
     const instructionFn = INSTRUCTIONS[kind];
     if (!instructionFn) {
         throw new Error(`Unknown AI prompt kind '${kind}'. Known kinds: ${Object.keys(INSTRUCTIONS).join(", ")}`);
     }
 
     const domain = detectDomain(input);
-    const system = [BASE_SYSTEM_PROMPT, domain ? DOMAIN_PROMPTS[domain] : null, contextBlock(context)]
-        .filter(Boolean)
-        .join("\n\n");
+    const system = [
+        BASE_SYSTEM_PROMPT,
+        surface === "tui" ? TUI_SYSTEM_ADDENDUM : null,
+        domain ? DOMAIN_PROMPTS[domain] : null,
+        contextBlock(context)
+    ].filter(Boolean).join("\n\n");
 
     return [
         { role: "system", content: system },

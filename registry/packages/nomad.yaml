@@ -2,19 +2,46 @@ schemaVersion: 1
 name: nomad
 description: HashiCorp's workload orchestrator
 category: devops
-platforms: [macos, linux]
-install: { method: brew-formula, id: "hashicorp/tap/nomad", tap: "hashicorp/tap" }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: hashicorp/tap/nomad
+  tap: hashicorp/tap
 dependencies: []
 validate: nomad version
-repair: "brew reinstall hashicorp/tap/nomad"
-update: "brew upgrade hashicorp/tap/nomad"
-uninstall: { method: brew-formula, id: "hashicorp/tap/nomad", tap: "hashicorp/tap" }
+versionCommand: nomad version
+repair: brew reinstall hashicorp/tap/nomad
+update: brew upgrade hashicorp/tap/nomad
+uninstall:
+  method: brew-formula
+  id: hashicorp/tap/nomad
+  tap: hashicorp/tap
 post_install: []
-homepage: "https://www.nomadproject.io"
-repository: "https://github.com/hashicorp/nomad"
+homepage: https://www.nomadproject.io
+repository: https://github.com/hashicorp/nomad
 license: BUSL-1.1
+documentation: https://developer.hashicorp.com/nomad/docs
 maintainer: DevForgeKit Registry
-tags: [devops, orchestration, hashicorp]
-aliases: []
+tags:
+  - devops
+  - orchestration
+  - hashicorp
+aliases:
+  - nomad-hashicorp
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - consul
+  - vault
+platformInstall:
+  macos:
+    method: brew-formula
+    id: hashicorp/tap/nomad
+    tap: hashicorp/tap
+

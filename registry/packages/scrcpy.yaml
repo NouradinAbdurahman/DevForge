@@ -2,19 +2,39 @@ schemaVersion: 1
 name: scrcpy
 description: Display and control an Android device from macOS
 category: android
-platforms: [macos, linux]
-install: { method: brew-formula, id: scrcpy }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: scrcpy
 dependencies: []
 validate: scrcpy --version
+versionCommand: scrcpy --version
 repair: brew reinstall scrcpy
 update: brew upgrade scrcpy
-uninstall: { method: brew-formula, id: scrcpy }
+uninstall:
+  method: brew-formula
+  id: scrcpy
 post_install: []
-homepage: "https://github.com/Genymobile/scrcpy"
-repository: "https://github.com/Genymobile/scrcpy"
+homepage: https://github.com/Genymobile/scrcpy
+repository: https://github.com/Genymobile/scrcpy
 license: Apache-2.0
+documentation: https://github.com/Genymobile/scrcpy
 maintainer: DevForgeKit Registry
-tags: [android, mobile]
-aliases: []
+tags:
+  - android
+  - mobile
+aliases:
+  - scrcpy-android
 stability: stable
 lastVerified: "2026-07-05"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: scrcpy
+

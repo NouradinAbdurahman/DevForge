@@ -2,19 +2,40 @@ schemaVersion: 1
 name: php
 description: The PHP scripting language
 category: languages
-platforms: [macos, linux]
-install: { method: brew-formula, id: php }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: php
 dependencies: []
 validate: php --version
+versionCommand: php --version
 repair: brew reinstall php
 update: brew upgrade php
-uninstall: { method: brew-formula, id: php }
+uninstall:
+  method: brew-formula
+  id: php
 post_install: []
-homepage: "https://www.php.net"
-repository: "https://github.com/php/php-src"
+homepage: https://www.php.net
+repository: https://github.com/php/php-src
 license: PHP-3.01
+documentation: https://www.php.net/docs.php
 maintainer: DevForgeKit Registry
-tags: [language, web, scripting]
-aliases: []
+tags:
+  - language
+  - web
+  - scripting
+aliases:
+  - php-cli
 stability: stable
 lastVerified: "2026-07-05"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: php
+

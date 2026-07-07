@@ -1,7 +1,12 @@
 // Laravel generator (v1.2.2 Tier 2): scaffolds with the official
 // `composer create-project laravel/laravel`, then layers Docker and CI -
 // Laravel's own installer already handles .env/.gitignore/testing setup,
-// so there's little to add on top beyond containerization.
+// so there's little to add on top beyond containerization. Deliberately
+// does NOT add shared.js's generic EDITORCONFIG (v2.1.2 audit flagged
+// this stack as "missing" one, but laravel/laravel's own skeleton
+// already ships a PHP-appropriate one - 4-space indent per PSR-12 -
+// overwriting it with the generic 2-space default would be a real
+// regression, not a fix).
 import { runShellCommand } from "../core/shell.js";
 import { confirm } from "../lib/prompts.js";
 import { vscodeSettings, vscodeExtensions } from "./shared.js";
@@ -91,6 +96,8 @@ export const laravelGenerator = {
     id: "laravel",
     label: "Laravel",
     description: "Scaffolded via composer create-project laravel/laravel, plus Docker and CI",
+    tags: ["backend", "php", "web", "api"],
+    recommends: ["mysql", "docker"],
     requiresTool: { command: "composer", hint: "Install PHP + Composer first - see https://getcomposer.org/download/" },
     promptOptions,
 

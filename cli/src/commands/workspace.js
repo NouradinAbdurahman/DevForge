@@ -26,6 +26,10 @@ import { PROVIDER_DEFAULT_HOSTS } from "../core/workspace/ssh.js";
 import { captureDockerContext } from "../core/workspace/docker.js";
 import { captureKubeContext } from "../core/workspace/kubernetes.js";
 import { installShellHook, uninstallShellHook, isShellHookInstalled, shellInitScript } from "../core/workspace/shellIntegration.js";
+import { getWorkspaceMetadata, formatMetadataSummary } from "../core/workspace/metadata.js";
+import { verifyWorkspaceStructured, formatStructuredVerification, previewSwitch, formatSwitchPreview, diffWorkspaces, formatWorkspaceDiff, previewBundleImport, formatBundlePreview, computeWorkspaceHealth, formatHealthScore } from "../core/workspace/verification.js";
+import { benchmarkWorkspace, formatBenchmarkResult } from "../core/workspace/benchmark.js";
+import { getPlatform } from "../core/platform/index.js";
 import { getProfile, getRecipe, getCollection, expandProfile, expandRecipe } from "../core/registry.js";
 import { scanCompatibility } from "../core/compatibility/engine.js";
 import { planRepair, executeRepairPlan } from "../core/compatibility/repair.js";
@@ -177,7 +181,7 @@ export function registerWorkspaceCommand(program) {
                 logger.info("Seeded from the current machine's live git identity and docker/kubernetes contexts.");
             }
 
-            logger.success(`Created workspace '${name}' at ${path.dirname(process.cwd())}`);
+            logger.success(`Created workspace '${name}'.`);
             if (opts.switch) {
                 const { subsystems } = await switchToWorkspace(name);
                 printSubsystemResults(subsystems);
@@ -217,9 +221,34 @@ export function registerWorkspaceCommand(program) {
         }));
 
     workspace
+        .command("metadata [name]")
+        .description("Show rich structured metadata for a workspace (defaults to the active workspace)")
+        .option("--json", "output as JSON")
+        .action(withErrorHandling(function (name) {
+            const opts = this.opts();
+            const target = resolveTargetName(name);
+            const doc = getWorkspace(target);
+            let snapshotCount = null;
+            try { snapshotCount = listSnapshots(target).length; } catch { /* workspace may not have snapshots dir */ }
+            const meta = getWorkspaceMetadata(doc, { activeName: getActiveWorkspaceName(), snapshotCount });
+            if (opts.json) {
+                console.log(JSON.stringify(meta, null, 2));
+                return;
+            }
+            for (const line of formatMetadataSummary(meta)) console.log(line);
+        }));
+
+    workspace
         .command("switch <name>")
         .description("Switch to a workspace: applies its git/ssh/docker/kubernetes/cloud identity and regenerates its shell export")
-        .action(withErrorHandling(async (name) => {
+        .option("--preview", "show what would change without actually switching")
+        .action(withErrorHandling(async function (name) {
+            const opts = this.opts();
+            if (opts.preview) {
+                const preview = await previewSwitch(name);
+                for (const line of formatSwitchPreview(preview)) console.log(line);
+                return;
+            }
             const { subsystems } = await switchToWorkspace(name);
             logger.success(`Switched to '${name}'.`);
             printSubsystemResults(subsystems);
@@ -288,8 +317,22 @@ export function registerWorkspaceCommand(program) {
     workspace
         .command("verify [name]")
         .description("Run a PASS/WARNING/FAIL health sweep across every subsystem a workspace declares (defaults to the active workspace)")
-        .action(withErrorHandling(async (name) => {
+        .option("--structured", "group results by subsystem with per-field details")
+        .option("--json", "output as JSON (implies --structured)")
+        .action(withErrorHandling(async function (name) {
+            const opts = this.opts();
             const target = resolveTargetName(name);
+            if (opts.structured || opts.json) {
+                const result = await verifyWorkspaceStructured(getWorkspace(target));
+                if (opts.json) {
+                    console.log(JSON.stringify(result, null, 2));
+                    return;
+                }
+                logger.section(`Verifying '${target}'`);
+                for (const line of formatStructuredVerification(result)) console.log(line);
+                if (result.fail > 0) process.exitCode = 1;
+                return;
+            }
             logger.section(`Verifying '${target}'`);
             const result = await verifyWorkspace(getWorkspace(target));
             printHealthResult(result);
@@ -327,11 +370,46 @@ export function registerWorkspaceCommand(program) {
         .description("Import a workspace bundle")
         .option("--name <name>", "import under a different name than the bundle recorded")
         .option("--overwrite", "replace an existing workspace of the same name")
+        .option("--preview", "show what would be imported without actually importing")
         .action(withErrorHandling(async function (archive) {
             const opts = this.opts();
+            if (opts.preview) {
+                const preview = await previewBundleImport(path.resolve(archive), { newName: opts.name });
+                for (const line of formatBundlePreview(preview)) console.log(line);
+                return;
+            }
             const { workspace: doc, repairs } = await importWorkspaceBundle(path.resolve(archive), { newName: opts.name, overwrite: opts.overwrite });
             logger.success(`Imported '${doc.name}'.`);
             for (const r of repairs) logger.warn(r);
+        }));
+
+    workspace
+        .command("diff <nameA> <nameB>")
+        .description("Compare two workspaces across all subsystems")
+        .option("--json", "output as JSON")
+        .action(withErrorHandling(function (nameA, nameB) {
+            const opts = this.opts();
+            const diff = diffWorkspaces(nameA, nameB);
+            if (opts.json) {
+                console.log(JSON.stringify(diff, null, 2));
+                return;
+            }
+            for (const line of formatWorkspaceDiff(diff)) console.log(line);
+        }));
+
+    workspace
+        .command("health [name]")
+        .description("Show a quick health score with per-subsystem breakdown (defaults to the active workspace)")
+        .option("--json", "output as JSON")
+        .action(withErrorHandling(function (name) {
+            const opts = this.opts();
+            const target = resolveTargetName(name);
+            const health = computeWorkspaceHealth(getWorkspace(target));
+            if (opts.json) {
+                console.log(JSON.stringify(health, null, 2));
+                return;
+            }
+            for (const line of formatHealthScore(health)) console.log(line);
         }));
 
     // ---------------------------------------------------------------
@@ -557,7 +635,7 @@ export function registerWorkspaceCommand(program) {
         .option("--print", "print the hook line instead of installing/removing it")
         .action(withErrorHandling(function (shellArg) {
             const opts = this.opts();
-            const shell = shellArg || "zsh";
+            const shell = shellArg || getPlatform().defaultShell();
             if (opts.print) {
                 console.log(shellInitScript());
                 return;
@@ -654,5 +732,27 @@ export function registerWorkspaceCommand(program) {
             saveWorkspace({ ...doc, compatibility: { ...doc.compatibility, repairHistory } });
 
             if (failed > 0) process.exitCode = 1;
+        }));
+
+    // ---------------------------------------------------------------
+    // Benchmark
+    // ---------------------------------------------------------------
+
+    workspace
+        .command("benchmark <name>")
+        .description("Benchmark core workspace operations (metadata, health, verify, snapshot, diff, switch, restore, bundle)")
+        .option("--runs <n>", "number of runs per operation (default: 1)", "1")
+        .option("--ops <list>", "comma-separated list of operations to run")
+        .option("--json", "output as JSON")
+        .action(withErrorHandling(async function (name) {
+            const opts = this.opts();
+            const runs = parseInt(opts.runs, 10) || 1;
+            const operations = opts.ops ? opts.ops.split(",").map((s) => s.trim()) : undefined;
+            const result = await benchmarkWorkspace(name, { operations, runs });
+            if (opts.json) {
+                console.log(JSON.stringify(result, null, 2));
+                return;
+            }
+            for (const line of formatBenchmarkResult(result)) console.log(line);
         }));
 }

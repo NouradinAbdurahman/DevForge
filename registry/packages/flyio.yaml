@@ -2,19 +2,44 @@ schemaVersion: 1
 name: flyio
 description: The Fly.io deployment platform's command-line interface
 category: cloud
-platforms: [macos, linux]
-install: { method: brew-formula, id: flyctl }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: flyctl
 dependencies: []
 validate: flyctl version
+versionCommand: flyctl version
 repair: brew reinstall flyctl
 update: brew upgrade flyctl
-uninstall: { method: brew-formula, id: flyctl }
+uninstall:
+  method: brew-formula
+  id: flyctl
 post_install: []
-homepage: "https://fly.io"
-repository: "https://github.com/superfly/flyctl"
+homepage: https://fly.io
+repository: https://github.com/superfly/flyctl
 license: Apache-2.0
+documentation: https://fly.io/docs/
 maintainer: DevForgeKit Registry
-tags: [cloud, deployment, paas]
-aliases: [fly, flyctl]
+tags:
+  - cloud
+  - deployment
+  - paas
+aliases:
+  - fly
+  - flyctl
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - railway
+  - vercel
+platformInstall:
+  macos:
+    method: brew-formula
+    id: flyctl
+

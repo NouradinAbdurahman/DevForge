@@ -2,19 +2,53 @@ schemaVersion: 1
 name: gnu-make
 description: GNU Make - a newer version than the one macOS ships
 category: build-systems
-platforms: [macos, linux]
-install: { method: brew-formula, id: make }
+platforms:
+  - macos
+  - linux
+  - windows
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: make
 dependencies: []
-validate: "gmake --version"
+validate: gmake --version
+versionCommand: make --version
 repair: brew reinstall make
 update: brew upgrade make
-uninstall: { method: brew-formula, id: make }
+uninstall:
+  method: brew-formula
+  id: make
 post_install: []
-homepage: "https://www.gnu.org/software/make"
-repository: ""
+homepage: https://www.gnu.org/software/make
+repository: https://git.savannah.gnu.org/cgit/make.git
 license: GPL-3.0
+documentation: https://www.gnu.org/software/make/manual/make.html
 maintainer: DevForgeKit Registry
-tags: [build-tool]
-aliases: [gmake, make]
+tags:
+  - build-tool
+  - build
+  - automation
+aliases:
+  - gmake
+  - make
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - cmake
+  - ninja
+platformInstall:
+  macos:
+    method: brew-formula
+    id: make
+  linux:
+    method: apt
+    id: make
+  windows:
+    method: winget
+    id: GnuWin32.Make
+

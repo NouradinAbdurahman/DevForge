@@ -2,19 +2,41 @@ schemaVersion: 1
 name: mtr
 description: A network diagnostic tool combining ping and traceroute
 category: networking
-platforms: [macos, linux]
-install: { method: brew-formula, id: mtr }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: mtr
 dependencies: []
 validate: mtr --version
+versionCommand: mtr --version
 repair: brew reinstall mtr
 update: brew upgrade mtr
-uninstall: { method: brew-formula, id: mtr }
+uninstall:
+  method: brew-formula
+  id: mtr
 post_install: []
-homepage: "https://www.bitwizard.nl/mtr"
-repository: "https://github.com/traviscross/mtr"
+homepage: https://www.bitwizard.nl/mtr
+repository: https://github.com/traviscross/mtr
 license: GPL-2.0
+documentation: https://github.com/traviscross/mtr
 maintainer: DevForgeKit Registry
-tags: [networking, diagnostics]
-aliases: []
+tags:
+  - networking
+  - diagnostics
+aliases:
+  - mtr-network
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - nmap
+platformInstall:
+  macos:
+    method: brew-formula
+    id: mtr
+

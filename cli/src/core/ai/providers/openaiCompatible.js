@@ -130,5 +130,5 @@ export function createOpenAICompatibleProvider({
         }
     }
 
-    return { id, chat, stream, embeddings, listModels, checkHealth };
+    return { id, chat, stream, embeddings, listModels, checkHealth, supportsStreaming: true };
 }

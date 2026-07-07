@@ -16,6 +16,7 @@ import { render as inkRender } from "ink";
 import { App } from "../src/tui/App.js";
 import { getBreakpoint, MIN_COLUMNS, MIN_ROWS, getPageMinSize, PAGE_MIN_SIZE } from "../src/tui/hooks/useTerminalSize.js";
 import { navWidth, headerMode, headerHeight } from "../src/tui/layout/responsive.js";
+import { setConfigValue } from "../src/core/config.js";
 
 const h = React.createElement;
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -53,13 +54,18 @@ class FakeStdin extends EventEmitter {
     unref() {}
 }
 
+// Pre-seeds onboardingSeen:true - this file tests resize behavior of
+// the normal dashboard, not the v2.0.4 first-run wizard.
 function withTempHome() {
     const originalHome = process.env.HOME;
     const tempHome = mkdtempSync(path.join(tmpdir(), "devforgekit-tui-resize-test-"));
     process.env.HOME = tempHome;
+    setConfigValue("onboardingSeen", true);
     return () => {
         process.env.HOME = originalHome;
-        rmSync(tempHome, { recursive: true, force: true });
+        // See test/tui.test.js's withTempHome for why: a still-in-flight
+        // async write (workspace switch, snapshot) can race this cleanup.
+        rmSync(tempHome, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
     };
 }
 
@@ -580,5 +586,37 @@ test("no frame contains overlapping text (no two lines with same content at diff
         instance.unmount();
     } finally {
         restore();
+    }
+});
+
+// --- v2.0.4 onboarding overlay at the size floor and ultrawide -------------
+// (Command Palette isn't covered here - this file's FakeStdin never
+// feeds real keypresses through Ink's parser, only resize events; the
+// palette's own interactive behavior is covered by the real-stdin tests
+// in tui.test.js. Onboarding needs no keypress to appear, so it's the
+// one new-in-this-session overlay this resize harness can genuinely
+// exercise.)
+
+test("Onboarding wizard's full-screen takeover renders without corruption at the 80x24 floor and at ultrawide", async () => {
+    // A genuinely fresh HOME (no onboardingSeen seed) - this is the one
+    // test in this file that needs the real first-run state, so it
+    // doesn't reuse this file's own onboardingSeen:true-seeding withTempHome.
+    const originalHome = process.env.HOME;
+    const tempHome = mkdtempSync(path.join(tmpdir(), "devforgekit-tui-resize-onboarding-test-"));
+    process.env.HOME = tempHome;
+    try {
+        for (const [columns, rows] of [[80, 24], [300, 60]]) {
+            const { instance, stdout } = renderAt(columns, rows);
+            await delay(150);
+            const frame = stdout.lastFrame();
+            assert.match(frame, /Getting started/, `expected the wizard at ${columns}x${rows}`);
+            for (const line of frame.split("\n")) {
+                assert.ok(line.length <= columns, `line exceeds ${columns} cols at ${columns}x${rows}: ${JSON.stringify(line.slice(0, 40))}`);
+            }
+            instance.unmount();
+        }
+    } finally {
+        process.env.HOME = originalHome;
+        rmSync(tempHome, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
     }
 });

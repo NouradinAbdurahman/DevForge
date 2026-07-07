@@ -2,20 +2,46 @@ schemaVersion: 1
 name: redis
 description: In-memory data structure store, used as a database/cache/broker
 category: databases
-platforms: [macos]
-install: { method: brew-formula, id: redis }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: redis
 dependencies: []
-validate: "redis-cli ping"
+validate: redis-cli ping
+versionCommand: redis-server --version
 repair: brew services restart redis
 update: brew upgrade redis
-uninstall: { method: brew-formula, id: redis }
+uninstall:
+  method: brew-formula
+  id: redis
 post_install:
-  - "brew services start redis"
-homepage: "https://redis.io"
-repository: "https://github.com/redis/redis"
+  - brew services start redis
+homepage: https://redis.io
+repository: https://github.com/redis/redis
 license: RSALv2
+documentation: https://redis.io/docs/
 maintainer: DevForgeKit Registry
-tags: [database, cache, key-value]
-aliases: []
+tags:
+  - database
+  - cache
+  - key-value
+aliases:
+  - redis-server
+  - redis-cli
 stability: stable
 lastVerified: "2026-07-05"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: redis
+  linux:
+    method: apt
+    id: redis-server
+

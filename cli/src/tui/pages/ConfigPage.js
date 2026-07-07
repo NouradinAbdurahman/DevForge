@@ -21,14 +21,15 @@ const FIELDS = [
     { key: "shell", values: ["zsh", "bash", "fish"] },
     { key: "packageManager", values: ["brew", "npm", "pnpm"] },
     { key: "browser", values: ["chrome", "safari", "firefox", "arc"] },
-    { key: "aiProvider", values: ["none", "openai", "anthropic", "ollama"] },
+    { key: "aiProvider", values: ["none", "openai", "anthropic", "gemini", "groq", "openrouter", "ollama", "lmstudio"], note: "or use 'ai setup' / AI Providers page (P)" },
     { key: "defaultProfile", text: true },
     { key: "updateSchedule", values: ["manual", "daily", "weekly"], note: "stored; no scheduler consumes it yet" },
     { key: "telemetry", values: [false, true], note: "stored; nothing reports anywhere yet" },
     { key: "registryUrl", text: true, note: "stored; remote registry fetch is design-only" },
     { key: "colorOutput", values: [true, false] },
     { key: "startupAnimation", values: [true, false], note: "the launch splash before the dashboard mounts" },
-    { key: "startupAnimationSpeed", values: ["normal", "fast", "off"], note: "fast skips particles/pacing; off = same as startupAnimation: false" }
+    { key: "startupAnimationSpeed", values: ["normal", "fast", "off"], note: "fast skips particles/pacing; off = same as startupAnimation: false" },
+    { key: "reducedMotion", values: [false, true], note: "static spinners instead of animated - takes effect next launch" }
 ];
 
 export function ConfigPage({ isActive }) {
@@ -97,7 +98,8 @@ export function ConfigPage({ isActive }) {
                     renderItem: (field, selected) => h(Text, {
                         key: field.key,
                         backgroundColor: selected && isActive ? theme.selection : undefined,
-                        color: selected && isActive ? theme.selectionText : theme.text
+                        color: selected && isActive ? theme.selectionText : theme.text,
+                        wrap: "truncate-end"
                     }, `${selected ? "❯ " : "  "}${field.key.padEnd(18)} ${String(displayValue(field) ?? "-").padEnd(14)} ${field.note ? `(${field.note})` : ""}`)
                 }),
             editing ? null : h(Box, { marginTop: 1, flexDirection: "column" },

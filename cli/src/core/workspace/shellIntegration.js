@@ -15,8 +15,9 @@
 // behavior this codebase avoids elsewhere (see cloud.js).
 import { existsSync, mkdirSync, writeFileSync, chmodSync } from "node:fs";
 import path from "node:path";
-import { userConfigDir, homeDir } from "../paths.js";
+import { userConfigDir } from "../paths.js";
 import { shellQuote } from "../shell.js";
+import { getPlatform } from "../platform/index.js";
 import { writeBlock, removeBlock, hasBlock } from "./markerBlock.js";
 
 const HOOK_ID = "workspace-shell-hook";
@@ -25,8 +26,13 @@ function workspaceShellFile() {
     return path.join(userConfigDir(), "workspace-shell.sh");
 }
 
+// rcFileFor(shell) -> delegates to the current platform adapter (see
+// core/platform/) instead of hardcoding .zshrc/.bashrc - macOS's default
+// shell is zsh, but a workspace can still request "bash" explicitly, and
+// on Linux/Windows the adapter resolves a different default/rc file
+// entirely (see linux.js/windows.js).
 function rcFileFor(shell) {
-    return shell === "bash" ? path.join(homeDir(), ".bashrc") : path.join(homeDir(), ".zshrc");
+    return getPlatform().shellConfigFile(shell);
 }
 
 // buildShellLines(workspace, { resolvedEnv }) -> string[] of plain
@@ -98,7 +104,7 @@ export function shellInitScript() {
 }
 
 // installShellHook(shell) -> the rc file path it was installed into.
-export function installShellHook(shell = "zsh") {
+export function installShellHook(shell = getPlatform().defaultShell()) {
     const rcFile = rcFileFor(shell);
     if (!existsSync(workspaceShellFile())) clearWorkspaceShell();
     writeBlock(rcFile, HOOK_ID, [shellInitScript()], {
@@ -112,10 +118,10 @@ export function installShellHook(shell = "zsh") {
     return rcFile;
 }
 
-export function uninstallShellHook(shell = "zsh") {
+export function uninstallShellHook(shell = getPlatform().defaultShell()) {
     return removeBlock(rcFileFor(shell), HOOK_ID);
 }
 
-export function isShellHookInstalled(shell = "zsh") {
+export function isShellHookInstalled(shell = getPlatform().defaultShell()) {
     return hasBlock(rcFileFor(shell), HOOK_ID);
 }

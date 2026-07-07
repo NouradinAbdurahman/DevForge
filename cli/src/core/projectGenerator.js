@@ -12,6 +12,7 @@ import { scanCompatibility } from "./compatibility/engine.js";
 import { confirm } from "../lib/prompts.js";
 import { DevForgeError } from "./errors.js";
 import { logger } from "./logger.js";
+import { licenseText } from "../generators/shared.js";
 
 // writeGeneratedFiles(baseDir, files) - files: [{ path, content, mode? }].
 // `path` is relative to baseDir and may include new subdirectories
@@ -113,6 +114,19 @@ export async function runProjectGenerator(generator, { name, parentDir, options 
     // than writing a brand new file - see generators/nextjs.js.
     if (generator.postGenerate) {
         await generator.postGenerate({ name, dir, options });
+    }
+
+    // Universal LICENSE (Project Generator Excellence, v2.1.2) - applied
+    // here, once, for every stack, rather than each generator hardcoding
+    // its own (5 of 17 used to hand-write an MIT LICENSE regardless of
+    // what a user might actually want; the other 12 wrote none at all).
+    // Defaults to MIT when unspecified (the same default those 5 already
+    // had), skips entirely for "none", and never overwrites a LICENSE a
+    // generator or its scaffolding CLI already wrote.
+    const licensePath = path.join(dir, "LICENSE");
+    if (!existsSync(licensePath)) {
+        const content = licenseText(options.license ?? "mit", options.licenseAuthor);
+        if (content) writeFileSync(licensePath, content);
     }
 
     if (!generator.skipGitInit) {

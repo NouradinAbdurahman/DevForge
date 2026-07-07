@@ -3,9 +3,11 @@ name: sphinx
 description: A documentation generator, the standard for Python projects
 category: documentation
 platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install: { method: pip, id: sphinx }
 dependencies: [python]
 validate: "sphinx-build --version"
+versionCommand: "sphinx-build --version"
 repair: "pip install --upgrade sphinx"
 update: "pip install --upgrade sphinx"
 uninstall: { method: pip, id: sphinx }
@@ -13,8 +15,10 @@ post_install: []
 homepage: "https://www.sphinx-doc.org"
 repository: "https://github.com/sphinx-doc/sphinx"
 license: BSD-2-Clause
+documentation: "https://www.sphinx-doc.org/en/master/"
 maintainer: DevForgeKit Registry
 tags: [documentation, python]
-aliases: []
+aliases: [sphinx-docs]
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives: [mkdocs, hugo]

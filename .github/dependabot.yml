@@ -23,6 +23,27 @@ updates:
           - "*"
 
   # ---------------------------------------------------------------------
+  # CLI (Layer 2) — the main Node.js package
+  # ---------------------------------------------------------------------
+  - package-ecosystem: "npm"
+    directory: "/cli"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "NouradinAbdurahman"
+    labels:
+      - "dependencies"
+      - "cli"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      cli:
+        patterns:
+          - "*"
+
+  # ---------------------------------------------------------------------
   # npm / pnpm - one entry per JS/TS starter template that ships a
   # package.json (Dependabot's "npm" ecosystem understands pnpm lockfiles too)
   # ---------------------------------------------------------------------

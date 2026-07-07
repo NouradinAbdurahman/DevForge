@@ -1,5 +1,7 @@
-# macOS
+# OS files
 .DS_Store
+Thumbs.db
+desktop.ini
 
 # Generated reports (machine-specific, regenerate with scripts/report.sh
 # and scripts/inventory.sh)

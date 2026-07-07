@@ -6,6 +6,7 @@
 // here - nothing else needs to change.
 import { flutterGenerator } from "./flutter.js";
 import { nextjsGenerator } from "./nextjs.js";
+import { sveltekitGenerator } from "./sveltekit.js";
 import { expressGenerator } from "./express.js";
 import { reactGenerator } from "./react.js";
 import { reactNativeGenerator } from "./react-native.js";
@@ -24,6 +25,7 @@ import { electronGenerator } from "./electron.js";
 export const GENERATORS = [
     flutterGenerator,
     nextjsGenerator,
+    sveltekitGenerator,
     expressGenerator,
     reactGenerator,
     reactNativeGenerator,

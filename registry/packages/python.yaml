@@ -3,9 +3,11 @@ name: python
 description: Python runtime, managed via mise (see mise.toml)
 category: languages
 platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install: { method: mise, id: python }
 dependencies: []
 validate: python3 --version
+versionCommand: "python3 --version"
 repair: mise install python
 update: mise upgrade python
 uninstall: { method: mise, id: python }
@@ -13,6 +15,7 @@ post_install: []
 homepage: "https://www.python.org"
 repository: "https://github.com/python/cpython"
 license: PSF-2.0
+documentation: "https://docs.python.org/3/"
 maintainer: DevForgeKit Registry
 tags: [language, scripting]
 aliases: [python3, cpython]

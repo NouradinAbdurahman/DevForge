@@ -11,6 +11,7 @@ DevForgeKit already knows how to answer.
 ```js
 {
   cwd: string,
+  platform: { id, label, architecture },                              // core/platform's OS Abstraction Layer (v2.1.3) - never a raw process.platform string
   config: { editor, shell, packageManager, aiProvider, aiModel },   // core/config.js's loadConfig()
   workspace: {                                                       // core/workspace/store.js's getActiveWorkspace(), or null
     name, profile, collections, recipes, components,
@@ -18,21 +19,28 @@ DevForgeKit already knows how to answer.
   } | null,
   git: { isRepo: false } | { isRepo: true, branch, changedFiles },    // real `git` calls against `cwd`
   dockerAvailable: boolean,                                           // commandExists("docker")
+  availableGeneratorStacks: string[],                                 // generators/index.js's listGenerators() ids (v2.1.3)
+  recentActivity: { type, summary, timestamp }[],                     // the last few entries from AI memory (v2.1.3) - never chat contents
 
   // only with { full: true }:
   installedComponents: string[],       // every registry package whose validate command currently passes
-  compatibility: { issues, score, verdict, ... }   // core/compatibility/engine.js's scanCompatibility()
+  compatibility: { issues, score, verdict, ... },   // core/compatibility/engine.js's scanCompatibility()
+  registry: { totalComponents, totalCategories, totalCollections, totalProfiles, totalRecipes, qualityScore, ... }  // core/registry.js's getRegistryStats() (v2.1.3)
 }
 ```
 
 ## Why `full` defaults to false
 
-`installedComponents`/`compatibility` require running every installed
-component's `validate` command (~250 shell probes today) plus a
-compatibility scan - genuinely useful for `ai doctor`/`ai analyze`/
+`installedComponents`/`compatibility`/`registry` all require real work -
+running every installed component's `validate` command (~261 shell
+probes today), a compatibility scan, or reading every package/collection/
+profile/recipe YAML file - genuinely useful for `ai doctor`/`ai analyze`/
 `ai optimize`, which explicitly opt in, but wasteful for `ai chat`/
 `ai explain <topic>`, which usually don't need it. Every command in
-`commands/ai.js` decides for itself whether to pass `full: true`.
+`commands/ai.js` decides for itself whether to pass `full: true`. The
+lighter fields above them (`platform`, `availableGeneratorStacks`,
+`recentActivity`) are cheap enough (no I/O, or one small local file read)
+to include in every gather regardless.
 
 ## What this deliberately does not do
 

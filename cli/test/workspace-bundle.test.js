@@ -37,7 +37,7 @@ test("exportWorkspaceBundle produces a real tar.gz that excludes secrets and sna
         const { archivePath, meta } = await exportWorkspaceBundle("acme-backend", outDir);
         assert.ok(existsSync(archivePath));
         assert.equal(meta.name, "acme-backend");
-        assert.equal(meta.workspaceSchemaVersion, 2); // bumped by the Compatibility Engine's `compatibility` field (v1.2.5)
+        assert.equal(meta.workspaceSchemaVersion, 3); // v3: lastUsedAt + healthScore fields (v2.1.8)
 
         const { stdout } = await captureShellCommand(`tar -tzf "${archivePath}"`);
         assert.ok(!stdout.includes("secrets.enc.json"));

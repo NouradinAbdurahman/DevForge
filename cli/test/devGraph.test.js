@@ -17,6 +17,7 @@ import {
     focusNode,
     findConflicts,
     findOrphans,
+    groupOrphansByType,
     renderGraphTree,
     exportGraph,
     verifyGraph,
@@ -196,6 +197,30 @@ test("computeStats finds most depended-upon node", () => {
     assert.ok(graph.stats.mostDependedNode);
 });
 
+// v2.1.4: distribution stats (category/platform/architecture/installed/missing)
+test("computeStats reports installed/missing counts from real node properties", () => {
+    const nodes = [
+        { id: "package:a", type: "package", name: "a", properties: { installed: true } },
+        { id: "package:b", type: "package", name: "b", properties: { installed: false } },
+        { id: "workspace:c", type: "workspace", name: "c", properties: {} } // neither - not a package
+    ];
+    const stats = computeStats(nodes, [], {}, []);
+    assert.equal(stats.installedCount, 1);
+    assert.equal(stats.missingCount, 1);
+});
+
+test("computeStats aggregates category/platform/architecture distribution across nodes", () => {
+    const nodes = [
+        { id: "package:a", type: "package", name: "a", properties: { category: "languages", platforms: ["macos", "linux"], architectures: ["intel"] } },
+        { id: "package:b", type: "package", name: "b", properties: { category: "languages", platforms: ["macos"], architectures: ["apple-silicon"] } },
+        { id: "package:c", type: "package", name: "c", properties: { category: "databases", platforms: ["linux"] } }
+    ];
+    const stats = computeStats(nodes, [], {}, []);
+    assert.deepEqual(stats.byCategory, { languages: 2, databases: 1 });
+    assert.deepEqual(stats.byPlatform, { macos: 2, linux: 2 });
+    assert.deepEqual(stats.byArchitecture, { intel: 1, "apple-silicon": 1 });
+});
+
 // ─── analyzeImpact ────────────────────────────────────────────────────
 
 test("analyzeImpact finds all nodes affected by removing a package", () => {
@@ -329,11 +354,11 @@ test("applyGraphFilter 'installed' returns installed nodes", () => {
     assert.ok(results.every((r) => r.properties?.installed === true));
 });
 
-test("applyGraphFilter 'broken' returns broken/invalid nodes", () => {
+test("applyGraphFilter 'broken' returns nodes with properties.valid === false (v2.1.4: the old healthStatus === 'broken' half was dead - buildGraph() never sets that value)", () => {
     const graph = makeTestGraph();
-    graph.nodes[0].properties.healthStatus = "broken";
+    graph.nodes[0].properties.valid = false;
     const results = applyGraphFilter(graph.nodes, "broken");
-    assert.ok(results.some((r) => r.properties?.healthStatus === "broken"));
+    assert.ok(results.some((r) => r.properties?.valid === false));
 });
 
 test("applyGraphFilter 'workspace' returns workspace type nodes", () => {
@@ -364,6 +389,22 @@ test("applyGraphFilter with unknown filter returns all", () => {
     const graph = makeTestGraph();
     const results = applyGraphFilter(graph.nodes, "nonexistent");
     assert.equal(results.length, graph.nodes.length);
+});
+
+// v2.1.4: 'unused' is now real (installed AND orphaned), using the same
+// computeOrphanNodes() logic findOrphans() uses - it used to always
+// return [] (a hardcoded stub, graph_reverseEmpty(), admitted as much in
+// its own comment).
+test("applyGraphFilter 'unused' returns installed orphan nodes when given the graph's edges", () => {
+    const graph = makeTestGraph();
+    const results = applyGraphFilter(graph.nodes, "unused", graph.edges);
+    assert.equal(results.length, 1);
+    assert.equal(results[0].name, "unused-pkg");
+});
+
+test("applyGraphFilter 'unused' returns [] without edges, rather than guessing", () => {
+    const graph = makeTestGraph();
+    assert.deepEqual(applyGraphFilter(graph.nodes, "unused"), []);
 });
 
 // ─── focusNode ────────────────────────────────────────────────────────
@@ -428,6 +469,33 @@ test("findOrphans returns empty when all nodes are connected", () => {
     graph.nodes = graph.nodes.filter((n) => n.name !== "unused-pkg");
     const orphans = findOrphans(graph);
     assert.equal(orphans.length, 0);
+});
+
+// v2.1.4: snapshot/benchmark are structurally non-orphanable (point-in-time
+// records with no honest "used by" edge); repair records are NOT excluded,
+// since their real touched tools are wired as REPAIRS edges in buildGraph().
+test("findOrphans excludes disconnected snapshot and benchmark nodes, but not disconnected repair nodes", () => {
+    const graph = makeTestGraph();
+    graph.nodes = [
+        ...graph.nodes,
+        { id: "snapshot:s1", type: NODE_TYPES.SNAPSHOT, name: "s1", properties: {} },
+        { id: "benchmark:b1", type: NODE_TYPES.BENCHMARK, name: "b1", properties: {} },
+        { id: "repair:r1", type: NODE_TYPES.REPAIR, name: "r1", properties: {} }
+    ];
+    const orphans = findOrphans(graph);
+    const orphanNames = orphans.map((n) => n.name);
+    assert.ok(!orphanNames.includes("s1"), "snapshot node should be excluded from orphan analysis");
+    assert.ok(!orphanNames.includes("b1"), "benchmark node should be excluded from orphan analysis");
+    assert.ok(orphanNames.includes("r1"), "a disconnected repair node IS a meaningful orphan");
+});
+
+test("groupOrphansByType groups orphan nodes by their type", () => {
+    const graph = makeTestGraph();
+    graph.nodes = [...graph.nodes, { id: "repair:r1", type: NODE_TYPES.REPAIR, name: "r1", properties: {} }];
+    const grouped = groupOrphansByType(findOrphans(graph));
+    assert.deepEqual(Object.keys(grouped).sort(), ["package", "repair"]);
+    assert.equal(grouped.package.length, 1);
+    assert.equal(grouped.package[0].name, "unused-pkg");
 });
 
 // ─── renderGraphTree ──────────────────────────────────────────────────
@@ -501,6 +569,36 @@ test("exportGraph produces valid ASCII tree", () => {
     const tree = exportGraph(graph, "tree");
     assert.ok(typeof tree === "string");
     assert.ok(tree.length > 0);
+});
+
+// v2.1.4: SVG export - real, hand-rolled, well-formed XML (no dependency,
+// no shelling out to Graphviz).
+test("exportGraph produces well-formed SVG with a node box per node and a line per edge", () => {
+    const graph = makeTestGraph();
+    const svg = exportGraph(graph, "svg");
+    assert.ok(svg.startsWith("<svg"));
+    assert.ok(svg.trim().endsWith("</svg>"));
+    assert.equal((svg.match(/<rect/g) || []).length - 1, graph.nodes.length); // -1 for the background rect
+    assert.equal((svg.match(/<line/g) || []).length, graph.edges.length);
+    assert.ok(svg.includes("flutter"));
+});
+
+test("exportGraph SVG escapes node names so they can never break the XML", () => {
+    const graph = makeTestGraph();
+    graph.nodes[0].name = `evil<script>&"'`;
+    const svg = exportGraph(graph, "svg");
+    assert.ok(!svg.includes("<script>"));
+    assert.ok(svg.includes("&lt;script&gt;"));
+});
+
+test("exportGraph produces a placeholder SVG for an empty graph instead of throwing", () => {
+    const svg = exportGraph({ nodes: [], edges: [] }, "svg");
+    assert.ok(svg.startsWith("<svg"));
+});
+
+test("exportGraph throws a PNG-aware error message for an unknown format", () => {
+    const graph = makeTestGraph();
+    assert.throws(() => exportGraph(graph, "png"), /PNG is deliberately not supported/);
 });
 
 test("exportGraph produces valid PlantUML", () => {

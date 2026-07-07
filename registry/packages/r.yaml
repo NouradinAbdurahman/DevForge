@@ -2,19 +2,43 @@ schemaVersion: 1
 name: r
 description: The R programming language for statistical computing
 category: languages
-platforms: [macos, linux]
-install: { method: brew-formula, id: r }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: r
 dependencies: []
 validate: R --version
+versionCommand: R --version
 repair: brew reinstall r
 update: brew upgrade r
-uninstall: { method: brew-formula, id: r }
+uninstall:
+  method: brew-formula
+  id: r
 post_install: []
-homepage: "https://www.r-project.org"
-repository: "https://github.com/r-devel/r-svn"
+homepage: https://www.r-project.org
+repository: https://github.com/r-devel/r-svn
 license: GPL-2.0
+documentation: https://cran.r-project.org/manuals.html
 maintainer: DevForgeKit Registry
-tags: [language, statistics, data-science]
-aliases: []
+tags:
+  - language
+  - statistics
+  - data-science
+aliases:
+  - rlang
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - python
+  - julia
+platformInstall:
+  macos:
+    method: brew-formula
+    id: r
+

@@ -3,12 +3,14 @@
 ## What this repo is
 
 `DevForgeKit` provisions, backs up, restores, updates, validates, and
-releases a complete macOS development workstation. What began as a pure
-shell-script toolkit (this document) is now Layer 1 of a larger platform;
-see [PlatformArchitecture.md](PlatformArchitecture.md) for the Node-based
-Core CLI (`cli/`), the component registry (`registry/`), and the plugin
-system (`plugins/`) built on top of it. Everything in *this* document is
-still accurate and unchanged - Layer 1 was deliberately never rewritten.
+releases a complete development workstation. What began as a pure
+shell-script toolkit for macOS (this document) is now Layer 1 of a
+larger cross-platform platform; see [PlatformArchitecture.md](PlatformArchitecture.md)
+for the Node-based Core CLI (`cli/`), the component registry (`registry/`),
+and the plugin system (`plugins/`) built on top of it. The CLI (Layer 2)
+supports macOS, Linux, and Windows; Layer 1 (this document) remains
+macOS-focused bash. Everything in *this* document is still accurate and
+unchanged - Layer 1 was deliberately never rewritten.
 
 ## Layering
 

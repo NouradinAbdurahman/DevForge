@@ -2,19 +2,43 @@ schemaVersion: 1
 name: kind
 description: Run local Kubernetes clusters using Docker container "nodes"
 category: containers
-platforms: [macos, linux]
-install: { method: brew-formula, id: kind }
-dependencies: [docker]
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: kind
+dependencies:
+  - docker
 validate: kind version
+versionCommand: kind version
 repair: brew reinstall kind
 update: brew upgrade kind
-uninstall: { method: brew-formula, id: kind }
+uninstall:
+  method: brew-formula
+  id: kind
 post_install: []
-homepage: "https://kind.sigs.k8s.io"
-repository: "https://github.com/kubernetes-sigs/kind"
+homepage: https://kind.sigs.k8s.io
+repository: https://github.com/kubernetes-sigs/kind
 license: Apache-2.0
+documentation: https://kind.sigs.k8s.io/docs/
 maintainer: DevForgeKit Registry
-tags: [containers, kubernetes, local-development]
-aliases: []
+tags:
+  - containers
+  - kubernetes
+  - local-development
+aliases:
+  - kind-k8s
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - minikube
+platformInstall:
+  macos:
+    method: brew-formula
+    id: kind
+

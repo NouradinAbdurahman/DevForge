@@ -2,19 +2,43 @@ schemaVersion: 1
 name: procs
 description: A modern replacement for ps
 category: utilities
-platforms: [macos, linux]
-install: { method: brew-formula, id: procs }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: procs
 dependencies: []
 validate: procs --version
+versionCommand: procs --version
 repair: brew reinstall procs
 update: brew upgrade procs
-uninstall: { method: brew-formula, id: procs }
+uninstall:
+  method: brew-formula
+  id: procs
 post_install: []
-homepage: "https://github.com/dalance/procs"
-repository: "https://github.com/dalance/procs"
+homepage: https://github.com/dalance/procs
+repository: https://github.com/dalance/procs
 license: MIT
+documentation: https://github.com/dalance/procs
 maintainer: DevForgeKit Registry
-tags: [utility, cli, monitoring]
-aliases: []
+tags:
+  - utility
+  - cli
+  - monitoring
+aliases:
+  - procs-monitor
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - htop
+  - btop
+platformInstall:
+  macos:
+    method: brew-formula
+    id: procs
+

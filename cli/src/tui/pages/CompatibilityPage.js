@@ -5,7 +5,7 @@
 // PASS/WARNING/FAIL-style sweep), just over a different check.
 import { useState, useEffect } from "react";
 import { Box, Text, useInput } from "ink";
-import { h, Panel, SelectList, KeyValue, KeyHints, Spinner, statusColor, useDetailWidth } from "../components/ui.js";
+import { h, Panel, SelectList, KeyValue, KeyHints, DetailPanel, LoadingState, statusColor, useDetailWidth } from "../components/ui.js";
 import { useStore } from "../store.js";
 import { compatibilitySnapshot, activeWorkspaceName } from "../data.js";
 import { getWorkspace, saveWorkspace } from "../../core/workspace/store.js";
@@ -96,7 +96,7 @@ export function CompatibilityPage({ isActive }) {
                 h(Text, { color: theme.text }, "Cross-tool/cross-version compatibility over every installed component."),
                 h(Box, { marginTop: 1 }, h(KeyHints, { theme, hints: [["s", "scan"], ["F", "repair"]] }))
             ) : null,
-            loading ? h(Box, null, h(Spinner, { theme }), h(Text, { color: theme.accent }, " scanning...")) : null,
+            loading ? h(LoadingState, { label: "scanning...", theme }) : null,
             result && !loading ? h(Box, { flexDirection: "column" },
                 h(Text, { color: theme.textMuted }, `${issues.length} finding(s) - worst severity first:`),
                 h(SelectList, {
@@ -105,31 +105,35 @@ export function CompatibilityPage({ isActive }) {
                     renderItem: (issue, selected) => h(Text, {
                         key: `${issue.tool}-${issue.message}`,
                         backgroundColor: selected && isActive ? theme.selection : undefined,
-                        color: selected && isActive ? theme.selectionText : statusColor(SEVERITY_TO_STATUS[issue.severity], theme)
+                        color: selected && isActive ? theme.selectionText : statusColor(SEVERITY_TO_STATUS[issue.severity], theme),
+                        wrap: "truncate-end"
                     }, `${selected ? "❯ " : "  "}${issue.severity.padEnd(11)} ${issue.tool.padEnd(16)} ${issue.message}`)
                 })
             ) : null
         ),
-        h(Panel, { title: result ? `Score: ${result.score}%` : "Score", theme, width: detailW },
-            result ? h(KeyValue, {
-                theme, labelWidth: 12,
-                pairs: [
-                    ["Verdict", result.verdict, result.verdict === "Healthy" ? theme.success : result.verdict === "Warning" ? theme.warning : theme.error],
-                    ["Pass", result.pass, theme.success],
-                    ["Recommend", result.recommend, theme.textMuted],
-                    ["Warning", result.warn, theme.warning],
-                    ["Critical", result.critical, theme.error],
-                    ["Unsupported", result.unsupported, theme.error]
-                ]
-            }) : h(Text, { color: theme.textMuted }, "Run a scan first (s)."),
-            current ? h(Box, { flexDirection: "column", marginTop: 1 },
-                h(Text, { color: theme.accent, bold: true }, current.tool),
-                h(Text, { color: theme.textMuted, wrap: "wrap" }, current.message),
-                current.recommendation ? h(Text, { color: theme.textMuted, wrap: "wrap" }, `\nRecommendation: ${current.recommendation}`) : null
-            ) : null,
-            h(Box, { marginTop: 1, flexDirection: "column" },
-                h(KeyHints, { theme, hints: [["F", "run 'devforgekit compatibility repair'"]] }),
-                h(Text, { color: theme.textMuted, wrap: "wrap" }, "(install missing requirements, run recommended upgrades) - conflicting-package removal still needs the CLI's confirmation prompt."))
-        )
+        h(DetailPanel, {
+            title: result ? `Score: ${result.score}%` : "Score", theme, width: detailW,
+            emptyText: "Run a scan first (s).",
+            body: result ? h(Box, { flexDirection: "column" },
+                h(KeyValue, {
+                    theme, labelWidth: 12,
+                    pairs: [
+                        ["Verdict", result.verdict, result.verdict === "Healthy" ? theme.success : result.verdict === "Warning" ? theme.warning : theme.error],
+                        ["Pass", result.pass, theme.success],
+                        ["Recommend", result.recommend, theme.textMuted],
+                        ["Warning", result.warn, theme.warning],
+                        ["Critical", result.critical, theme.error],
+                        ["Unsupported", result.unsupported, theme.error]
+                    ]
+                }),
+                current ? h(Box, { flexDirection: "column", marginTop: 1 },
+                    h(Text, { color: theme.accent, bold: true }, current.tool),
+                    h(Text, { color: theme.textMuted, wrap: "wrap" }, current.message),
+                    current.recommendation ? h(Text, { color: theme.textMuted, wrap: "wrap" }, `\nRecommendation: ${current.recommendation}`) : null
+                ) : null
+            ) : undefined,
+            hints: [["F", "run 'devforgekit compatibility repair'"]],
+            footer: h(Text, { color: theme.textMuted, wrap: "wrap" }, "(install missing requirements, run recommended upgrades) - conflicting-package removal still needs the CLI's confirmation prompt.")
+        })
     );
 }

@@ -216,15 +216,16 @@ most of it). No page renders its own copy.
 |---|---|---|
 | Dashboard | `1` | Machine overview: installed count, health score, outdated packages, storage, registry stats, real device info (OS, model, chip, memory, uptime, software update status), recent session actions, update notifications |
 | Workspaces | `w` | Browse/create (`n`) isolated per-project environments, switch (`Enter`), verify (`v`), snapshot (`x`), deactivate (`z`), delete (`D`, press twice) - see [WorkspaceManager.md](WorkspaceManager.md) |
-| Components | `c` | All 250 registry packages: filter by text (`f`) and status (`←`/`→`), inspect details, install/update/remove with live streamed output |
+| Components | `c` | All 261 registry packages: filter by text (`f`) and status (`←`/`→`), inspect details, install/update/remove with live streamed output |
+| Registry | `y` | The registry health scorecard (v2.1.1 Registry Excellence): package/verified/quality counts, coverage percentages (compatibility/documentation/validation/aliases/architecture), the lowest-quality packages worth improving, and actionable recommendations - the dashboard form of `devforgekit registry audit` |
 | Profiles | `p` | All 50 profiles: resolved component list, install (`a`), set default (`s`) |
 | Recipes | `r` | All recipes with a step-by-step preview (install → configure → verify), run (`a`) with live progress and a verify report |
-| Project Generator | `g` | The 16-stack wizard: pick stack → name → per-stack options → confirm; generation suspends the dashboard so the scaffolder owns the terminal. Also lists the static `templates/` |
+| Project Generator | `g` | The 17-stack wizard: pick stack → name → per-stack options → confirm; generation suspends the dashboard so the scaffolder owns the terminal. Also lists the static `templates/` |
 | Plugins | `n` | Everything `discoverPlugins()` finds (valid and invalid with reasons), manifest details, run a plugin command (`x`, suspends) |
 | Doctor | `d` | In-dashboard component diagnostics (`s` scan, `F` scan+repair) with recommended fixes, or hand off to the full `scripts/doctor.sh` (`D`/`X`) |
 | Compatibility | `m` | Cross-tool/cross-version compatibility scan (`s`) with a 5-tier score and issue drill-down; repair (`F`) suspends the dashboard to run the repair plan, since a conflict removal needs a real confirmation prompt - see [CompatibilityEngine.md](CompatibilityEngine.md) |
 | AI Assistant | `e` | Request/response chat (not token-streamed - see [AIAssistant.md](AIAssistant.md)) grounded in this machine's real context; shows a clear empty state when no AI provider is configured |
-| Updates | `u` | Live `brew outdated` list; update one (`a`) via the manifest's own update command, or run the full `scripts/update.sh` (`A`, suspends) |
+| Updates | `u` | Live outdated-package list (Homebrew on macOS, apt/dnf/pacman on Linux, winget/choco/scoop on Windows); update one (`a`) via the manifest's own update command, or run the full `scripts/update.sh` (`A`, suspends) |
 | Inventory | `i` | The Markdown reports `scripts/inventory.sh` writes under `reports/`, with preview and regeneration (`a`, suspends) |
 | Configuration | `o` | Every config field, editable in place (writes through `core/config.js` to `~/.config/devforgekit/config.yaml`); the `tuiTheme` field applies live |
 | Logs | `l` | The session's action log, filterable by level (`←`/`→`), exportable (`e`) to `~/.devforgekit/logs/` |
@@ -242,8 +243,10 @@ global key with no visible hint anywhere in the status bar (it was
 only documented on the Help page) - it's now shown alongside every
 other global key.
 
-- **Global**: `Tab` focus, `↑↓`/`jk` move, `Enter` open, `Esc` back,
-  `/` search, `R` refresh caches, `?` help, `q` quit
+- **Global**: `Tab` focus, `↑↓`/`jk` move, `PgUp`/`PgDn` page-jump,
+  `g`/`G` jump to first/last item, `Enter` open, `Esc` back, `/` search
+  (or a page's own filter, where one exists), `:`/`Ctrl+P` Command
+  Palette, `R` refresh caches, `?` help, `q` quit
 - **Menu focus**: single-letter page shortcuts, shown in the nav as a
   bracketed badge in front of each page's label (`[1] Dashboard`, `[w]
   Workspaces`, `[c] Components`...) instead of a bare trailing
@@ -251,7 +254,14 @@ other global key.
 - **Page focus**: page-specific action keys - every page's own
   bottom-of-panel hint line uses the same `KeyHints` treatment as the
   status bar, so a page's local keys (`a` install, `u` update, `r`
-  remove, `f` filter...) read consistently with the global ones
+  remove, `/` filter...) read consistently with the global ones
+
+`PgUp`/`PgDn`/`g`/`G` work in every `SelectList`/`ScrollList` in the
+dashboard (`components/ui.js`) - one scrolling contract everywhere,
+not a per-page reinvention. `g`/`G` (not raw `Home`/`End` key codes)
+is deliberate: `Home`/`End` aren't reliably reported across terminal
+emulators, while `g`/`G` is the same portable vim/k9s/lazygit
+convention this dashboard's `j`/`k` already borrows.
 
 Single-letter page shortcuts only fire while the menu has focus, so
 page action keys never collide with navigation. While a text field
@@ -286,7 +296,56 @@ the same nested-Text pattern for the same reason.
 `/` from anywhere opens one search across components (using the
 registry's ranked `searchPackages`), profiles, recipes, collections,
 plugins, and generator stacks. Results are grouped by type; `↓` moves
-into the results and `Enter` jumps to the owning page.
+into the results and `Enter` jumps to the owning page. Profiles,
+recipes, collections, plugins, and stacks are ranked with `tui/fuzzy.js`
+(name + description, scattered-character fuzzy matching, not a plain
+substring check) - components and commands keep the registry's/command
+tree's own scored search, since rewriting those cross-cutting core
+algorithms is a bigger change than this dashboard's own UI layer.
+
+A handful of pages own their own local `/` filter instead of opening
+global search (`components`, `commands`, `ai-models` -
+`App.js`'s `PAGES_WITH_LOCAL_FILTER`) - `/` on those pages always means
+"filter what I'm looking at", never global search. This is a static
+list, not a per-keystroke decision: Ink's `useInput` dispatches every
+active handler for one keystroke off the same pre-keystroke render (see
+`components/ui.js`'s `useFilterField` for the full explanation), so a
+page reacting to `/` can never win a race against `Shell`'s own
+already-registered handler for that identical keystroke - the exclusion
+has to be decided ahead of time, not reactively.
+
+## Command Palette
+
+`:` or `Ctrl+P` (`components/CommandPalette.js`) - fuzzy-jump to any
+page or run a global action (refresh, help, about, quit), the same
+"type a few letters, Enter, go anywhere" contract VS Code's Ctrl+P
+popularized. Deliberately distinct from `/` search: the palette answers
+"where do I go / what do I trigger", search answers "what am I looking
+for". Rendered by `Shell` in place of the active page's content, the
+same full-content-swap pattern `SearchPage`/`ModalHost` already use
+(Ink has no floating overlay - see the Architecture section).
+
+## First-run onboarding
+
+A genuinely fresh install (`~/.config/devforgekit/config.yaml` has no
+`onboardingSeen: true` yet) shows a short wizard
+(`components/OnboardingWizard.js`) before the dashboard: welcome, pick a
+theme (live preview via ↑↓), a keyboard-model tour, a what's-on-each-
+page tour, a few suggested profiles, and an optional AI Assistant nudge.
+`Enter`/`→` advances, `←` goes back, `Esc` skips the rest immediately -
+either way, finishing calls `actions.dismissOnboarding()`, which writes
+`onboardingSeen: true` to `config.yaml` synchronously before dispatching,
+so it never shows again on any later launch.
+
+Unlike `ModalHost`/`CommandPalette`/`SearchPage` (which swap only the
+content pane next to `Nav`), onboarding takes over the *entire* screen -
+the same full-screen-replace `Shell` uses for `TooSmallScreen` - since a
+first-run wizard sharing screen space with a still-clickable Nav
+sidebar behind it would undercut the "this is the only thing you can
+interact with right now" intent. `Shell`'s own global `useInput` handler
+returns immediately whenever `state.onboarding` is true, so no global
+shortcut (search, palette, nav letters, refresh) can act silently
+underneath the wizard.
 
 ## Themes
 
@@ -451,14 +510,34 @@ expect, since Ink does support `borderColor` and `<Text color=...>`.
 
 The theme system computes WCAG contrast ratios for text-vs-background
 pairs. Themes with contrast below AA (4.5:1) are flagged in `devforgekit
-theme list` and on import. The `dark` default theme (v1.4.0 redesign)
-uses a real hex palette, checked to have zero AA contrast warnings
-across every text/background pair `checkContrast()` tests, including
-the selection state (`selectionText` on `selection` is >= 4.5:1) -
-the redesign's main fix was exactly this: the old palette's
-`selection: "cyan"` / `selectionText: "black"` pairing was replaced
-because a selected row must always read as crisp white-on-solid-blue,
-never a washed-out combination.
+theme list` and on import. `checkContrast()` checks 8 tokens against
+`background` plus 3 pairs that are actually rendered as real Ink
+`backgroundColor`+`color` combinations rather than just checked against
+the page background: `selectionText`-on-`selection` (every selected row
+in every `SelectList` across the dashboard), and `searchHighlight`/
+`tableHeader`-on-`background` (v2.0.5 - these 3 pairs weren't checked at
+all before, and a v2.0.5 audit found 4 of the 20 built-in themes
+genuinely failing one of them: `arctic` and `paper`'s `searchHighlight`,
+`solarized-dark` and `arctic`'s `tableHeader`, and `github-dark`'s
+`selectionText`-on-`selection` - all fixed, and
+`test/theme.test.js`'s "every built-in theme passes WCAG AA contrast"
+test guards against a future theme edit regressing any of them again.
+The `dark` default theme (v1.4.0 redesign) uses a real hex palette,
+checked to have zero AA contrast warnings across every pair
+`checkContrast()` tests - the redesign's main fix was exactly this: the
+old palette's `selection: "cyan"` / `selectionText: "black"` pairing was
+replaced because a selected row must always read as crisp
+white-on-solid-blue, never a washed-out combination.
+
+**Reduced motion** (v2.0.5, `hooks/useReducedMotion.js`): a dedicated
+context - the same single-purpose pattern `useTerminalSize.js` already
+established, rather than threading this through the full `store.js`
+reducer - read once at launch from `config.yaml`'s `reducedMotion`
+field (toggle it on the Configuration page; like
+`startupAnimationSpeed`, it takes effect on the *next* launch, not
+live). When true, `Spinner` shows one fixed glyph instead of cycling
+frames every 200ms - still communicates "busy" via presence and accent
+color, without the animation itself.
 
 ## Architecture
 
@@ -527,8 +606,8 @@ Design decisions, and why:
   the same pattern lazygit uses for `$EDITOR`. React state doesn't
   survive the remount; the target page reloads fresh data, which is
   what you want after an external operation anyway.
-- **Background probes yield.** "Is X installed" for 250 components
-  means 250 shell probes (~10-15s). They run in small parallel batches
+- **Background probes yield.** "Is X installed" for 261 components
+  means 261 shell probes (~10-15s). They run in small parallel batches
   with explicit timer yields between batches - an unbroken await-chain
   of spawns starves stdin processing enough that keypresses coalesce
   into unmatchable chunks (found via PTY smoke testing). As extra
@@ -536,7 +615,7 @@ Design decisions, and why:
   a coalesced chunk.
 - **Caching with explicit refresh.** Registry YAML and probe results
   are cached per session (`R` drops all caches); Ink re-renders many
-  times a second and re-parsing 250 manifests per render would lag
+  times a second and re-parsing 261 manifests per render would lag
   visibly.
 - **Centralized resize state.** A single `TerminalSizeProvider`
   mounts one `resize` listener (via Ink's `useStdout`, so it targets
@@ -564,9 +643,24 @@ Design decisions, and why:
   The global floor (80×24) always applies; per-page minimums can only
   be higher, never lower.
 - **Memoized components.** `DashboardHeader`, `Nav`, `StatusBar`, and
-  `SelectList` are wrapped in `React.memo` with explicit props
-  (instead of reading context internally), so they only re-render when
-  their own inputs change — not on every store or resize update.
+  `SelectList` are wrapped in `React.memo` with explicit props (instead
+  of reading context internally), so they only re-render when their own
+  inputs change — not on every store or resize update. `StatusBar` is a
+  v2.0.6 fix, not original: it used to call `useStore()` directly, which
+  silently made its own `React.memo` wrapper a no-op - `React.memo` only
+  skips a re-render triggered by the *parent* re-rendering with the same
+  props; it has no effect at all on a component that subscribes to a
+  context directly, since a context update re-renders every consumer
+  regardless of memo. It re-rendered on every single dispatch in the
+  app (busy/notify/log fire constantly during a live install on a
+  completely different page) despite the memo wrapper looking correct
+  at a glance. Converting it to explicit props (`theme`, `page`, `busy`,
+  `toast`, `dismissToast`) from `App.js`'s `Shell`, with `dismissToast`
+  built via the same `useCallback(..., [dispatch])` trick `navigate`
+  already used (so the prop reference stays stable across renders where
+  nothing StatusBar cares about changed), is what actually made the memo
+  effective. Worth checking for the same trap before adding a new
+  `React.memo` wrapper anywhere else in this codebase.
 - **Stable React keys.** List renders use stable identity-based keys
   (e.g. `entry.time + entry.message`, `line + i`) instead of bare
   array indices, preventing reconciliation bugs when items are added,
@@ -576,13 +670,262 @@ Design decisions, and why:
 
 - First frame renders in well under 500ms (test-asserted; typically
   ~150ms): only registry YAML parsing happens before paint.
-- Install-state probing, `brew outdated`, and disk stats resolve in the
+- Install-state probing, outdated-package checks, and disk stats resolve in the
   background; affected numbers show "checking..." / spinners until they
   land.
 - Terminal resize events are debounced to a single re-render ~40ms
   after a burst settles, and memoized components skip re-renders when
   their props haven't changed — keeping resize smooth even on rapid
   window drags.
+
+## v2.1.0 UX & Product Consistency Audit
+
+A polish-only pass (no new features) auditing every page against
+`components/ui.js`'s own conventions for wording, spacing, color, key
+hints, navigation, and destructive-action safety - the goal being that
+switching pages never feels like switching apps. Findings came from five
+independent page-by-page audits (each checking a batch of pages against
+the shared component contract), then fixed in place and re-verified
+against the full test suite after each batch. Representative fixes,
+grouped by category:
+
+- **A real bug, not just a style nit**: `AIDiagnosticsPage`'s scan used
+  `"WARN"` as a status value, but `statusColor()`/`STATUS_ICON` only
+  recognize `"WARNING"` - every warning-level check row silently rendered
+  in muted gray instead of the warning color, indistinguishable from
+  passing rows at a glance.
+- **Three independent copies of the same AI-health severity mapping**
+  (`DashboardPage`, `AIStatusCard`, `commands/ai.js`'s `ai status`) had
+  quietly drifted - one of them didn't classify `"invalid-provider"` as
+  an error the other two did. Replaced with one canonical
+  `aiHealthTone(status)` export (`core/ai/validation.js`) all three now
+  call, so the CLI and the dashboard can never disagree about the same
+  fact again (the standing principle this codebase already applies
+  elsewhere - see `docs/PlatformArchitecture.md`).
+- **Hand-rolled list navigation**: `AICredentialsPage` and
+  `AIProvidersPage` each drove their provider list with a bespoke
+  `key.upArrow`/`key.downArrow` handler, silently missing the `j`/`k`,
+  `PageUp`/`PageDown`, and `g`/`G` every other list in the app gets for
+  free from `SelectList`. Both now use `SelectList` like everywhere else.
+- **`statusColor()` extended** to also accept the app's other canonical
+  severity vocabulary - the lowercase `"success"`/`"warning"`/`"error"`
+  toast/log levels `notify()`/`actions.log()` use everywhere - so
+  `LogsPage` no longer needs its own copy (it silently miscolored
+  `"success"`/`"warning"` entries as muted gray before, since the
+  original `statusColor()` only recognized uppercase `"WARNING"`).
+  `AICapabilitiesPage`, `AICredentialsPage`, and `PluginsPage`'s
+  hand-rolled ✓/✗ tone pairs now call the shared helper too.
+- **Wording standardized**: "No provider configured" (was "No provider
+  active" on one AI page, "No provider configured" on others); dropped
+  inconsistent trailing periods from toast messages across the AI pages,
+  Updates, and Commands (the app's dominant toast style never ends in a
+  period); `CommandsPage`'s local filter now says "filter" (was
+  "search"), matching `FilterBar`'s own vocabulary and every other
+  filterable page; `HelpPage`'s documented Logs shortcut (`←→`) now
+  matches what `LogsPage` actually renders (`←/→`).
+  `AboutPage`'s stale hardcoded `"(v1.2.3)"` dashboard-version mention
+  (from the dashboard's very first release) was removed.
+- **Loading/empty/error states unified**: `CompatibilityPage`/`DoctorPage`
+  had hand-rolled `Spinner`+accent-text loading rows instead of
+  `LoadingState` (a different color than the shared component would have
+  used); `DoctorPage`'s scan now renders through `InstallProgress` like
+  every other scan/install flow; `DashboardPage`'s registry-load failure
+  and `AboutPage`'s previously-silent registry-load failure both now
+  render through `ErrorState`; `UpdatesPage`'s "Everything is up to
+  date." became a real `EmptyState`; `RecipesPage`'s recipe-expansion
+  failure (previously swallowed with no visible message at all) now
+  surfaces through the same pattern `ProfilesPage` already used.
+- **`ProfilesPage`/`RecipesPage` detail panels rebuilt on `DetailPanel`**
+  instead of hand-rolled `Panel`+`KeyValue`+manual `Box{marginTop:1}`
+  chains, matching `WorkspacePage`/`CompatibilityPage`'s existing pattern
+  - same spacing, same empty-state wording, for free.
+- **A safety inconsistency**: `ComponentsPage`'s `r` (remove) uninstalled
+  immediately with no confirmation at all, while `WorkspacePage`'s
+  equally destructive delete required a deliberate second keypress.
+  `ComponentsPage` now confirms via `actions.confirmAsync` (previously
+  defined in `store.js` but never actually called anywhere) before
+  removing anything - `WorkspacePage`'s own press-twice pattern was left
+  as-is deliberately (deleting a workspace also destroys its secrets/
+  snapshot history, a meaningfully higher-stakes action that reasonably
+  warrants its own, different guard rather than converging both onto one
+  pattern for its own sake).
+- **Silent "busy" states made visible**: `WorkspacePage`'s switch/verify
+  actions blocked re-entrancy via a `busy` flag that was never actually
+  rendered anywhere; `AIOverviewPage`'s mount-time health check had the
+  same gap (plus two dead `statusText()`/`statusColor()` helpers that
+  were clearly meant to render it and never got wired up). Both now show
+  a `LoadingState` while the action runs, the same affordance
+  `AICredentialsPage`/`AIProvidersPage`'s "testing..." already used.
+
+See `cli/test/tui.test.js`/`tui-resize.test.js` for the regression
+coverage this pass ran against - the full suite stayed green throughout,
+re-verified after every batch of fixes rather than only at the end.
+
+## v2.1.1 Registry Excellence: the Registry page and a real page-height lesson
+
+The new Registry page (`y`) surfaces the registry health scorecard
+(package/verified/quality counts, coverage percentages, lowest-quality
+packages, recommendations) that `devforgekit registry audit` prints -
+see `docs/Registry.md` and `docs/PlatformArchitecture.md` section 3 for
+the underlying data. Built deliberately compact: one `Panel`, not four.
+
+**The lesson worth recording**: an earlier revision spread this across
+four stacked/side-by-side panels (a health `KeyValue`, a variable-height
+wrapped Recommendations block, a 3-column `Table`, and a categories/tags
+row) - individually reasonable, but the *combined* height exceeded this
+app's own documented worst-case content budget (`PAGE_MIN_SIZE`, see
+`hooks/useTerminalSize.js`). Past that budget, Ink's Yoga layout does not
+cleanly truncate from the bottom the way a scrollable view would; it
+silently drops or merges rows from wherever the layout ran out of room -
+observed as specific `KeyValue` rows vanishing (not always the same one)
+and a row's trailing text bleeding onto the next row's line, e.g.
+`Average Quality        77%2%)` (the `2%)` is the tail of a *different*,
+vanished row's `(2%)` value). This is a genuine, reproducible Ink
+behavior, not speculation: the exact same corruption pattern was
+confirmed on the pre-existing, shipped `DashboardPage` when forced to
+render at exactly the documented 24-row floor with no debounced resize
+settle - `cli/test/tui-resize.test.js`'s whole suite exists specifically
+because this class of bug is invisible in code review and only shows up
+by actually rendering at real terminal sizes. The fix was straightforward
+once diagnosed: cut the page down to one panel with condensed rows
+(coverage percentages folded into one text line, recommendations capped
+to 2, a 3-row "needs attention" list instead of a `Table`) - comfortably
+inside every page's minimum budget, verified render-clean from 80x24 up.
+**Takeaway for any new page**: total content height (every panel's
+border + title + rows, summed) must fit `PAGE_MIN_SIZE`'s worst case,
+not just "looks fine at my own terminal size" - render it at the actual
+floor (`renderApp` + `instance.stdout.rows = <floor>`) before trusting it.
+
+## v2.1.3.1 AI Chat Rendering: a real Markdown renderer, not raw LLM output
+
+Before this, the AI Assistant's Chat page (`e`) printed an assistant
+message's raw string straight into a `<Text>` - so a response containing
+`## Section`, `**bold**`, a fenced ` ```bash ` block, a Markdown table, or
+an HTML `<br>` showed those literal characters on screen instead of
+anything resembling formatted output. This was a real, reported gap: the
+model's *answers* were fine, but the *presentation* looked unfinished.
+
+**The fix is a real rendering pipeline, not a few regex replacements**:
+
+- `tui/lib/markdown.js`'s `parseMarkdown(text)` is a pure, dependency-free
+  parser (no Ink/React) - text in, a plain array of typed blocks out
+  (`heading`/`paragraph`/`bullet-list`/`numbered-list`/`code-block`/
+  `table`/`divider`, each paragraph/list-item further broken into
+  bold/italic/inline-code/link `segments`). Hand-rolled rather than a new
+  dependency, the same precedent `providers/openaiCompatible.js`'s own
+  SSE parser already set for "hand-roll the one format actually needed
+  instead of pulling in a library." `<br>` becomes a real line break;
+  every other HTML tag is stripped outright rather than printed literally.
+- `tui/components/markdown.js`'s `MarkdownText({ text, theme })` turns
+  those blocks into real Ink elements - a heading gets a bottom border
+  (levels 1-2) via the same "text-plus-border-only-Box" trick as the
+  Divider block below it, a code block gets a rounded border, a table
+  reuses the *existing* shared `Table` component (`components/ui.js`),
+  bullets get a consistent `•` marker, and every paragraph/list item
+  routes through one shared `InlineSegments` renderer for bold/italic/
+  inline-code/link spans - the same "nested Text is one reflowable run"
+  trick `KeyValue` already relies on, so long styled runs wrap as a unit
+  instead of each span getting its own flex-shrink share of the width.
+  This is the one component any future page should reach for whenever it
+  needs to show AI-authored text - never print a raw model string again.
+- `AIPage.js`'s message list now routes every **assistant** message
+  through `MarkdownText`; **user** messages (typed by the person, not the
+  model) stay as plain text - there's nothing to render there.
+- A TUI-specific system prompt addendum (`core/ai/prompts/library.js`'s
+  `TUI_SYSTEM_ADDENDUM`, layered in only when a caller passes
+  `{ surface: "tui" }` to `buildPrompt`) asks the model itself for
+  terminal-shaped output in the first place - concise, plain-text
+  headings, no Markdown tables, no HTML, commands in their own fenced
+  block, no repeating what's already on screen (provider/model/directory/
+  health), no chatbot filler ("Great question!"). The renderer is a real
+  safety net for whatever formatting still shows up regardless; the
+  prompt reduces how much there is to catch. `AIPage.js`'s
+  `createChatSession({ ..., surface: "tui" })` is the only caller that
+  opts in - the plain CLI `ai chat` REPL is unaffected.
+
+The chat input line moved at the same time: it used to be a detached row
+below *both* the Chat and Context panels, with no visual link to the
+conversation feeding it - a real, reported "where do I type" confusion.
+It now lives inside the Chat panel itself, under the transcript, with a
+`❯` prompt marker.
+
+## v2.1.3.2 Quick Actions: a visibility bug, and another real row-budget lesson
+
+Reported immediately after v2.1.3.1: the Chat page's `1 Doctor · 2
+Generate · 3 Planner · 4 Explain · 5 Review · 6 Optimize · 7 Fix` hint
+row only ever rendered inside the *empty-state* welcome message (`messages.length
+=== 0`) - so it visually vanished the moment a first message was sent,
+even though the underlying `1`-`7` keyboard shortcuts (gated on the input
+field being empty, not on message count) kept working the whole time.
+The fix moved the list into the Context panel, which is always visible
+regardless of conversation length.
+
+That change immediately reproduced the exact Ink row-budget corruption
+`docs/TUI.md`'s v2.1.1 note and `AIOverviewPage`'s Health Score both
+already hit: adding ~8 rows (`Quick Actions` label + 7 action rows) to
+the narrow Context panel (`useDetailWidth`, ~26-42 columns depending on
+terminal width) pushed the page's real content past its declared
+`PAGE_MIN_SIZE` floor of 24 rows, and Ink silently corrupted the KeyValue
+rows above it (`Provider`/`Workspace` vanished, quick-action lines bled
+into each other - `1 Doctortions`, `3 Plannere`) rather than truncating
+cleanly. Bisecting by actually rendering (`renderApp` + `instance.stdout.rows
+= N` + emitting `resize`) found the real threshold: corrupt at 30 rows,
+clean from 32 up. `hooks/useTerminalSize.js`'s `ai` entry is now `{
+columns: 80, rows: 34 }` (30 + a safety margin) - below that floor the
+page now shows the ordinary "resize your terminal" placeholder instead of
+ever rendering corrupted content. **Takeaway, restated a third time
+because it keeps being the actual root cause**: a page's true row
+requirement has to be measured by rendering it at a candidate floor and
+checking for corruption, never estimated from "how many lines does this
+content look like on paper."
+
+## v2.1.4 Environment Graph: a new page, and a real test-isolation lesson
+
+The Environment Graph (`G`) is a genuinely new dashboard page - before
+this, the graph (see `docs/EnvironmentGraph.md`) was CLI-only. It follows
+the established list+detail shape (`CompatibilityPage`/`ComponentsPage`):
+a searchable node list on the left, a detail panel on the right showing
+the highlighted node's type/category/installed/quality/platforms plus
+its real dependents (`analyzeImpact()`). `F` forces a rebuild bypassing
+the 30-minute cache; `x` asks AI to explain the highlighted node.
+
+**The lesson worth recording**: this page's underlying build is a real
+~15-20s scan (the same one `graph stats` pays on the CLI side), auto-
+triggered on mount the same way `CompatibilityPage`'s own scan already
+is. Writing an automated test for it surfaced a real test-isolation
+issue, not a product bug: a test that navigates to this page and
+unmounts quickly (checking only the pre-build UI) leaves that real,
+~15-20s background build still running in the same Node process - and
+`node --test` runs every test in a file in one process, so a still-
+running background scan from an *earlier* test can measurably increase
+CPU/event-loop contention during a *later*, unrelated, timing-sensitive
+test (this suite already had one such test, self-documented as "flaky
+under full-suite load" from an unrelated background compatibility scan -
+this page's heavier footprint made it flake more often). Two real fixes,
+not one:
+
+1. **An unmount guard** (`useRef` `mountedRef`, not a plain object -
+   a plain `const` inside the component body is recreated every render
+   and would silently stop guarding calls made from a later render's
+   closure, e.g. the `F` key's own `load({refresh:true})`). Every state
+   update and `actions.log()`/`actions.notify()` dispatch after the async
+   build resolves is skipped if the page already unmounted.
+2. **One test, not two, exercises the real build.** An earlier draft had
+   a separate "fast" test that checked the pre-build UI and unmounted
+   after 60ms, plus a comprehensive "slow" test that waited for the real
+   result - each spawning its own independent ~15-20s background scan.
+   Consolidating into one test (which checks the initial state, *then*
+   waits for the real result) roughly halves the aggregate background-
+   scan pressure within the file. Combined with placing this one
+   remaining slow test at the very end of the file (not adjacent to the
+   pre-existing flaky test) and raising the shared `withTempHome()`
+   cleanup helper's `rmSync` retry budget (5×200ms → 10×300ms, since a
+   real scan's own file writes can still be landing the instant a test's
+   temp-HOME cleanup starts), five consecutive full-file runs came back
+   clean. **Takeaway**: a page whose real data path is genuinely slow
+   needs its test to *own* that slowness deliberately (one test, waited
+   out fully, placed away from timing-sensitive neighbors) rather than
+   letting it leak into the background as an unawaited side effect.
 
 ## Session logs
 

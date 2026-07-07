@@ -2,19 +2,41 @@ schemaVersion: 1
 name: zed
 description: A high-performance, multiplayer code editor
 category: editors
-platforms: [macos]
-install: { method: brew-cask, id: zed }
+platforms:
+  - macos
+architectures:
+  - intel
+  - apple-silicon
+install:
+  method: brew-cask
+  id: zed
 dependencies: []
-validate: "test -d '/Applications/Zed.app'"
+validate: test -d '/Applications/Zed.app'
+versionCommand: zed --version
 repair: brew reinstall --cask zed
 update: brew upgrade --cask zed
-uninstall: { method: brew-cask, id: zed }
+uninstall:
+  method: brew-cask
+  id: zed
 post_install: []
-homepage: "https://zed.dev"
-repository: "https://github.com/zed-industries/zed"
+homepage: https://zed.dev
+repository: https://github.com/zed-industries/zed
 license: GPL-3.0
+documentation: https://zed.dev/docs
 maintainer: DevForgeKit Registry
-tags: [editor, ide]
-aliases: []
+tags:
+  - editor
+  - ide
+aliases:
+  - zed-editor
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - vscode
+  - cursor
+  - neovim
+platformInstall:
+  macos:
+    method: brew-cask
+    id: zed
+

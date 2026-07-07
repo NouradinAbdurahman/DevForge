@@ -8,7 +8,9 @@
 // would be dishonest (see docs/TUI.md's scoping notes).
 import { useState } from "react";
 import { Box, Text, useInput } from "ink";
-import { h, Panel, SelectList, KeyValue, KeyHints, ProgressBar, statusColor, useDetailWidth } from "../components/ui.js";
+import { h, Panel, SelectList, DetailPanel, InstallProgress, statusColor, useDetailWidth } from "../components/ui.js";
+
+const EMPTY_TEXT = "No recipes found.";
 import { useStore } from "../store.js";
 import { registrySnapshot } from "../data.js";
 import { expandRecipe } from "../../core/registry.js";
@@ -27,10 +29,12 @@ export function RecipesPage({ isActive }) {
     const current = highlighted && recipes.includes(highlighted) ? highlighted : recipes[0] || null;
 
     let expanded = [];
+    let expandError = null;
     try {
         if (current) expanded = expandRecipe(current);
-    } catch {
+    } catch (err) {
         expanded = [];
+        expandError = err.message;
     }
 
     async function runRecipe(recipe) {
@@ -98,6 +102,7 @@ export function RecipesPage({ isActive }) {
                 // list used; SelectList's own scroll window still
                 // kicks in if more recipes exist than fit.
                 items: recipes, isActive, height: 8, theme,
+                emptyText: EMPTY_TEXT,
                 onHighlight: setHighlighted,
                 // A two-line card per recipe (icon + name, then the
                 // description indented underneath) instead of cramming
@@ -122,31 +127,39 @@ export function RecipesPage({ isActive }) {
                 }
             })
         ),
-        h(Panel, { title: current ? `Recipe: ${current.icon ? `${current.icon} ` : ""}${current.name}` : "Details", theme, width: detailW },
-            current ? h(Box, { flexDirection: "column" },
-                h(Text, { color: theme.text, wrap: "wrap" }, current.description || ""),
-                h(Text, { color: theme.accent, bold: true }, "\nWhat running this will do:"),
-                h(KeyValue, {
-                    theme, labelWidth: 13,
-                    pairs: [
-                        ["1. install", `${expanded.length} components (deps resolved)`],
-                        ["2. configure", (current.configure || []).join(", ") || "nothing"],
-                        ["3. verify", current.verify !== false ? "health-check every component" : "skipped"],
-                        ["4. settings", current.settings ? Object.entries(current.settings).map(([k, v]) => `${k}=${v}`).join(" ") : "none"]
-                    ]
-                }),
-                h(Text, { color: theme.textMuted, wrap: "wrap" }, `\n${expanded.slice(0, 16).join(", ")}${expanded.length > 16 ? ", ..." : ""}`),
-                h(Box, { marginTop: 1 }, h(KeyHints, { theme, hints: [["a", "run recipe"]] })),
-                running ? h(Box, { flexDirection: "column", marginTop: 1 },
-                    h(ProgressBar, { value: running.step, total: running.total, theme, label: running.phase }),
-                    ...running.lines.map((line, i) => h(Text, { key: line + i, color: theme.textMuted }, line.slice(0, 46)))
-                ) : null,
+        h(DetailPanel, {
+            title: current ? `Recipe: ${current.icon ? `${current.icon} ` : ""}${current.name}` : "Details",
+            theme, width: detailW,
+            emptyText: EMPTY_TEXT,
+            sections: current ? [{
+                pairs: [["Description", current.description || "none"]]
+            }, {
+                title: "What running this will do",
+                labelWidth: 13,
+                pairs: expandError ? [["1. install", `error: ${expandError}`, theme.error]] : [
+                    ["1. install", `${expanded.length} components (deps resolved)`],
+                    ["2. configure", (current.configure || []).join(", ") || "nothing"],
+                    ["3. verify", current.verify !== false ? "health-check every component" : "skipped"],
+                    ["4. settings", current.settings ? Object.entries(current.settings).map(([k, v]) => `${k}=${v}`).join(" ") : "none"],
+                    ["Components", `${expanded.slice(0, 16).join(", ")}${expanded.length > 16 ? ", ..." : ""}`]
+                ]
+            }] : [],
+            hints: current ? [["a", "run recipe"]] : undefined,
+            footer: h(Box, { flexDirection: "column" },
+                running ? h(InstallProgress, {
+                    theme,
+                    label: `Running recipe: ${current ? current.name : ""}`,
+                    unit: running.phase,
+                    value: running.step,
+                    total: running.total,
+                    lines: running.lines.map((line) => line.slice(0, 46))
+                }) : null,
                 lastVerify && !running ? h(Box, { flexDirection: "column", marginTop: 1 },
                     h(Text, { color: theme.accent, bold: true }, `Last verify: ${lastVerify.passed} pass / ${lastVerify.failed} fail`),
                     ...lastVerify.results.slice(0, 8).map((r) =>
                         h(Text, { key: r.name, color: statusColor(r.status === "pass" ? "PASS" : r.status === "fail" ? "FAIL" : "WARNING", theme) }, ` ${r.status.padEnd(8)} ${r.name}`))
                 ) : null
-            ) : h(Text, { color: theme.textMuted }, "No recipes found.")
-        )
+            )
+        })
     );
 }

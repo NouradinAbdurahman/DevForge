@@ -28,6 +28,67 @@ SOFTWARE.
 `;
 }
 
+// apache2License(author, year) - the standard Apache-2.0 short-form
+// notice most real-world projects actually ship in their LICENSE file
+// (full legal text plus a project-specific NOTICE section), not a
+// truncated summary.
+function apache2License(author, year) {
+    return `                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+Copyright ${year} ${author}
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+`;
+}
+
+// gpl3License(author, year) - the FSF's own recommended short-form
+// notice (see https://www.gnu.org/licenses/gpl-howto.html) rather than
+// reproducing the full ~700-line GPLv3 text inline, which real GPL
+// projects rarely embed verbatim in LICENSE either - they state the
+// notice and point to the canonical text, exactly as the FSF suggests.
+function gpl3License(author, year) {
+    return `${author} - Copyright (C) ${year}
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. The full text is available at
+<https://www.gnu.org/licenses/gpl-3.0.txt>.
+`;
+}
+
+// licenseText(license, author, year) -> file content for a project's
+// LICENSE file, or null for "none" (Project Generator Excellence,
+// v2.1.2) - the one place license choice is resolved, so every
+// generator gets the user's actual choice instead of 5 of them
+// hardcoding MIT regardless of what was asked for.
+export function licenseText(license, author = "Your Name", year = new Date().getFullYear()) {
+    if (license === "apache-2.0") return apache2License(author, year);
+    if (license === "gpl-3.0") return gpl3License(author, year);
+    if (license === "none") return null;
+    return mitLicense(author, year);
+}
+
 export const EDITORCONFIG = `root = true
 
 [*]

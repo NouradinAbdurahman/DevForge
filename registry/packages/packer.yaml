@@ -2,19 +2,46 @@ schemaVersion: 1
 name: packer
 description: HashiCorp's tool for building machine images
 category: devops
-platforms: [macos, linux]
-install: { method: brew-formula, id: "hashicorp/tap/packer", tap: "hashicorp/tap" }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: hashicorp/tap/packer
+  tap: hashicorp/tap
 dependencies: []
 validate: packer version
-repair: "brew reinstall hashicorp/tap/packer"
-update: "brew upgrade hashicorp/tap/packer"
-uninstall: { method: brew-formula, id: "hashicorp/tap/packer", tap: "hashicorp/tap" }
+versionCommand: packer --version
+repair: brew reinstall hashicorp/tap/packer
+update: brew upgrade hashicorp/tap/packer
+uninstall:
+  method: brew-formula
+  id: hashicorp/tap/packer
+  tap: hashicorp/tap
 post_install: []
-homepage: "https://www.packer.io"
-repository: "https://github.com/hashicorp/packer"
+homepage: https://www.packer.io
+repository: https://github.com/hashicorp/packer
 license: BUSL-1.1
+documentation: https://developer.hashicorp.com/packer/docs
 maintainer: DevForgeKit Registry
-tags: [devops, infrastructure-as-code, hashicorp]
-aliases: []
+tags:
+  - devops
+  - infrastructure-as-code
+  - hashicorp
+aliases:
+  - packer-hashicorp
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - terraform
+  - ansible
+platformInstall:
+  macos:
+    method: brew-formula
+    id: hashicorp/tap/packer
+    tap: hashicorp/tap
+

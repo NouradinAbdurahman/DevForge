@@ -2,20 +2,52 @@ schemaVersion: 1
 name: fd
 description: A simple, fast, and user-friendly alternative to find
 category: utilities
-platforms: [macos, linux]
-install: { method: brew-formula, id: fd }
+platforms:
+  - macos
+  - linux
+  - windows
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: fd
 dependencies: []
 validate: fd --version
+versionCommand: fd --version
 repair: brew reinstall fd
 update: brew upgrade fd
-uninstall: { method: brew-formula, id: fd }
+uninstall:
+  method: brew-formula
+  id: fd
 post_install: []
-homepage: "https://github.com/sharkdp/fd"
-repository: "https://github.com/sharkdp/fd"
+homepage: https://github.com/sharkdp/fd
+repository: https://github.com/sharkdp/fd
 license: MIT
+documentation: https://github.com/sharkdp/fd
 maintainer: DevForgeKit Registry
-tags: [utility, search, cli]
-aliases: []
+tags:
+  - utility
+  - search
+  - cli
+aliases:
+  - fdfind
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - fzf
 ciVerified: true
+platformInstall:
+  macos:
+    method: brew-formula
+    id: fd
+  linux:
+    method: apt
+    id: fd-find
+  windows:
+    method: winget
+    id: sharkdp.fd
+

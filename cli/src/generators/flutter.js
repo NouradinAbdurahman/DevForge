@@ -7,7 +7,7 @@
 // build (serves `flutter build web` output via nginx).
 import { runShellCommand } from "../core/shell.js";
 import { select, confirm } from "../lib/prompts.js";
-import { vscodeSettings, vscodeExtensions } from "./shared.js";
+import { EDITORCONFIG, vscodeSettings, vscodeExtensions } from "./shared.js";
 
 async function promptOptions(flags) {
     const state = flags.state || await select("State management?", [
@@ -288,6 +288,8 @@ export const flutterGenerator = {
     id: "flutter",
     label: "Flutter",
     description: "Clean Architecture, Riverpod/Bloc, Supabase/Firebase, CI/CD, testing, linting",
+    tags: ["mobile", "dart", "ios", "android", "cross-platform"],
+    recommends: ["firebase", "supabase", "android-studio", "dart"],
     requiresTool: { command: "flutter", hint: "Install it with: devforgekit component install flutter" },
     compatibilityCheck: ["flutter"],
     promptOptions,
@@ -316,6 +318,7 @@ export const flutterGenerator = {
             { path: "lib/data/repositories/service_stub.dart", content: serviceStub(name, options.backend) },
             { path: "test/widget_test.dart", content: widgetTest(name, options) },
             { path: ".github/workflows/ci.yml", content: ciWorkflow() },
+            { path: ".editorconfig", content: EDITORCONFIG },
             { path: ".vscode/settings.json", content: vscodeSettings({ "dart.lineLength": 100 }) },
             { path: ".vscode/extensions.json", content: vscodeExtensions(["dart-code.dart-code", "dart-code.flutter"]) },
             {

@@ -1,0 +1,7 @@
+schemaVersion: 1
+name: fzf
+# All three pairings are documented directly in fzf's own README/wiki
+# (ripgrep as the default reload/search backend, zoxide's own docs suggesting
+# `fzf` for its interactive `zi` mode, `bat` as the canonical `--preview`
+# command in fzf's examples) - not speculative pairings.
+recommends: [ripgrep, zoxide, bat]

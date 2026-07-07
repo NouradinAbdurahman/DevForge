@@ -1,0 +1,3 @@
+schemaVersion: 1
+name: swift
+recommends: [swiftlint, swiftformat, xcbeautify, xcodegen]

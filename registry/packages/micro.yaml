@@ -2,19 +2,41 @@ schemaVersion: 1
 name: micro
 description: A modern and intuitive terminal-based text editor
 category: editors
-platforms: [macos, linux]
-install: { method: brew-formula, id: micro }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: micro
 dependencies: []
 validate: micro --version
+versionCommand: micro --version
 repair: brew reinstall micro
 update: brew upgrade micro
-uninstall: { method: brew-formula, id: micro }
+uninstall:
+  method: brew-formula
+  id: micro
 post_install: []
-homepage: "https://micro-editor.github.io"
-repository: "https://github.com/zyedidia/micro"
+homepage: https://micro-editor.github.io
+repository: https://github.com/zyedidia/micro
 license: MIT
+documentation: https://github.com/zyedidia/micro/tree/master/runtime/help
 maintainer: DevForgeKit Registry
-tags: [editor, terminal]
-aliases: []
+tags:
+  - editor
+  - terminal
+aliases:
+  - micro-editor
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - neovim
+platformInstall:
+  macos:
+    method: brew-formula
+    id: micro
+

@@ -5,7 +5,7 @@
 // Layer 1's, not re-rendered here).
 import { useState } from "react";
 import { Box, Text, useInput } from "ink";
-import { h, Panel, SelectList, KeyValue, KeyHints, ProgressBar, statusColor, Spinner, useDetailWidth } from "../components/ui.js";
+import { h, Panel, SelectList, KeyValue, KeyHints, DetailPanel, InstallProgress, statusColor, useDetailWidth } from "../components/ui.js";
 import { useStore } from "../store.js";
 import { registrySnapshot, getPackageSafe } from "../data.js";
 import { validate, repair } from "../../core/installer.js";
@@ -85,10 +85,7 @@ export function DoctorPage({ isActive }) {
                     hints: [["s", "scan"], ["F", "scan + auto-repair"], ["D", "full doctor.sh"], ["X", "full doctor.sh --fix"]]
                 }))
             ) : null,
-            progress ? h(Box, { flexDirection: "column" },
-                h(Box, null, h(Spinner, { theme }), h(Text, { color: theme.accent }, " probing components...")),
-                h(ProgressBar, { value: progress.done, total: progress.total, theme, label: "checks" })
-            ) : null,
+            progress ? h(InstallProgress, { label: "Probing components...", unit: "checks", value: progress.done, total: progress.total, theme }) : null,
             results ? h(Box, { flexDirection: "column" },
                 h(Text, { color: theme.textMuted }, `${issues.length} issue(s), ${results.length - issues.length} passing - issues first:`),
                 h(SelectList, {
@@ -97,35 +94,40 @@ export function DoctorPage({ isActive }) {
                     renderItem: (r, selected) => h(Text, {
                         key: r.name,
                         backgroundColor: selected && isActive ? theme.selection : undefined,
-                        color: selected && isActive ? theme.selectionText : statusColor(r.status, theme)
+                        color: selected && isActive ? theme.selectionText : statusColor(r.status, theme),
+                        wrap: "truncate-end"
                     }, `${selected ? "❯ " : "  "}${r.status.padEnd(8)} ${r.name.padEnd(22)} ${r.note || r.fix}`)
                 })
             ) : null
         ),
-        h(Panel, { title: tally ? `Health: ${tally.score}%` : "Health", theme, width: detailW },
-            tally ? h(KeyValue, {
-                theme, labelWidth: 10,
-                pairs: [
-                    ["Verdict", tally.verdict, tally.score >= 90 ? theme.success : tally.score >= 70 ? theme.warning : theme.error],
-                    ["Pass", tally.pass, theme.success],
-                    ["Warnings", tally.warn, theme.warning],
-                    ["Fail", tally.fail, theme.error]
-                ]
-            }) : h(Text, { color: theme.textMuted }, "Run a scan first (s)."),
-            current && pkg ? h(Box, { flexDirection: "column", marginTop: 1 },
-                h(Text, { color: theme.accent, bold: true }, current.name),
-                h(Text, { color: theme.textMuted, wrap: "wrap" },
-                    current.status === "PASS"
-                        ? "Healthy."
-                        : pkg.repair
-                            ? `Recommended fix: ${pkg.repair} (press F to run repairs)`
-                            : pkg.install
-                                ? "Not installed or failing - install it from the Components page (c)."
-                                : "No repair command declared for this component."),
-                h(Text, { color: theme.textMuted, wrap: "wrap" }, pkg.documentation ? `Docs: ${pkg.documentation}` : "")
-            ) : null,
-            h(Text, { color: theme.textMuted, wrap: "wrap" },
+        h(DetailPanel, {
+            title: tally ? `Health: ${tally.score}%` : "Health", theme, width: detailW,
+            emptyText: "Run a scan first (s).",
+            body: tally ? h(Box, { flexDirection: "column" },
+                h(KeyValue, {
+                    theme, labelWidth: 10,
+                    pairs: [
+                        ["Verdict", tally.verdict, tally.score >= 90 ? theme.success : tally.score >= 70 ? theme.warning : theme.error],
+                        ["Pass", tally.pass, theme.success],
+                        ["Warnings", tally.warn, theme.warning],
+                        ["Fail", tally.fail, theme.error]
+                    ]
+                }),
+                current && pkg ? h(Box, { flexDirection: "column", marginTop: 1 },
+                    h(Text, { color: theme.accent, bold: true }, current.name),
+                    h(Text, { color: theme.textMuted, wrap: "wrap" },
+                        current.status === "PASS"
+                            ? "Healthy."
+                            : pkg.repair
+                                ? `Recommended fix: ${pkg.repair} (press F to run repairs)`
+                                : pkg.install
+                                    ? "Not installed or failing - install it from the Components page (c)."
+                                    : "No repair command declared for this component."),
+                    h(Text, { color: theme.textMuted, wrap: "wrap" }, pkg.documentation ? `Docs: ${pkg.documentation}` : "")
+                ) : null
+            ) : undefined,
+            footer: h(Text, { color: theme.textMuted, wrap: "wrap" },
                 "\nD/X hand the terminal to scripts/doctor.sh (PATH manager, brew doctor, mise doctor...) and return here after.")
-        )
+        })
     );
 }

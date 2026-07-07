@@ -2,19 +2,43 @@ schemaVersion: 1
 name: cloudflare
 description: Cloudflare Tunnel's command-line client (cloudflared)
 category: cloud
-platforms: [macos, linux]
-install: { method: brew-formula, id: cloudflared }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: cloudflared
 dependencies: []
 validate: cloudflared --version
+versionCommand: cloudflared --version
 repair: brew reinstall cloudflared
 update: brew upgrade cloudflared
-uninstall: { method: brew-formula, id: cloudflared }
+uninstall:
+  method: brew-formula
+  id: cloudflared
 post_install: []
-homepage: "https://developers.cloudflare.com/cloudflare-one/connections/connect-networks"
-repository: "https://github.com/cloudflare/cloudflared"
+homepage: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks
+repository: https://github.com/cloudflare/cloudflared
 license: Apache-2.0
+documentation: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks
 maintainer: DevForgeKit Registry
-tags: [cloud, networking, cdn]
-aliases: [cloudflared]
+tags:
+  - cloud
+  - networking
+  - cdn
+aliases:
+  - cloudflared
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - vercel
+  - netlify
+platformInstall:
+  macos:
+    method: brew-formula
+    id: cloudflared
+

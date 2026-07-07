@@ -1,0 +1,3 @@
+schemaVersion: 1
+name: cpp
+recommends: [cmake, ninja, meson]

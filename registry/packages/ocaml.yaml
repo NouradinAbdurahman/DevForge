@@ -2,19 +2,41 @@ schemaVersion: 1
 name: ocaml
 description: The OCaml programming language
 category: languages
-platforms: [macos, linux]
-install: { method: brew-formula, id: ocaml }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: ocaml
 dependencies: []
 validate: ocaml --version
+versionCommand: ocaml --version
 repair: brew reinstall ocaml
 update: brew upgrade ocaml
-uninstall: { method: brew-formula, id: ocaml }
+uninstall:
+  method: brew-formula
+  id: ocaml
 post_install: []
-homepage: "https://ocaml.org"
-repository: "https://github.com/ocaml/ocaml"
+homepage: https://ocaml.org
+repository: https://github.com/ocaml/ocaml
 license: LGPL-2.1
+documentation: https://ocaml.org/manual/
 maintainer: DevForgeKit Registry
-tags: [language, functional]
-aliases: []
+tags:
+  - language
+  - functional
+aliases:
+  - ocaml-lang
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - haskell
+platformInstall:
+  macos:
+    method: brew-formula
+    id: ocaml
+

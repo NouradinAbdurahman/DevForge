@@ -1,16 +1,17 @@
-// Development Environment Graph command (v1.3.6). See core/devGraph.js.
+// Development Environment Graph command (v1.3.6, overhauled for
+// Environment Graph Excellence in v2.1.4). See core/devGraph.js and
+// docs/EnvironmentGraph.md.
 import { writeFileSync } from "node:fs";
 import {
-    buildGraph,
+    buildGraphCached,
     analyzeImpact,
     findPath,
     searchGraph,
-    applyGraphFilter,
     focusNode,
     findConflicts,
     findOrphans,
+    groupOrphansByType,
     renderGraphTree,
-    computeStats,
     exportGraph,
     verifyGraph,
     compareGraphs,
@@ -18,11 +19,18 @@ import {
     saveGraph,
     listHistory,
     loadGraph,
-    NODE_TYPES,
-    EDGE_TYPES
+    clearGraphCache
 } from "../core/devGraph.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling } from "../core/errors.js";
+
+// addRefreshOption(cmd) - every subcommand reads the graph via
+// buildGraphCached() (a 30-minute TTL cache - see devGraph.js), so this
+// one flag is the escape hatch when a user just installed/removed
+// something and wants the graph to reflect it immediately.
+function addRefreshOption(cmd) {
+    return cmd.option("--refresh", "bypass the 30-minute graph cache and rebuild from scratch");
+}
 
 export function registerGraphCommand(program) {
     const graph = program
@@ -32,15 +40,15 @@ export function registerGraphCommand(program) {
         .alias("deps");
 
     // ─── open (default = build + display) ────────────────────────────
-    graph
+    addRefreshOption(graph
         .command("open", { isDefault: true })
         .description("Build and display the environment graph")
         .option("--json", "output graph as JSON")
         .option("--save", "save graph to history")
-        .option("--format <format>", "export format: tree, json, dot, mermaid", "tree")
+        .option("--format <format>", "export format: tree, json, dot, mermaid, svg", "tree"))
         .action(withErrorHandling(async function () {
             const opts = this.opts();
-            const g = await buildGraph();
+            const g = await buildGraphCached({ refresh: opts.refresh });
 
             if (opts.save) {
                 const filePath = saveGraph(g);
@@ -57,15 +65,30 @@ export function registerGraphCommand(program) {
             }
         }));
 
-    // ─── search ──────────────────────────────────────────────────────
+    // ─── cache ───────────────────────────────────────────────────────
     graph
+        .command("cache")
+        .description("Show or clear the graph's 30-minute build cache")
+        .option("--clear", "clear the cache now")
+        .action(withErrorHandling(function () {
+            const opts = this.opts();
+            if (opts.clear) {
+                const cleared = clearGraphCache();
+                logger.success(cleared ? "Graph cache cleared." : "No graph cache to clear.");
+                return;
+            }
+            logger.info("Every 'graph' subcommand caches its build for 30 minutes. Use --refresh on any command to bypass it, or 'graph cache --clear' to clear it now.");
+        }));
+
+    // ─── search ──────────────────────────────────────────────────────
+    addRefreshOption(graph
         .command("search [query]")
         .description("Search graph nodes by name, type, description, tag, or category")
-        .option("-f, --filter <filter>", "filter: installed, broken, unused, duplicate, large, recent, critical, outdated, workspace, recipe, plugin, profile")
-        .option("--json", "output as JSON")
+        .option("-f, --filter <filter>", "filter: installed, broken, unused, critical, workspace, recipe, plugin, profile")
+        .option("--json", "output as JSON"))
         .action(withErrorHandling(async function (query) {
             const opts = this.opts();
-            const g = await buildGraph();
+            const g = await buildGraphCached({ refresh: opts.refresh });
             const results = searchGraph(g, query, { filter: opts.filter });
 
             if (opts.json) {
@@ -88,15 +111,15 @@ export function registerGraphCommand(program) {
         }));
 
     // ─── explain ─────────────────────────────────────────────────────
-    graph
+    addRefreshOption(graph
         .command("explain <name>")
         .description("AI-powered explanation of a node in the graph (requires AI provider)")
         .option("--provider <id>", "AI provider to use")
         .option("--model <model>", "model override")
-        .option("--endpoint <url>", "custom API endpoint")
+        .option("--endpoint <url>", "custom API endpoint"))
         .action(withErrorHandling(async function (name) {
             const opts = this.opts();
-            const g = await buildGraph();
+            const g = await buildGraphCached({ refresh: opts.refresh });
             const result = await explainNode(g, name, {
                 provider: opts.provider,
                 model: opts.model,
@@ -111,15 +134,15 @@ export function registerGraphCommand(program) {
         }));
 
     // ─── export ──────────────────────────────────────────────────────
-    graph
+    addRefreshOption(graph
         .command("export [format]")
-        .description("Export graph (json, markdown, html, dot, mermaid, tree, plantuml)")
+        .description("Export graph (json, markdown, html, dot, mermaid, svg, tree, plantuml)")
         .option("-f, --format <format>", "output format", "markdown")
         .option("-o, --output <file>", "output file (default: stdout)")
-        .option("--save", "save graph to history before exporting")
+        .option("--save", "save graph to history before exporting"))
         .action(withErrorHandling(async function () {
             const opts = this.opts();
-            const g = await buildGraph();
+            const g = await buildGraphCached({ refresh: opts.refresh });
 
             if (opts.save) {
                 saveGraph(g);
@@ -137,11 +160,11 @@ export function registerGraphCommand(program) {
         }));
 
     // ─── verify ──────────────────────────────────────────────────────
-    graph
+    addRefreshOption(graph
         .command("verify")
-        .description("Verify graph integrity (missing nodes, cycles, conflicts, orphans)")
-        .action(withErrorHandling(async () => {
-            const g = await buildGraph();
+        .description("Verify graph integrity (missing nodes, cycles, conflicts, orphans)"))
+        .action(withErrorHandling(async function () {
+            const g = await buildGraphCached({ refresh: this.opts().refresh });
             const result = verifyGraph(g);
 
             logger.section("Graph Verification");
@@ -153,13 +176,13 @@ export function registerGraphCommand(program) {
         }));
 
     // ─── stats ───────────────────────────────────────────────────────
-    graph
+    addRefreshOption(graph
         .command("stats")
         .description("Show graph statistics")
-        .option("--json", "output as JSON")
+        .option("--json", "output as JSON"))
         .action(withErrorHandling(async function () {
             const opts = this.opts();
-            const g = await buildGraph();
+            const g = await buildGraphCached({ refresh: opts.refresh });
 
             if (opts.json) {
                 console.log(JSON.stringify(g.stats, null, 2));
@@ -169,6 +192,8 @@ export function registerGraphCommand(program) {
             logger.section("Graph Statistics");
             console.log(`\n  Total nodes: ${g.stats.totalNodes}`);
             console.log(`  Total edges: ${g.stats.totalEdges}`);
+            console.log(`  Installed: ${g.stats.installedCount}`);
+            console.log(`  Missing: ${g.stats.missingCount}`);
             console.log(`  Average depth: ${g.stats.averageDepth}`);
             console.log(`  Max depth: ${g.stats.maxDepth}`);
             console.log(`  Orphans: ${g.stats.orphanCount}`);
@@ -185,6 +210,27 @@ export function registerGraphCommand(program) {
                 console.log(`    ${type}: ${count}`);
             }
 
+            if (Object.keys(g.stats.byCategory).length > 0) {
+                console.log(`\n  Category distribution:`);
+                for (const [category, count] of Object.entries(g.stats.byCategory)) {
+                    console.log(`    ${category}: ${count}`);
+                }
+            }
+
+            if (Object.keys(g.stats.byPlatform).length > 0) {
+                console.log(`\n  Platform distribution:`);
+                for (const [platform, count] of Object.entries(g.stats.byPlatform)) {
+                    console.log(`    ${platform}: ${count}`);
+                }
+            }
+
+            if (Object.keys(g.stats.byArchitecture).length > 0) {
+                console.log(`\n  Architecture distribution:`);
+                for (const [arch, count] of Object.entries(g.stats.byArchitecture)) {
+                    console.log(`    ${arch}: ${count}`);
+                }
+            }
+
             if (g.stats.mostDependedNode) {
                 const node = g.nodes.find((n) => n.id === g.stats.mostDependedNode);
                 console.log(`\n  Most depended-upon: ${node?.name || g.stats.mostDependedNode} (${g.stats.mostDependedCount} dependents)`);
@@ -192,11 +238,11 @@ export function registerGraphCommand(program) {
         }));
 
     // ─── path ────────────────────────────────────────────────────────
-    graph
+    addRefreshOption(graph
         .command("path <from> <to>")
-        .description("Find the shortest path between two nodes in the graph")
-        .action(withErrorHandling(async (from, to) => {
-            const g = await buildGraph();
+        .description("Find the shortest path between two nodes in the graph"))
+        .action(withErrorHandling(async function (from, to) {
+            const g = await buildGraphCached({ refresh: this.opts().refresh });
             const result = findPath(g, from, to);
 
             if (!result) {
@@ -214,13 +260,13 @@ export function registerGraphCommand(program) {
         }));
 
     // ─── impact ──────────────────────────────────────────────────────
-    graph
+    addRefreshOption(graph
         .command("impact <name>")
         .description("Show what would be affected if a node were removed")
-        .option("--json", "output as JSON")
+        .option("--json", "output as JSON"))
         .action(withErrorHandling(async function (name) {
             const opts = this.opts();
-            const g = await buildGraph();
+            const g = await buildGraphCached({ refresh: opts.refresh });
             const impact = analyzeImpact(g, name);
 
             if (opts.json) {
@@ -254,13 +300,13 @@ export function registerGraphCommand(program) {
         }));
 
     // ─── conflicts ───────────────────────────────────────────────────
-    graph
+    addRefreshOption(graph
         .command("conflicts")
         .description("Show all conflict edges in the graph")
-        .option("--json", "output as JSON")
+        .option("--json", "output as JSON"))
         .action(withErrorHandling(async function () {
             const opts = this.opts();
-            const g = await buildGraph();
+            const g = await buildGraphCached({ refresh: opts.refresh });
             const conflicts = findConflicts(g);
 
             if (opts.json) {
@@ -282,13 +328,13 @@ export function registerGraphCommand(program) {
         }));
 
     // ─── orphan ──────────────────────────────────────────────────────
-    graph
+    addRefreshOption(graph
         .command("orphan")
-        .description("Show orphan nodes (no connections in the graph)")
-        .option("--json", "output as JSON")
+        .description("Show orphan nodes (no connections in the graph), grouped by type")
+        .option("--json", "output as JSON"))
         .action(withErrorHandling(async function () {
             const opts = this.opts();
-            const g = await buildGraph();
+            const g = await buildGraphCached({ refresh: opts.refresh });
             const orphans = findOrphans(g);
 
             if (opts.json) {
@@ -302,47 +348,48 @@ export function registerGraphCommand(program) {
                 return;
             }
 
-            for (const node of orphans) {
-                console.log(`\n  ${node.name} (${node.type})`);
-                if (node.properties?.description) console.log(`    ${node.properties.description}`);
+            // Grouped by type (v2.1.4 Phase 6) - "why is this an orphan"
+            // reads a lot clearer as "5 unused CLIs" than one flat list
+            // mixing CLI tools, themes, and package managers together.
+            // Snapshot/benchmark records are excluded from this list
+            // entirely (see devGraph.js's NON_ORPHANABLE_TYPES) - they're
+            // point-in-time records, not tools with a "used by" concept.
+            const byType = groupOrphansByType(orphans);
+            for (const [type, nodes] of Object.entries(byType)) {
+                console.log(`\n  ${type} (${nodes.length}):`);
+                for (const node of nodes) {
+                    console.log(`    - ${node.name}${node.properties?.description ? ` - ${node.properties.description}` : ""}`);
+                }
             }
             console.log(`\n  ${orphans.length} orphan node(s)`);
         }));
 
     // ─── focus ───────────────────────────────────────────────────────
-    graph
+    addRefreshOption(graph
         .command("focus <name>")
         .description("Extract a subgraph focused on a single node and its connections")
-        .option("--format <format>", "output format: tree, json, dot, mermaid", "tree")
+        .option("--format <format>", "output format: tree, json, dot, mermaid, svg", "tree"))
         .action(withErrorHandling(async function (name) {
             const opts = this.opts();
-            const g = await buildGraph();
+            const g = await buildGraphCached({ refresh: opts.refresh });
             const subgraph = focusNode(g, name);
 
             logger.section(`Focused Graph: ${name}`);
             console.log(`\n  Nodes: ${subgraph.nodeCount}`);
             console.log(`  Edges: ${subgraph.edgeCount}`);
+            console.log();
 
             if (opts.format === "json") {
                 console.log(JSON.stringify(subgraph, null, 2));
             } else if (opts.format === "tree") {
-                console.log();
                 console.log(renderGraphTree(g, name, { maxDepth: 5 }));
-            } else if (opts.format === "dot") {
-                console.log("digraph focus {");
-                for (const edge of subgraph.edges) {
-                    const fromName = subgraph.nodes.find((n) => n.id === edge.from)?.name || edge.from;
-                    const toName = subgraph.nodes.find((n) => n.id === edge.to)?.name || edge.to;
-                    console.log(`  "${fromName}" -> "${toName}" [label="${edge.type}"];`);
-                }
-                console.log("}");
-            } else if (opts.format === "mermaid") {
-                console.log("graph LR");
-                for (const edge of subgraph.edges) {
-                    const fromName = subgraph.nodes.find((n) => n.id === edge.from)?.name || edge.from;
-                    const toName = subgraph.nodes.find((n) => n.id === edge.to)?.name || edge.to;
-                    console.log(`  ${fromName} -->|${edge.type}| ${toName}`);
-                }
+            } else {
+                // dot/mermaid/svg: `subgraph` already has the `{nodes,
+                // edges}` shape exportGraph() needs (v2.1.4 - this used to
+                // reimplement dot/mermaid formatting inline here, byte-
+                // for-byte duplicating exportDot()/exportMermaid() in
+                // devGraph.js).
+                console.log(exportGraph(subgraph, opts.format));
             }
         }));
 

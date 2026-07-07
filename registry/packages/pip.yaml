@@ -3,9 +3,11 @@ name: pip
 description: Python's default package installer, upgraded independently of the Python runtime
 category: package-managers
 platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install: { method: shell, command: "python3 -m pip install --upgrade pip" }
 dependencies: [python]
 validate: pip3 --version
+versionCommand: "pip --version"
 repair: "python3 -m pip install --upgrade --force-reinstall pip"
 update: "python3 -m pip install --upgrade pip"
 uninstall: { method: shell, command: "echo 'pip ships with Python - remove Python to remove pip'" }
@@ -13,8 +15,10 @@ post_install: []
 homepage: "https://pip.pypa.io"
 repository: "https://github.com/pypa/pip"
 license: MIT
+documentation: "https://pip.pypa.io/en/stable/"
 maintainer: DevForgeKit Registry
 tags: [package-manager, python]
 aliases: [pip3]
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives: [pipx, poetry, uv]

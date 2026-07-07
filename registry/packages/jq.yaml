@@ -2,20 +2,52 @@ schemaVersion: 1
 name: jq
 description: A lightweight command-line JSON processor
 category: utilities
-platforms: [macos, linux]
-install: { method: brew-formula, id: jq }
+platforms:
+  - macos
+  - linux
+  - windows
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: jq
 dependencies: []
 validate: jq --version
+versionCommand: jq --version
 repair: brew reinstall jq
 update: brew upgrade jq
-uninstall: { method: brew-formula, id: jq }
+uninstall:
+  method: brew-formula
+  id: jq
 post_install: []
-homepage: "https://jqlang.org"
-repository: "https://github.com/jqlang/jq"
+homepage: https://jqlang.org
+repository: https://github.com/jqlang/jq
 license: MIT
+documentation: https://jqlang.org/manual/
 maintainer: DevForgeKit Registry
-tags: [utility, json, cli]
-aliases: []
+tags:
+  - utility
+  - json
+  - cli
+aliases:
+  - jq-json
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - yq
 ciVerified: true
+platformInstall:
+  macos:
+    method: brew-formula
+    id: jq
+  linux:
+    method: apt
+    id: jq
+  windows:
+    method: winget
+    id: jqlang.jq
+

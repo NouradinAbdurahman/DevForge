@@ -2,19 +2,51 @@ schemaVersion: 1
 name: go
 description: The Go programming language
 category: languages
-platforms: [macos, linux]
-install: { method: brew-formula, id: go }
+platforms:
+  - macos
+  - linux
+  - windows
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: go
 dependencies: []
 validate: go version
+versionCommand: go version
 repair: brew reinstall go
 update: brew upgrade go
-uninstall: { method: brew-formula, id: go }
+uninstall:
+  method: brew-formula
+  id: go
 post_install: []
-homepage: "https://go.dev"
-repository: "https://github.com/golang/go"
+homepage: https://go.dev
+repository: https://github.com/golang/go
 license: BSD-3-Clause
+documentation: https://go.dev/doc/
 maintainer: DevForgeKit Registry
-tags: [language, backend]
-aliases: [golang]
+tags:
+  - language
+  - backend
+aliases:
+  - golang
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - rust
+  - zig
+platformInstall:
+  macos:
+    method: brew-formula
+    id: go
+  linux:
+    method: apt
+    id: golang
+  windows:
+    method: winget
+    id: GoLang.Go
+

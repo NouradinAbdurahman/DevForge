@@ -2,19 +2,46 @@ schemaVersion: 1
 name: supabase
 description: The Supabase command-line interface
 category: cloud
-platforms: [macos, linux]
-install: { method: brew-formula, id: supabase, tap: "supabase/tap" }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: supabase
+  tap: supabase/tap
 dependencies: []
 validate: supabase --version
-repair: "brew reinstall supabase/tap/supabase"
-update: "brew upgrade supabase/tap/supabase"
-uninstall: { method: brew-formula, id: supabase, tap: "supabase/tap" }
+versionCommand: supabase --version
+repair: brew reinstall supabase/tap/supabase
+update: brew upgrade supabase/tap/supabase
+uninstall:
+  method: brew-formula
+  id: supabase
+  tap: supabase/tap
 post_install: []
-homepage: "https://supabase.com/docs/guides/cli"
-repository: "https://github.com/supabase/cli"
+homepage: https://supabase.com/docs/guides/cli
+repository: https://github.com/supabase/cli
 license: MIT
+documentation: https://supabase.com/docs/reference/cli/introduction
 maintainer: DevForgeKit Registry
-tags: [cloud, backend, database]
-aliases: []
+tags:
+  - cloud
+  - backend
+  - database
+aliases:
+  - supabase-cli
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - firebase
+  - netlify
+platformInstall:
+  macos:
+    method: brew-formula
+    id: supabase
+    tap: supabase/tap
+

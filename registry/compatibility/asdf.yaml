@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: asdf
+conflicts: [volta]
+recommends: [direnv]

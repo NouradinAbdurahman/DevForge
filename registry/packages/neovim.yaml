@@ -2,19 +2,52 @@ schemaVersion: 1
 name: neovim
 description: A hyperextensible, Vim-based text editor
 category: editors
-platforms: [macos, linux]
-install: { method: brew-formula, id: neovim }
+platforms:
+  - macos
+  - linux
+  - windows
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: neovim
 dependencies: []
-validate: "nvim --version"
+validate: nvim --version
+versionCommand: nvim --version
 repair: brew reinstall neovim
 update: brew upgrade neovim
-uninstall: { method: brew-formula, id: neovim }
+uninstall:
+  method: brew-formula
+  id: neovim
 post_install: []
-homepage: "https://neovim.io"
-repository: "https://github.com/neovim/neovim"
+homepage: https://neovim.io
+repository: https://github.com/neovim/neovim
 license: Apache-2.0
+documentation: https://neovim.io/doc/
 maintainer: DevForgeKit Registry
-tags: [editor, terminal, vim]
-aliases: [nvim]
+tags:
+  - editor
+  - terminal
+  - vim
+aliases:
+  - nvim
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - helix
+  - emacs
+platformInstall:
+  macos:
+    method: brew-formula
+    id: neovim
+  linux:
+    method: apt
+    id: neovim
+  windows:
+    method: winget
+    id: Neovim.Neovim
+

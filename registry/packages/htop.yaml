@@ -2,19 +2,52 @@ schemaVersion: 1
 name: htop
 description: An interactive process viewer
 category: monitoring
-platforms: [macos, linux]
-install: { method: brew-formula, id: htop }
+platforms:
+  - macos
+  - linux
+  - windows
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: htop
 dependencies: []
 validate: htop --version
+versionCommand: htop --version
 repair: brew reinstall htop
 update: brew upgrade htop
-uninstall: { method: brew-formula, id: htop }
+uninstall:
+  method: brew-formula
+  id: htop
 post_install: []
-homepage: "https://htop.dev"
-repository: "https://github.com/htop-dev/htop"
+homepage: https://htop.dev
+repository: https://github.com/htop-dev/htop
 license: GPL-2.0
+documentation: https://github.com/htop-dev/htop
 maintainer: DevForgeKit Registry
-tags: [utility, monitoring, tui]
-aliases: []
+tags:
+  - utility
+  - monitoring
+  - tui
+aliases:
+  - htop-monitor
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - btop
+  - glances
+platformInstall:
+  macos:
+    method: brew-formula
+    id: htop
+  linux:
+    method: apt
+    id: htop
+  windows:
+    method: winget
+    id: htop.htop
+

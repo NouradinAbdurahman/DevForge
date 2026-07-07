@@ -1,0 +1,7 @@
+schemaVersion: 1
+name: kubectl
+# helm/k9s/kubectx/kubens/kustomize already declare kubectl as a hard
+# `dependencies` entry (so installing any of them pulls kubectl in) - this is
+# the reverse direction: someone who installs bare kubectl is told what pairs
+# well with it, which the dependency graph alone doesn't surface.
+recommends: [helm, k9s, kubectx, kubens, kustomize]

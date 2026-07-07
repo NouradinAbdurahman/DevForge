@@ -113,5 +113,5 @@ export function createOllamaProvider({ model, embeddingsModel, baseUrl = "http:/
         }
     }
 
-    return { id, chat, stream, embeddings, listModels, checkHealth };
+    return { id, chat, stream, embeddings, listModels, checkHealth, supportsStreaming: true };
 }

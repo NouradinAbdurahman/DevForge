@@ -2,19 +2,42 @@ schemaVersion: 1
 name: glow
 description: A terminal-based markdown renderer
 category: utilities
-platforms: [macos, linux]
-install: { method: brew-formula, id: glow }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: glow
 dependencies: []
 validate: glow --version
+versionCommand: glow --version
 repair: brew reinstall glow
 update: brew upgrade glow
-uninstall: { method: brew-formula, id: glow }
+uninstall:
+  method: brew-formula
+  id: glow
 post_install: []
-homepage: "https://github.com/charmbracelet/glow"
-repository: "https://github.com/charmbracelet/glow"
+homepage: https://github.com/charmbracelet/glow
+repository: https://github.com/charmbracelet/glow
 license: MIT
+documentation: https://github.com/charmbracelet/glow
 maintainer: DevForgeKit Registry
-tags: [utility, markdown, cli]
-aliases: []
+tags:
+  - utility
+  - markdown
+  - cli
+aliases:
+  - glow-md
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - bat
+platformInstall:
+  macos:
+    method: brew-formula
+    id: glow
+

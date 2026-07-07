@@ -8,6 +8,7 @@ import { getPackage, loadPackages } from "../core/registry.js";
 import { captureShellCommand } from "../core/shell.js";
 import { scoreManifest, checkLiveReachability, applyLiveReachability } from "../core/quality.js";
 import { getPackageDiagnostics, INSTALL_STATUS, STATUS_META, RESPONSIBILITY } from "../core/installAudit.js";
+import { getPlatform } from "../core/platform/index.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling } from "../core/errors.js";
 
@@ -15,18 +16,18 @@ export async function computeInstallSize(pkg) {
     const step = pkg.install || (pkg.variants && pkg.variants[0].install);
     if (!step) return null;
 
+    const platform = getPlatform();
     let dir;
-    if (step.method === "brew-formula") {
-        const { code, stdout } = await captureShellCommand(`brew --cellar ${step.id} 2>/dev/null`);
-        if (code !== 0) return null;
-        dir = stdout.trim();
-    } else if (step.method === "brew-cask") {
-        const { code, stdout } = await captureShellCommand("brew --prefix 2>/dev/null");
-        if (code !== 0) return null;
-        dir = `${stdout.trim()}/Caskroom/${step.id}`;
-    } else {
+    try {
+        if (step.method === "brew-formula" && typeof platform.packageCellarDir === "function") {
+            dir = await platform.packageCellarDir(step.id);
+        } else if (step.method === "brew-cask" && typeof platform.packageCaskroomDir === "function") {
+            dir = await platform.packageCaskroomDir(step.id);
+        }
+    } catch {
         return null;
     }
+    if (!dir) return null;
 
     const { code, stdout } = await captureShellCommand(`du -sh "${dir}" 2>/dev/null`);
     if (code !== 0 || !stdout.trim()) return null;
@@ -132,8 +133,11 @@ export function registerInfoCommand(program) {
 
             // ── Registry Health ───────────────────────────────────────
             console.log(`  Registry Health: ${scored.score}/100${opts.live ? "" : " (structural checks only - run with --live for homepage/repository reachability)"}`);
-            for (const check of scored.checks) {
-                console.log(`  ${check.pass ? "✓" : "✗"} ${check.label}`);
+            for (const group of scored.breakdown) {
+                console.log(`  ${group.category}: ${group.passCount}/${group.total}`);
+                for (const check of scored.checks.filter((c) => c.category === group.category)) {
+                    console.log(`    ${check.pass ? "✓" : "✗"} ${check.label}`);
+                }
             }
             console.log();
 

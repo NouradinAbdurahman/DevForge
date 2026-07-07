@@ -2,19 +2,40 @@ schemaVersion: 1
 name: kubens
 description: Fast namespace switching for Kubernetes (installed alongside kubectx)
 category: kubernetes
-platforms: [macos, linux]
-install: { method: brew-formula, id: kubectx }
-dependencies: [kubectl]
-validate: "command -v kubens"
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: kubectx
+dependencies:
+  - kubectl
+validate: command -v kubens
+versionCommand: kubens --version
 repair: brew reinstall kubectx
 update: brew upgrade kubectx
-uninstall: { method: brew-formula, id: kubectx }
+uninstall:
+  method: brew-formula
+  id: kubectx
 post_install: []
-homepage: "https://github.com/ahmetb/kubectx"
-repository: "https://github.com/ahmetb/kubectx"
+homepage: https://github.com/ahmetb/kubectx
+repository: https://github.com/ahmetb/kubectx
 license: Apache-2.0
+documentation: https://github.com/ahmetb/kubectx
 maintainer: DevForgeKit Registry
-tags: [kubernetes, cli]
-aliases: []
+tags:
+  - kubernetes
+  - cli
+aliases:
+  - kns
 stability: stable
 lastVerified: "2026-07-05"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: kubectx
+

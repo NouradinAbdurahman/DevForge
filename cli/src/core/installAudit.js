@@ -13,6 +13,7 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { loadPackages } from "./registry.js";
 import { userStateDir } from "./paths.js";
+import { getPlatform } from "./platform/index.js";
 
 export const INSTALL_AUDIT_VERSION = 2;
 
@@ -179,57 +180,24 @@ export const STATUS_META = {
 
 // ─── Platform detection ───────────────────────────────────────────────
 // Detects the current OS and CPU architecture so every diagnosis can
-// answer "does this package support my platform?"
+// answer "does this package support my platform?" Delegates to the
+// core/platform/ adapter (v2.0.7) instead of its own
+// process.platform/process.arch mapping - this used to be one of three
+// independent copies of the same darwin/linux/win32 -> macos/linux/
+// windows logic (the others were compatibility/engine.js's
+// currentPlatform() and this file's own detectPlatformSync()).
 export async function detectPlatform() {
-    const platform = process.platform;
-    const arch = process.arch;
-
-    let os = "unknown";
-    if (platform === "darwin") os = "macos";
-    else if (platform === "linux") os = "linux";
-    else if (platform === "win32") os = "windows";
-
-    let cpu = "unknown";
-    if (arch === "arm64") {
-        cpu = os === "macos" ? "apple-silicon" : "arm64";
-    } else if (arch === "x64" || arch === "ia32") {
-        cpu = os === "macos" ? "intel" : "x64";
-    } else if (arch === "arm") {
-        cpu = "arm";
-    }
-
-    // macOS version detection (best-effort)
-    let osVersion = null;
-    if (os === "macos") {
-        try {
-            const { execSync } = await import("node:child_process");
-            osVersion = execSync("sw_vers -productVersion", { encoding: "utf-8" }).trim();
-        } catch { /* best-effort */ }
-    }
-
-    return { os, cpu, arch, platform, osVersion };
+    const platform = getPlatform();
+    const osVersion = await platform.osVersion();
+    return { os: platform.id, cpu: platform.architecture(), arch: process.arch, platform: process.platform, osVersion };
 }
 
-// Synchronous version for module-level use
+// Synchronous version for module-level use - osVersion is deliberately
+// omitted here (every implementation shells out, so it can't be
+// synchronous); callers needing it use detectPlatform() instead.
 export function detectPlatformSync() {
-    const platform = process.platform;
-    const arch = process.arch;
-
-    let os = "unknown";
-    if (platform === "darwin") os = "macos";
-    else if (platform === "linux") os = "linux";
-    else if (platform === "win32") os = "windows";
-
-    let cpu = "unknown";
-    if (arch === "arm64") {
-        cpu = os === "macos" ? "apple-silicon" : "arm64";
-    } else if (arch === "x64" || arch === "ia32") {
-        cpu = os === "macos" ? "intel" : "x64";
-    } else if (arch === "arm") {
-        cpu = "arm";
-    }
-
-    return { os, cpu, arch, platform };
+    const platform = getPlatform();
+    return { os: platform.id, cpu: platform.architecture(), arch: process.arch, platform: process.platform };
 }
 
 /**

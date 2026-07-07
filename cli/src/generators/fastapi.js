@@ -3,7 +3,7 @@
 // per docs/Templates.md) - adds a real app package layout, Pydantic
 // settings, pytest, Docker, and CI.
 import { confirm } from "../lib/prompts.js";
-import { mitLicense, EDITORCONFIG, vscodeSettings, vscodeExtensions } from "./shared.js";
+import { EDITORCONFIG, vscodeSettings, vscodeExtensions } from "./shared.js";
 
 async function promptOptions(flags) {
     const docker = flags.docker ?? await confirm("Include Docker + docker-compose?", true);
@@ -135,6 +135,8 @@ export const fastapiGenerator = {
     id: "fastapi",
     label: "FastAPI",
     description: "Pydantic settings, pytest, Docker, CI",
+    tags: ["backend", "python", "api", "web"],
+    recommends: ["postgres", "poetry", "docker"],
     requiresTool: null,
     promptOptions,
 
@@ -154,7 +156,6 @@ export const fastapiGenerator = {
             { path: ".env.example", content: `APP_NAME=${name}\nDEBUG=false\n` },
             { path: ".editorconfig", content: EDITORCONFIG },
             { path: ".gitignore", content: "__pycache__/\n*.pyc\n.venv/\nenv/\n.env\n.pytest_cache/\n.ruff_cache/\n.DS_Store\n" },
-            { path: "LICENSE", content: mitLicense() },
             { path: ".vscode/settings.json", content: vscodeSettings({ "python.analysis.typeCheckingMode": "basic" }) },
             { path: ".vscode/extensions.json", content: vscodeExtensions(["ms-python.python", "charliermarsh.ruff"]) },
             { path: ".github/workflows/ci.yml", content: ciWorkflow() },

@@ -12,7 +12,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { homeDir } from "../paths.js";
-import { commandExists, captureShellCommand } from "../shell.js";
+import { commandExists } from "../shell.js";
 import { getProfile, getCollection, getRecipe, getPackage, expandProfile, expandRecipe } from "../registry.js";
 import { validate } from "../installer.js";
 import { discoverPlugins } from "../plugins.js";
@@ -21,6 +21,7 @@ import { validateWorkspaceDoc } from "./schema.js";
 import { getSecret } from "./env.js";
 import { listDockerContexts } from "./docker.js";
 import { listKubeContexts } from "./kubernetes.js";
+import { getPlatform } from "../platform/index.js";
 
 function expandHome(p) {
     if (!p) return p;
@@ -158,9 +159,10 @@ export async function verifyWorkspace(workspace) {
         }
     }
     const brewIds = new Set(resolvedPackages.flatMap(brewIdsOf));
-    if (brewIds.size > 0 && (await commandExists("brew"))) {
-        const { stdout } = await captureShellCommand("brew outdated 2>/dev/null");
-        const outdated = new Set(stdout.split("\n").map((l) => l.trim().split(" ")[0]).filter(Boolean));
+    const platform = getPlatform();
+    if (brewIds.size > 0 && typeof platform.outdatedPackages === "function") {
+        const outdatedList = await platform.outdatedPackages().catch(() => []);
+        const outdated = new Set(outdatedList.map((l) => l.trim().split(" ")[0]).filter(Boolean));
         const outdatedInWorkspace = [...brewIds].filter((id) => outdated.has(id));
         push(outdatedInWorkspace.length === 0 ? "PASS" : "WARNING",
             outdatedInWorkspace.length === 0

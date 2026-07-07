@@ -12,6 +12,8 @@ export const reactNativeGenerator = {
     id: "react-native",
     label: "React Native",
     description: "Bare-workflow React Native (native ios/android folders) via Expo's bare-minimum template, CI",
+    tags: ["mobile", "javascript", "js", "ios", "android"],
+    recommends: ["android-studio", "genymotion", "fastlane"],
     requiresTool: { command: "npx", hint: "Install Node.js (e.g. `devforgekit component install node`), which ships npx." },
     compatibilityCheck: ["node", "watchman"],
 

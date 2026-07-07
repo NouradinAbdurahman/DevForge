@@ -3,9 +3,14 @@ name: curl
 description: A command-line tool for transferring data with URLs (a newer version than macOS ships)
 category: utilities
 platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install: { method: brew-formula, id: curl }
+platformInstall:
+  macos: { method: brew-formula, id: curl }
+  linux: { method: apt, id: curl }
 dependencies: []
 validate: curl --version
+versionCommand: "curl --version"
 repair: brew reinstall curl
 update: brew upgrade curl
 uninstall: { method: brew-formula, id: curl }
@@ -13,8 +18,10 @@ post_install: []
 homepage: "https://curl.se"
 repository: "https://github.com/curl/curl"
 license: curl
+documentation: "https://curl.se/docs/"
 maintainer: DevForgeKit Registry
 tags: [utility, networking, cli]
-aliases: []
+aliases: [curl-cli]
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives: [wget, httpie]

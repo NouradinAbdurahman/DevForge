@@ -1,39 +1,51 @@
 // Workspaces: browse/create/switch/verify/snapshot/delete isolated dev
 // environments (git/ssh/env/docker/k8s/cloud/shell identity) - the same
-// engine `devforgekit workspace ...` drives (core/workspace/*.js). This
-// page deliberately exposes only the high-frequency actions (matching
-// RecipesPage/DoctorPage's scoping precedent); rename/clone/export/
-// import/env/ssh/rollback management stay CLI-only rather than
-// cramming every one of the 30 subcommands into a terminal UI.
+// engine `devforgekit workspace ...` drives (core/workspace/*.js).
+//
+// v2.1.8 Redesign: tabbed interface with Overview, Workspaces, Snapshots,
+// and Health tabs. The old single-list page is now the "Workspaces" tab.
+// Overview shows active workspace metadata + health score. Snapshots
+// browses and restores point-in-time snapshots. Health shows the
+// per-subsystem health breakdown.
 import { useState } from "react";
 import { Box, Text, useInput } from "ink";
-import { h, Panel, SelectList, KeyValue, KeyHints, TextField, statusColor, useDetailWidth } from "../components/ui.js";
+import {
+    h, Panel, SelectList, KeyValue, KeyHints, TextField, statusColor,
+    useDetailWidth, DetailPanel, ErrorState, LoadingState
+} from "../components/ui.js";
 import { useStore } from "../store.js";
 import { workspaceList, activeWorkspaceName } from "../data.js";
 import { createWorkspace, deleteWorkspace } from "../../core/workspace/store.js";
 import { switchToWorkspace, deactivateWorkspace } from "../../core/workspace/switcher.js";
 import { verifyWorkspace } from "../../core/workspace/health.js";
-import { createSnapshot } from "../../core/workspace/snapshot.js";
+import { createSnapshot, listSnapshots, restoreSnapshot } from "../../core/workspace/snapshot.js";
+import { getWorkspaceMetadata } from "../../core/workspace/metadata.js";
+import { computeWorkspaceHealth } from "../../core/workspace/verification.js";
+
+const TABS = [
+    { id: "overview", label: "Overview", key: "1" },
+    { id: "workspaces", label: "Workspaces", key: "2" },
+    { id: "snapshots", label: "Snapshots", key: "3" },
+    { id: "health", label: "Health", key: "4" },
+];
 
 export function WorkspacePage({ isActive }) {
     const { theme, state, dispatch, actions } = useStore();
+    const [tab, setTab] = useState("workspaces");
     const [step, setStep] = useState("list"); // list -> create-name -> create-description
     const [highlighted, setHighlighted] = useState(null);
     const [busy, setBusy] = useState(false);
+    const [busyLabel, setBusyLabel] = useState("");
     const [verifyResult, setVerifyResult] = useState(null);
-    const [confirmDelete, setConfirmDelete] = useState(null); // armed workspace name
+    const [confirmDelete, setConfirmDelete] = useState(null);
     const [draftName, setDraftName] = useState("");
     const [draftDescription, setDraftDescription] = useState("");
+    const [snapshotWs, setSnapshotWs] = useState(null);
+    const [snapshotHighlight, setSnapshotHighlight] = useState(null);
     const detailW = useDetailWidth(48);
 
     const entries = workspaceList();
     const activeName = activeWorkspaceName();
-    // Always resolve `current` fresh from `entries` by name rather than
-    // trusting the `highlighted` reference itself - workspaceList() is
-    // deliberately uncached (so create/switch/delete show up
-    // immediately, see data.js), so a stale/partial `highlighted` object
-    // (e.g. the { name } placeholder set right after creating one below)
-    // must never be rendered directly.
     const current = (highlighted && entries.find((e) => e.name === highlighted.name)) || entries[0] || null;
 
     function selectHighlight(entry) {
@@ -45,6 +57,7 @@ export function WorkspacePage({ isActive }) {
     async function doSwitch(entry) {
         if (!entry || !entry.valid || busy) return;
         setBusy(true);
+        setBusyLabel(`switching to ${entry.name}...`);
         actions.setBusy({ label: `workspace switch ${entry.name}` });
         actions.log(`workspace switch ${entry.name}`);
         try {
@@ -61,6 +74,7 @@ export function WorkspacePage({ isActive }) {
     async function doVerify(entry) {
         if (!entry || !entry.valid || busy) return;
         setBusy(true);
+        setBusyLabel(`verifying ${entry.name}...`);
         actions.setBusy({ label: `workspace verify ${entry.name}` });
         try {
             const result = await verifyWorkspace(entry.doc);
@@ -158,18 +172,103 @@ export function WorkspacePage({ isActive }) {
             else if (key.escape) cancelCreate();
             return;
         }
-        // step === "list"
-        if (input === "n") startCreate();
-        else if (input === "v") doVerify(current);
-        else if (input === "x") doSnapshot(current);
-        else if (input === "z") doDeactivate();
-        else if (input === "D") armOrDelete(current);
+        const tabMatch = TABS.find((t) => t.key === input);
+        if (tabMatch) {
+            setTab(tabMatch.id);
+            return;
+        }
+        if (tab === "workspaces") {
+            if (input === "n") startCreate();
+            else if (input === "v") doVerify(current);
+            else if (input === "x") doSnapshot(current);
+            else if (input === "z") doDeactivate();
+            else if (input === "D") armOrDelete(current);
+        } else if (tab === "snapshots") {
+            if (input === "r" && snapshotHighlight) {
+                try {
+                    restoreSnapshot(snapshotWs || activeName, snapshotHighlight.id);
+                    actions.notify(`Restored snapshot ${snapshotHighlight.id}`, "success");
+                } catch (err) {
+                    actions.notify(`Restore failed: ${err.message}`, "error");
+                }
+            }
+        } else if (tab === "health") {
+            if (input === "v") doVerify(current);
+        }
     }, { isActive: Boolean(isActive) && !state.searchOpen });
 
-    const listPanel = step === "list"
+    // ─── Tab Bar ──────────────────────────────────────────────────────
+    const tabBar = h(Box, { flexDirection: "row" },
+        ...TABS.map((t) => {
+            const active = tab === t.id;
+            return h(Text, {
+                key: t.id,
+                color: active ? theme.accent : theme.textMuted,
+                bold: active,
+                backgroundColor: active ? theme.selection : undefined,
+            }, ` ${t.label} `);
+        })
+    );
+
+    // ─── Overview Tab ─────────────────────────────────────────────────
+    const overviewTab = (() => {
+        if (!activeName) {
+            return h(Box, { flexDirection: "column", paddingX: 1 },
+                h(Text, { color: theme.textMuted }, "No active workspace. Switch to one from the Workspaces tab (press 2).")
+            );
+        }
+        const activeEntry = entries.find((e) => e.name === activeName);
+        if (!activeEntry || !activeEntry.valid) {
+            return h(ErrorState, { message: `Active workspace '${activeName}' is invalid.`, theme });
+        }
+        let snapCount = null;
+        try { snapCount = listSnapshots(activeName).length; } catch { /* no snapshots dir */ }
+        const meta = getWorkspaceMetadata(activeEntry.doc, { activeName, snapshotCount: snapCount });
+        const health = computeWorkspaceHealth(activeEntry.doc);
+        const healthColor = health.score >= 75 ? theme.success : health.score >= 50 ? theme.warning : theme.error;
+
+        return h(Box, { flexDirection: "column", paddingX: 1 },
+            h(Text, { color: theme.accent, bold: true }, `${meta.name} — ${meta.description}`),
+            h(Text, { color: theme.textMuted }, `Status: ${meta.status}  |  Last used: ${meta.lastUsedAt || "(never)"}  |  Created: ${meta.createdAt || "?"}`),
+            h(Box, { marginTop: 1, flexDirection: "row" },
+                h(Text, { color: theme.textMuted }, "Health: "),
+                h(Text, { color: healthColor, bold: true }, `${health.score}%`)
+            ),
+            h(Box, { marginTop: 1, flexDirection: "row", flexWrap: "wrap" },
+                ...health.breakdown.map((item) =>
+                    h(Text, {
+                        key: item.subsystem,
+                        color: item.status === "healthy" ? theme.success : theme.textMuted
+                    }, ` ${item.status === "healthy" ? "✓" : "○"} ${item.subsystem}  `)
+                )
+            ),
+            h(Box, { marginTop: 1 },
+                h(KeyValue, {
+                    theme, labelWidth: 14,
+                    pairs: [
+                        ["Git", `${meta.git.name || "(not set)"} <${meta.git.email || "?"}>`, theme.text],
+                        ["SSH", `${meta.ssh.identities} identities`, theme.text],
+                        ["Env", `${meta.env.variableCount} vars, ${meta.env.secretCount} secrets`, theme.text],
+                        ["Docker", meta.docker.context || "(none)", theme.text],
+                        ["Kubernetes", meta.kubernetes.context || "(none)", theme.text],
+                        ["Cloud", meta.cloud.count > 0 ? meta.cloud.providers.map((c) => c.provider).join(", ") : "(none)", theme.text],
+                        ["AI", meta.ai.provider, theme.text],
+                        ["Editor", meta.editor.app, theme.text],
+                        ["Shell", meta.shell.shell || "(default)", theme.text],
+                        ["Profile", meta.profile || "(none)", theme.text],
+                        ["Tags", meta.tags.join(", ") || "(none)", theme.text],
+                        ["Snapshots", String(meta.snapshotCount ?? "?"), theme.text],
+                    ]
+                })
+            )
+        );
+    })();
+
+    // ─── Workspaces Tab ───────────────────────────────────────────────
+    const workspacesTab = step === "list"
         ? h(Box, { flexDirection: "column" },
             h(SelectList, {
-                items: entries, isActive, height: 14, theme,
+                items: entries, isActive, height: 12, theme,
                 onHighlight: selectHighlight,
                 onSelect: doSwitch,
                 emptyText: "No workspaces yet - press n to create one.",
@@ -181,13 +280,15 @@ export function WorkspacePage({ isActive }) {
                     return h(Text, {
                         key: entry.name,
                         backgroundColor: selected && isActive ? theme.selection : undefined,
-                        color: selected && isActive ? theme.selectionText : (entry.valid ? theme.text : theme.error)
+                        color: selected && isActive ? theme.selectionText : (entry.valid ? theme.text : theme.error),
+                        wrap: "truncate-end"
                     }, `${selected ? "❯ " : "  "}${isActiveWs ? "▸" : " "}${label}`);
                 }
             }),
+            busy ? h(Box, { marginTop: 1 }, h(LoadingState, { label: busyLabel, theme })) : null,
             h(Box, { marginTop: 1 }, h(KeyHints, {
                 theme,
-                hints: [["Enter", "switch"], ["n", "new"], ["v", "verify"], ["x", "snapshot"], ["z", "deactivate"], ["D", "delete (press twice)"]]
+                hints: [["Enter", "switch"], ["n", "new"], ["v", "verify"], ["x", "snapshot"], ["z", "deactivate"], ["D", "delete (2x)"]]
             }))
         )
         : h(Box, { flexDirection: "column" },
@@ -203,34 +304,124 @@ export function WorkspacePage({ isActive }) {
             h(Box, { marginTop: 1 }, h(KeyHints, { theme, hints: [["Enter", "continue"], ["Esc", "cancel"]] }))
         );
 
-    return h(Box, { flexGrow: 1 },
-        h(Panel, { title: `Workspaces (${entries.length})${activeName ? ` · active: ${activeName}` : ""}`, theme, isActive, flexGrow: 1 }, listPanel),
-        h(Panel, { title: current ? `Workspace: ${current.name}` : "Details", theme, width: detailW },
-            current && current.valid ? h(Box, { flexDirection: "column" },
-                h(Text, { color: theme.text, wrap: "wrap" }, current.doc.description || ""),
-                h(KeyValue, {
-                    theme, labelWidth: 12,
-                    pairs: [
-                        ["Status", current.doc.status, current.name === activeName ? theme.success : theme.text],
-                        ["Tags", current.doc.tags.join(", ") || "none"],
-                        ["Profile", current.doc.profile || "none"],
-                        ["Components", String(current.doc.components.length)],
-                        ["Git", current.doc.git.email || current.doc.git.name || "not set"],
-                        ["SSH", `${current.doc.ssh.identities.length} identities`],
-                        ["Env", `${Object.keys(current.doc.env.variables).length} vars, ${current.doc.env.secretKeys.length} secrets`],
-                        ["Docker", current.doc.docker.context || "none"],
-                        ["Kubernetes", current.doc.kubernetes.context || "none"],
-                        ["Projects", String(current.doc.projectHistory.length)]
-                    ]
-                }),
-                verifyResult && verifyResult.name === current.name ? h(Box, { flexDirection: "column", marginTop: 1 },
-                    h(Text, { color: theme.accent, bold: true }, `Verify: ${verifyResult.score}% - ${verifyResult.verdict}`),
-                    ...verifyResult.results.slice(0, 8).map((r, i) =>
-                        h(Text, { key: r.description + i, color: statusColor(r.status, theme), wrap: "truncate-end" }, ` ${r.status.padEnd(8)} ${r.description}`))
-                ) : null
-            ) : (current ? h(Text, { color: theme.error, wrap: "wrap" }, `Invalid: ${current.reason}`) : h(Text, { color: theme.textMuted }, "No workspace highlighted.")),
-            h(Text, { color: theme.textMuted, wrap: "wrap" },
-                "\nFull management (rename/clone/export/import/env/ssh/rollback) is available via 'devforgekit workspace ...' in a terminal.")
+    // ─── Snapshots Tab ────────────────────────────────────────────────
+    const snapshotsTab = (() => {
+        const wsName = snapshotWs || activeName || (current && current.valid ? current.name : null);
+        if (!wsName) {
+            return h(Box, { paddingX: 1 }, h(Text, { color: theme.textMuted }, "No workspace selected. Switch to one first."));
+        }
+        let snaps = [];
+        try { snaps = listSnapshots(wsName); } catch { /* no snapshots dir */ }
+        const snapItems = snaps.map((s) => ({ ...s, name: s.id }));
+        const currentSnap = (snapshotHighlight && snapItems.find((s) => s.id === snapshotHighlight.id)) || snapItems[0] || null;
+
+        return h(Box, { flexDirection: "column" },
+            h(Text, { color: theme.textMuted }, `Snapshots for '${wsName}' (${snaps.length})`),
+            h(SelectList, {
+                items: snapItems, isActive, height: 10, theme,
+                onHighlight: (s) => setSnapshotHighlight(s),
+                onSelect: () => {},
+                emptyText: "No snapshots yet.",
+                renderItem: (snap, selected) =>
+                    h(Text, {
+                        key: snap.id,
+                        backgroundColor: selected && isActive ? theme.selection : undefined,
+                        color: selected && isActive ? theme.selectionText : theme.text,
+                        wrap: "truncate-end"
+                    }, `${selected ? "❯ " : "  "}${snap.id}  ${snap.message || ""}`.slice(0, 60))
+            }),
+            currentSnap ? h(Box, { marginTop: 1, flexDirection: "column" },
+                h(Text, { color: theme.accent, bold: true }, currentSnap.id),
+                h(Text, { color: theme.textMuted }, `Created: ${currentSnap.createdAt || "?"}`),
+                currentSnap.message ? h(Text, { color: theme.text }, currentSnap.message) : null
+            ) : null,
+            h(Box, { marginTop: 1 }, h(KeyHints, {
+                theme,
+                hints: [["r", "restore"], ["1-4", "switch tabs"]]
+            }))
+        );
+    })();
+
+    // ─── Health Tab ───────────────────────────────────────────────────
+    const healthTab = (() => {
+        if (!current || !current.valid) {
+            return h(Box, { paddingX: 1 }, h(Text, { color: theme.textMuted }, "No valid workspace selected."));
+        }
+        const health = computeWorkspaceHealth(current.doc);
+        const healthColor = health.score >= 75 ? theme.success : health.score >= 50 ? theme.warning : theme.error;
+
+        return h(Box, { flexDirection: "column", paddingX: 1 },
+            h(Text, { color: theme.accent, bold: true }, `Health: ${current.name}`),
+            h(Text, { color: healthColor, bold: true }, `${health.score}%`),
+            h(Text, { color: theme.textMuted }, ""),
+            ...health.breakdown.map((item) =>
+                h(Text, {
+                    key: item.subsystem,
+                    color: item.status === "healthy" ? theme.success : theme.textMuted
+                }, `  ${item.status === "healthy" ? "✓" : "○"}  ${item.subsystem.padEnd(14)} ${item.detail}`)
+            ),
+            verifyResult && verifyResult.name === current.name ? h(Box, { flexDirection: "column", marginTop: 1 },
+                h(Text, { color: theme.accent, bold: true }, `Verify: ${verifyResult.score}% - ${verifyResult.verdict}`),
+                ...verifyResult.results.slice(0, 10).map((r, i) =>
+                    h(Text, { key: r.description + i, color: statusColor(r.status, theme), wrap: "truncate-end" }, ` ${r.status.padEnd(8)} ${r.description}`))
+            ) : null,
+            h(Box, { marginTop: 1 }, h(KeyHints, {
+                theme,
+                hints: [["v", "run full verify"], ["1-4", "switch tabs"]]
+            }))
+        );
+    })();
+
+    // ─── Detail Panel (right side, for Workspaces tab) ────────────────
+    const detailBody = current && current.valid
+        ? h(Box, { flexDirection: "column" },
+            h(Text, { color: theme.text, wrap: "wrap" }, current.doc.description || ""),
+            h(KeyValue, {
+                theme, labelWidth: 12,
+                pairs: [
+                    ["Status", current.doc.status, current.name === activeName ? theme.success : theme.text],
+                    ["Tags", current.doc.tags.join(", ") || "none"],
+                    ["Profile", current.doc.profile || "none"],
+                    ["Components", String(current.doc.components.length)],
+                    ["Git", current.doc.git.email || current.doc.git.name || "not set"],
+                    ["SSH", `${current.doc.ssh.identities.length} identities`],
+                    ["Env", `${Object.keys(current.doc.env.variables).length} vars, ${current.doc.env.secretKeys.length} secrets`],
+                    ["Docker", current.doc.docker.context || "none"],
+                    ["Kubernetes", current.doc.kubernetes.context || "none"],
+                    ["Last used", current.doc.lastUsedAt || "(never)"],
+                    ["Projects", String(current.doc.projectHistory.length)]
+                ]
+            }),
+            verifyResult && verifyResult.name === current.name ? h(Box, { flexDirection: "column", marginTop: 1 },
+                h(Text, { color: theme.accent, bold: true }, `Verify: ${verifyResult.score}% - ${verifyResult.verdict}`),
+                ...verifyResult.results.slice(0, 8).map((r, i) =>
+                    h(Text, { key: r.description + i, color: statusColor(r.status, theme), wrap: "truncate-end" }, ` ${r.status.padEnd(8)} ${r.description}`))
+            ) : null
+        )
+        : (current ? h(ErrorState, { message: `Invalid: ${current.reason}`, theme }) : undefined);
+
+    // ─── Render ───────────────────────────────────────────────────────
+    const tabContent = tab === "overview" ? overviewTab
+        : tab === "workspaces" ? workspacesTab
+        : tab === "snapshots" ? snapshotsTab
+        : healthTab;
+
+    return h(Box, { flexGrow: 1, flexDirection: "column" },
+        tabBar,
+        h(Box, { flexGrow: 1 },
+            tab === "workspaces"
+                ? h(Box, { flexGrow: 1, flexDirection: "row" },
+                    h(Panel, { title: `Workspaces (${entries.length})${activeName ? ` · active: ${activeName}` : ""}`, theme, isActive, flexGrow: 1 }, workspacesTab),
+                    h(DetailPanel, {
+                        title: current ? `Workspace: ${current.name}` : "Details",
+                        theme, width: detailW,
+                        emptyText: "No workspace highlighted.",
+                        body: detailBody,
+                        footer: h(Text, { color: theme.textMuted, wrap: "wrap" },
+                            "\nFull management (rename/clone/export/import/diff/health/metadata) via 'devforgekit workspace ...'")
+                    })
+                )
+                : h(Panel, { title: TABS.find((t) => t.id === tab).label, theme, isActive, flexGrow: 1 }, tabContent)
         )
     );
 }

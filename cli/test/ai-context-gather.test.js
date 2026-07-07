@@ -50,10 +50,31 @@ test("gatherContext({ full: true }) additionally includes installedComponents an
     })();
 });
 
-test("gatherContext() defaults to a fast, non-full gather (no installedComponents/compatibility fields)", async () => {
+test("gatherContext() defaults to a fast, non-full gather (no installedComponents/compatibility/registry fields)", async () => {
     await withTempHome(async () => {
         const context = await gatherContext({ cwd: process.cwd() });
         assert.equal(context.installedComponents, undefined);
         assert.equal(context.compatibility, undefined);
+        assert.equal(context.registry, undefined);
+    })();
+});
+
+test("gatherContext() always includes a real platform summary, generator stack list, and recent AI activity", async () => {
+    await withTempHome(async () => {
+        const context = await gatherContext({ cwd: process.cwd() });
+        assert.equal(typeof context.platform.id, "string");
+        assert.ok(context.platform.id.length > 0);
+        assert.equal(typeof context.platform.architecture, "string");
+        assert.ok(Array.isArray(context.availableGeneratorStacks));
+        assert.ok(context.availableGeneratorStacks.includes("flutter"));
+        assert.deepEqual(context.recentActivity, []); // no AI history in a fresh temp HOME
+    })();
+});
+
+test("gatherContext({ full: true }) additionally includes real registry-wide stats", async () => {
+    await withTempHome(async () => {
+        const context = await gatherContext({ full: true, cwd: process.cwd() });
+        assert.equal(typeof context.registry.totalComponents, "number");
+        assert.ok(context.registry.totalComponents > 0);
     })();
 });

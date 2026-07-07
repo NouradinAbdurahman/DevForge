@@ -9,13 +9,18 @@
 // honest error instead of a fabricated number.
 import { useState, useEffect } from "react";
 import { Box, Text } from "ink";
-import { h, Panel, KeyValue } from "../components/ui.js";
+import { h, Panel, Card, ErrorState } from "../components/ui.js";
 import { useStore } from "../store.js";
 import {
     registrySnapshot, machineStats, outdated, plugins, currentConfig, generators, activeWorkspaceName,
     deviceOsInfo, deviceHardwareInfo, deviceMemoryGb, deviceDiskUsage, deviceUptime, deviceSoftwareUpdate
 } from "../data.js";
 import { getVersion } from "../../version.js";
+import { loadConfig } from "../../core/config.js";
+import { aiHealthStatus, aiHealthTone } from "../../core/ai/validation.js";
+import { providerLabel, storageLocation } from "../../core/ai/credentials/manager.js";
+import { providerIcon } from "../../core/ai/providers/meta.js";
+import { getCachedModels } from "../../core/ai/models/cache.js";
 
 export function DashboardPage() {
     const { theme, state } = useStore();
@@ -53,10 +58,24 @@ export function DashboardPage() {
 
     if (error) {
         return h(Panel, { title: "Dashboard", theme },
-            h(Text, { color: theme.error }, `Registry failed to load: ${error}`));
+            h(ErrorState, { message: `Registry failed to load: ${error}`, theme }));
     }
 
     const recentActions = state.logs.slice(-5).reverse();
+
+    // AI status widget data
+    const aiConfig = loadConfig();
+    const aiHealth = aiHealthStatus();
+    const aiProvider = aiConfig.aiProvider && aiConfig.aiProvider !== "none" ? aiConfig.aiProvider : null;
+    const aiModel = aiConfig.aiModel || (aiProvider ? "default" : null);
+    let aiModelCount = null;
+    if (aiProvider) {
+        const cached = getCachedModels(aiProvider);
+        if (cached) aiModelCount = cached.models.length;
+    }
+    const healthTone = aiHealthTone(aiHealth.status);
+    const healthIcon = healthTone === "success" ? "✓" : healthTone === "error" ? "✗" : "⚠";
+    const healthColor = theme[healthTone];
 
     // Software update status line - "checking..." until the (slower,
     // network-dependent) probe resolves, then either the real verdict
@@ -74,65 +93,63 @@ export function DashboardPage() {
 
     return h(Box, { flexDirection: "column", flexGrow: 1 },
         h(Box, null,
-            h(Panel, { title: "Machine", theme, flexGrow: 1 },
-                h(KeyValue, {
-                    theme,
-                    pairs: [
-                        ["Installed components", machine ? `${machine.installed} / ${machine.checked}` : "checking..."],
-                        ["Health score", machine ? `${machine.health.score}% - ${machine.health.verdict}` : "checking...",
-                            machine ? (machine.health.score >= 90 ? theme.success : machine.health.score >= 70 ? theme.warning : theme.error) : theme.textMuted],
-                        ["Outdated packages", outdatedList ? String(outdatedList.length) : "checking...",
-                            outdatedList && outdatedList.length > 0 ? theme.warning : undefined],
-                        ["Storage", device ? `${device.disk.usedGb} / ${device.disk.totalGb} GB (${device.disk.usedPercent}% used)` : "checking...",
-                            device ? (device.disk.usedPercent >= 95 ? theme.error : device.disk.usedPercent >= 85 ? theme.warning : undefined) : undefined],
-                        updateLine
-                    ]
-                })
-            ),
-            h(Panel, { title: "Registry", theme, flexGrow: 1 },
-                h(KeyValue, {
-                    theme,
-                    pairs: [
-                        ["Components", registry.stats.totalComponents],
-                        ["Categories", registry.stats.totalCategories],
-                        ["Collections", registry.stats.totalCollections],
-                        ["Profiles", registry.stats.totalProfiles],
-                        ["Recipes", registry.stats.totalRecipes],
-                        ["Quality score", `${registry.stats.qualityScore}/100`]
-                    ]
-                })
-            )
+            h(Card, {
+                title: "Machine", theme, flexGrow: 1,
+                pairs: [
+                    ["Installed components", machine ? `${machine.installed} / ${machine.checked}` : "checking..."],
+                    ["Health score", machine ? `${machine.health.score}% - ${machine.health.verdict}` : "checking...",
+                        machine ? (machine.health.score >= 90 ? theme.success : machine.health.score >= 70 ? theme.warning : theme.error) : theme.textMuted],
+                    ["Outdated packages", outdatedList ? String(outdatedList.length) : "checking...",
+                        outdatedList && outdatedList.length > 0 ? theme.warning : undefined],
+                    ["Storage", device ? `${device.disk.usedGb} / ${device.disk.totalGb} GB (${device.disk.usedPercent}% used)` : "checking...",
+                        device ? (device.disk.usedPercent >= 95 ? theme.error : device.disk.usedPercent >= 85 ? theme.warning : undefined) : undefined],
+                    updateLine
+                ]
+            }),
+            h(Card, {
+                title: "Registry", theme, flexGrow: 1,
+                pairs: [
+                    ["Components", registry.stats.totalComponents],
+                    ["Categories", registry.stats.totalCategories],
+                    ["Collections", registry.stats.totalCollections],
+                    ["Profiles", registry.stats.totalProfiles],
+                    ["Recipes", registry.stats.totalRecipes],
+                    ["Quality score", `${registry.stats.qualityScore}/100`]
+                ]
+            })
         ),
         h(Box, null,
-            h(Panel, { title: "Device", theme, flexGrow: 1 },
-                h(KeyValue, {
-                    theme,
-                    pairs: [
-                        ["OS", device ? `${device.os.name} ${device.os.version} (${device.os.build})` : "checking..."],
-                        ["Model", device ? device.hardware.model : "checking..."],
-                        ["Chip", device ? device.hardware.chip : "checking..."],
-                        ["Memory", device ? `${device.memoryGb} GB` : "checking..."],
-                        // The real `uptime` output, trimmed to just the
-                        // "up ..." clause for display - the load-average
-                        // tail is real too, just not device-overview
-                        // material, and made this row wrap awkwardly.
-                        ["Uptime", device ? device.uptime.replace(/^.*?\bup\b\s*/, "").split(",").slice(0, 2).join(",") : "checking..."]
-                    ]
-                })
-            ),
-            h(Panel, { title: "Platform", theme, flexGrow: 1 },
-                h(KeyValue, {
-                    theme,
-                    pairs: [
-                        ["DevForgeKit", `v${getVersion()}`],
-                        ["Workspace", activeWorkspaceName() || "-"],
-                        ["Current profile", config.defaultProfile || "-"],
-                        ["Editor / shell", `${config.editor} / ${config.shell}`],
-                        ["Plugins installed", pluginList.length],
-                        ["Generator stacks", generators().length]
-                    ]
-                })
-            )
+            h(Card, {
+                title: "Device", theme, flexGrow: 1,
+                pairs: [
+                    ["OS", device ? `${device.os.name} ${device.os.version} (${device.os.build})` : "checking..."],
+                    ["Model", device ? device.hardware.model : "checking..."],
+                    ["Chip", device ? device.hardware.chip : "checking..."],
+                    ["Memory", device ? `${device.memoryGb} GB` : "checking..."],
+                    ["Uptime", device ? device.uptime.replace(/^.*?\bup\b\s*/, "").split(",").slice(0, 2).join(",") : "checking..."]
+                ]
+            }),
+            h(Card, {
+                title: "Platform", theme, flexGrow: 1,
+                pairs: [
+                    ["DevForgeKit", `v${getVersion()}`],
+                    ["Workspace", activeWorkspaceName() || "-"],
+                    ["Current profile", config.defaultProfile || "-"],
+                    ["Editor / shell", `${config.editor} / ${config.shell}`],
+                    ["Plugins installed", pluginList.length],
+                    ["Generator stacks", generators().length]
+                ]
+            }),
+            h(Card, {
+                title: "AI", theme, width: 34,
+                pairs: [
+                    ["Status", `${healthIcon} ${aiHealth.label}`, healthColor],
+                    ["Provider", aiProvider ? `${providerIcon(aiProvider)} ${providerLabel(aiProvider)}` : "—", aiProvider ? theme.accent : theme.textMuted],
+                    ["Model", aiModel || "—", theme.text],
+                    ["Backend", aiProvider ? storageLocation() : "—", theme.textMuted],
+                    ["Cached Models", aiModelCount !== null ? String(aiModelCount) : "—", theme.textMuted]
+                ]
+            })
         ),
         h(Panel, { title: "Recent actions (this session)", theme },
             recentActions.length === 0

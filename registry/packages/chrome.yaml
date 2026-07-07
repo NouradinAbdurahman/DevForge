@@ -2,19 +2,41 @@ schemaVersion: 1
 name: chrome
 description: Google Chrome web browser
 category: browsers
-platforms: [macos]
-install: { method: brew-cask, id: google-chrome }
+platforms:
+  - macos
+architectures:
+  - intel
+  - apple-silicon
+install:
+  method: brew-cask
+  id: google-chrome
 dependencies: []
-validate: "test -d '/Applications/Google Chrome.app'"
+validate: test -d '/Applications/Google Chrome.app'
+versionCommand: ls /Applications | grep 'Google Chrome'
 repair: brew reinstall --cask google-chrome
 update: brew upgrade --cask google-chrome
-uninstall: { method: brew-cask, id: google-chrome }
+uninstall:
+  method: brew-cask
+  id: google-chrome
 post_install: []
-homepage: "https://www.google.com/chrome"
-repository: "https://chromium.googlesource.com/chromium/src"
+homepage: https://www.google.com/chrome
+repository: https://chromium.googlesource.com/chromium/src
 license: proprietary
+documentation: https://support.google.com/chrome
 maintainer: DevForgeKit Registry
-tags: [browser, devtools]
-aliases: [google-chrome]
+tags:
+  - browser
+  - devtools
+aliases:
+  - google-chrome
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - firefox
+  - brave
+  - edge
+platformInstall:
+  macos:
+    method: brew-cask
+    id: google-chrome
+

@@ -3,9 +3,11 @@ name: aider
 description: An AI pair-programming tool that edits code in your local git repo
 category: ai
 platforms: [macos, linux]
+architectures: [intel, apple-silicon]
 install: { method: shell, command: "pipx install aider-chat" }
 dependencies: [pipx]
 validate: aider --version
+versionCommand: "aider --version"
 repair: "pipx upgrade aider-chat"
 update: "pipx upgrade aider-chat"
 uninstall: { method: shell, command: "pipx uninstall aider-chat" }
@@ -13,8 +15,10 @@ post_install: []
 homepage: "https://aider.chat"
 repository: "https://github.com/Aider-AI/aider"
 license: Apache-2.0
+documentation: "https://aider.chat/docs/"
 maintainer: DevForgeKit Registry
 tags: [ai, cli, agent]
 aliases: [aider-chat]
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives: [continue, claude-code]

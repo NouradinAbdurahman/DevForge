@@ -3,9 +3,11 @@ name: playwright
 description: An end-to-end testing framework for web apps
 category: testing
 platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install: { method: npm, id: "@playwright/test" }
 dependencies: [node]
 validate: "playwright --version"
+versionCommand: "playwright --version"
 repair: "npm install -g @playwright/test@latest"
 update: "npm install -g @playwright/test@latest"
 uninstall: { method: npm, id: "@playwright/test" }
@@ -13,8 +15,10 @@ post_install: []
 homepage: "https://playwright.dev"
 repository: "https://github.com/microsoft/playwright"
 license: Apache-2.0
+documentation: "https://playwright.dev/docs/intro"
 maintainer: DevForgeKit Registry
 tags: [testing, web, e2e]
-aliases: []
+aliases: [playwright-test]
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives: [cypress]

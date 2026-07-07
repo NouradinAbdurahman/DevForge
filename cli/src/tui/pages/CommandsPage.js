@@ -5,7 +5,7 @@
 import { useState, useMemo } from "react";
 import { Box, Text, useInput } from "ink";
 import { execSync } from "node:child_process";
-import { h, Panel, SelectList, KeyValue, KeyHints, TextField, useDetailWidth } from "../components/ui.js";
+import { h, Panel, SelectList, KeyHints, useDetailWidth, useFilterField, FilterBar, EmptyState } from "../components/ui.js";
 import { useStore } from "../store.js";
 import { getCommandTree, searchCommandTree, findRelatedCommands } from "../../core/commandTree.js";
 
@@ -43,8 +43,10 @@ loadTree();
 
 export function CommandsPage({ isActive }) {
     const { theme, state, dispatch, actions, suspend } = useStore();
-    const [searchText, setSearchText] = useState("");
-    const [typingSearch, setTypingSearch] = useState(false);
+    const { query: searchText, setQuery: setSearchText, isOpen: typingSearch } = useFilterField({
+        isActive: Boolean(isActive) && !state.searchOpen,
+        onTypingChange: (typing) => dispatch({ type: "setTyping", typing })
+    });
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [highlighted, setHighlighted] = useState(null);
     const [exampleIdx, setExampleIdx] = useState(0);
@@ -81,30 +83,17 @@ export function CommandsPage({ isActive }) {
     const currentExamples = current?.examples || [];
     const safeExampleIdx = currentExamples.length > 0 ? exampleIdx % currentExamples.length : 0;
 
-    useInput((input, key) => {
-        if (typingSearch) {
-            if (key.escape) {
-                setTypingSearch(false);
-                setSearchText("");
-                dispatch({ type: "setTyping", typing: false });
-            } else if (key.return) {
-                setTypingSearch(false);
-                dispatch({ type: "setTyping", typing: false });
-            }
-            return;
-        }
+    useInput((input) => {
+        if (typingSearch) return;
 
-        if (input === "/") {
-            setTypingSearch(true);
-            dispatch({ type: "setTyping", typing: true });
-        } else if (input === "c" && current) {
+        if (input === "c" && current) {
             try {
                 execSync("pbcopy", { input: current.fullName });
                 setCopied(true);
                 actions.notify(`Copied: ${current.fullName}`, "success");
                 setTimeout(() => setCopied(false), 1500);
             } catch {
-                actions.notify("Copy failed (pbcopy not available)", "warning");
+                actions.notify("Copy failed (pbcopy not available)", "error");
             }
         } else if (input === "e" && current && currentExamples.length > 0) {
             setExampleIdx((i) => (i + 1) % currentExamples.length);
@@ -170,21 +159,15 @@ export function CommandsPage({ isActive }) {
             isActive: isActive && !typingSearch,
             flexGrow: 1
         },
-            h(Box, null,
-                h(Text, { color: theme.textMuted }, "search (/): "),
-                h(TextField, {
-                    value: searchText,
-                    onChange: (text) => { setSearchText(text); },
-                    isActive: typingSearch,
-                    placeholder: "type to search...",
-                    theme
-                })
-            ),
+            typingSearch
+                ? h(FilterBar, { query: searchText, onChange: setSearchText, isOpen: typingSearch, isActive: Boolean(isActive) && typingSearch, theme })
+                : h(Text, { color: theme.textMuted }, `/ to filter${searchText ? `: "${searchText}"` : ""}`),
             h(SelectList, {
                 items: filteredCommands,
                 isActive: isActive && !typingSearch,
                 height: 14,
                 theme,
+                emptyText: searchText ? `No commands match "${searchText}".` : "No commands in this category.",
                 onHighlight: (cmd) => {
                     setHighlighted(cmd);
                     setExampleIdx(0);
@@ -192,7 +175,8 @@ export function CommandsPage({ isActive }) {
                 renderItem: (cmd, selected) => h(Text, {
                     key: cmd.name,
                     backgroundColor: selected && isActive ? theme.selection : undefined,
-                    color: selected && isActive ? theme.selectionText : theme.text
+                    color: selected && isActive ? theme.selectionText : theme.text,
+                    wrap: "truncate-end"
                 },
                     `${selected ? "❯" : " "} ${cmd.name.padEnd(18).slice(0, 18)}`,
                     h(Text, {
@@ -296,14 +280,14 @@ export function CommandsPage({ isActive }) {
                     h(KeyHints, {
                         theme,
                         hints: [
-                            ["/", "search"],
+                            ["/", "filter"],
                             ["c", "copy"],
                             ["e", "examples"],
                             ["r", "run"]
                         ]
                     })
                 )
-            ) : h(Text, { color: theme.textMuted }, "No command highlighted.")
+            ) : h(EmptyState, { title: "No command highlighted.", theme })
         )
     );
 }

@@ -9,7 +9,7 @@
 // 100+ YAML files.
 import { writeFileSync } from "node:fs";
 import path from "node:path";
-import { loadRegistry, getRegistryStats, expandProfile, expandRecipe, loadPackages } from "../core/registry.js";
+import { loadRegistry, getRegistryStats, expandProfile, expandRecipe, loadPackages, clearRegistryCache } from "../core/registry.js";
 import { loadCompatibilityRuleFiles } from "../core/compatibility/rules.js";
 import { repoRoot } from "../core/paths.js";
 import { logger } from "../core/logger.js";
@@ -27,6 +27,75 @@ export function compatibilityCoverage(packages) {
     if (packages.length === 0) return 100;
     const covered = new Set(loadCompatibilityRuleFiles().map((r) => r.name));
     return Math.round((packages.filter((p) => covered.has(p.name)).length / packages.length) * 100);
+}
+
+// computeRegistryAudit(data) -> a curated health scorecard + actionable
+// recommendations (v2.1.1 Registry Excellence), distinct from the three
+// commands above rather than a fourth overlapping one: `stats` is raw
+// analytics, `verify` actually runs installs (slow, machine-dependent),
+// `doctor` dumps every individual structural issue found. `audit` is the
+// one static (no live installs), curated "is this registry in good
+// shape, and what's the highest-leverage thing to fix" view - every
+// number here is either read straight from getRegistryStats/
+// registryDoctor or computed as a simple coverage percentage over real
+// package fields, never fabricated.
+function pct(count, total) {
+    return total === 0 ? 100 : Math.round((count / total) * 100);
+}
+
+export function computeRegistryAudit(data) {
+    const { packages } = data;
+    const stats = getRegistryStats(data);
+    const { issues: doctorIssues } = registryDoctor({ packages });
+    const total = packages.length;
+
+    const deprecatedCount = packages.filter((p) => p.stability === "deprecated").length;
+    const brokenMetadataCount = new Set(
+        doctorIssues.filter((i) => i.severity === "error").map((i) => i.package)
+    ).size;
+    const documentationCoverage = pct(packages.filter((p) => p.documentation).length, total);
+    const validationCoverage = pct(packages.filter((p) => p.validate).length, total);
+    const aliasesCoverage = pct(packages.filter((p) => (p.aliases || []).length > 0).length, total);
+    const architectureCoverage = pct(packages.filter((p) => (p.architectures || []).length > 0).length, total);
+    const compatCoverage = compatibilityCoverage(packages);
+
+    const recommendations = [];
+    if (aliasesCoverage < 50) {
+        const missing = total - packages.filter((p) => (p.aliases || []).length > 0).length;
+        recommendations.push(`${missing} package(s) have no aliases - add common short-name aliases where one genuinely exists (e.g. 'rg' for ripgrep).`);
+    }
+    if (compatCoverage < 25) {
+        const missing = total - Math.round((compatCoverage / 100) * total);
+        recommendations.push(`${missing} package(s) have no compatibility rule - consider declaring real conflicts/recommends for well-known pairings (see docs/RuleSchema.md).`);
+    }
+    if (architectureCoverage < 90) {
+        const missing = total - packages.filter((p) => (p.architectures || []).length > 0).length;
+        recommendations.push(`${missing} package(s) don't declare supported architectures - add 'architectures' so compatibility checks can catch CPU mismatches.`);
+    }
+    if (stats.ciVerifiedCount < total * 0.1) {
+        recommendations.push(`Only ${stats.ciVerifiedCount} package(s) are CI-verified - consider adding more to .github/workflows/registry-smoke.yml's live-tested allowlist.`);
+    }
+    if (deprecatedCount > 0) {
+        const withoutReplacement = packages.filter((p) => p.stability === "deprecated" && !(p.recommendedAlternatives || []).length).length;
+        if (withoutReplacement > 0) {
+            recommendations.push(`${withoutReplacement} deprecated package(s) have no recommendedAlternatives - add one so users know what to switch to.`);
+        }
+    }
+
+    return {
+        total,
+        verified: stats.ciVerifiedCount,
+        untested: total - stats.ciVerifiedCount,
+        deprecated: deprecatedCount,
+        brokenMetadata: brokenMetadataCount,
+        averageQuality: stats.qualityScore,
+        compatibilityCoverage: compatCoverage,
+        documentationCoverage,
+        validationCoverage,
+        aliasesCoverage,
+        architectureCoverage,
+        recommendations
+    };
 }
 
 function buildCompiledRegistry({ categories, packages, collections, profiles, recipes }) {
@@ -126,6 +195,7 @@ export function registerRegistryCommand(program) {
 
             writeFileSync(registryJsonPath, `${JSON.stringify(buildCompiledRegistry(data), null, 2)}\n`);
             writeFileSync(docsPath, buildDocsMarkdown(data));
+            clearRegistryCache();
 
             logger.success(`Generated registry/registry.json (${data.packages.length} packages, ${data.categories.length} categories, ${data.collections.length} collections, ${data.profiles.length} profiles, ${data.recipes.length} recipes)`);
             logger.success("Generated docs/Registry.md");
@@ -292,6 +362,43 @@ export function registerRegistryCommand(program) {
                 if (infos.length > 20) {
                     console.log(`  ... and ${infos.length - 20} more info items.`);
                 }
+            }
+        }));
+
+    registry
+        .command("audit")
+        .description("Registry health scorecard: coverage percentages across documentation/validation/aliases/architecture/compatibility, plus actionable recommendations")
+        .option("--json", "emit the scorecard as JSON")
+        .action(withErrorHandling(function () {
+            const opts = this.opts();
+            const data = loadRegistry();
+            const audit = computeRegistryAudit(data);
+
+            if (opts.json) {
+                console.log(JSON.stringify(audit, null, 2));
+                return;
+            }
+
+            logger.section("Registry Audit");
+            console.log(`  Packages:                ${audit.total}`);
+            console.log(`  Verified (CI):           ${audit.verified} (${pct(audit.verified, audit.total)}%)`);
+            console.log(`  Untested:                ${audit.untested} (${pct(audit.untested, audit.total)}%)`);
+            console.log(`  Deprecated:              ${audit.deprecated}`);
+            console.log(`  Broken Metadata:         ${audit.brokenMetadata}`);
+            console.log(`  Average Quality:         ${audit.averageQuality}%`);
+            console.log(`  Compatibility Coverage:  ${audit.compatibilityCoverage}%`);
+            console.log(`  Documentation Coverage:  ${audit.documentationCoverage}%`);
+            console.log(`  Validation Coverage:     ${audit.validationCoverage}%`);
+            console.log(`  Aliases Coverage:        ${audit.aliasesCoverage}%`);
+            console.log(`  Architecture Coverage:   ${audit.architectureCoverage}%`);
+
+            if (audit.recommendations.length > 0) {
+                logger.section("Recommendations");
+                for (const rec of audit.recommendations) {
+                    console.log(`  - ${rec}`);
+                }
+            } else {
+                logger.success("No high-leverage gaps found.");
             }
         }));
 }

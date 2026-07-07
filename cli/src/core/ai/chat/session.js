@@ -2,12 +2,15 @@
 // system prompt + context on the first turn. Deliberately in-memory only
 // - `turns` never touches disk (see memory/history.js's doc comment on
 // why conversations themselves are never persisted, only structured
-// events).
+// events). `surface: "tui"` (v2.1.3.1) layers in the TUI-specific system
+// prompt addendum - pass it when the caller is the dashboard's Chat page
+// (whose responses go through tui/components/markdown.js's renderer),
+// omit it for the plain CLI `ai chat` REPL.
 import { getProvider } from "../providers/index.js";
 import { buildPrompt } from "../prompts/library.js";
 import { gatherContext } from "../context/gather.js";
 
-export function createChatSession({ providerId, workspace, apiKey, model, endpoint, fetchImpl } = {}) {
+export function createChatSession({ providerId, workspace, apiKey, model, endpoint, fetchImpl, surface } = {}) {
     const provider = getProvider(providerId, { apiKey, model, endpoint, workspace, fetchImpl });
     const turns = [];
     let primed = false;
@@ -15,7 +18,7 @@ export function createChatSession({ providerId, workspace, apiKey, model, endpoi
     async function prime() {
         if (primed) return;
         const context = await gatherContext();
-        const [systemMessage] = buildPrompt("chat", context);
+        const [systemMessage] = buildPrompt("chat", context, "", { surface });
         turns.push(systemMessage);
         primed = true;
     }

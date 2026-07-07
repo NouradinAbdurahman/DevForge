@@ -1,6 +1,6 @@
 // About: version, platform stats, and where everything lives.
 import { Box, Text } from "ink";
-import { h, Panel, KeyValue } from "../components/ui.js";
+import { h, Panel, KeyValue, ErrorState } from "../components/ui.js";
 import { useStore } from "../store.js";
 import { registrySnapshot, plugins, generators } from "../data.js";
 import { getVersion } from "../../version.js";
@@ -8,16 +8,19 @@ import { getVersion } from "../../version.js";
 export function AboutPage() {
     const { theme } = useStore();
     let stats = null;
+    let loadError = null;
     try {
         stats = registrySnapshot().stats;
-    } catch {
+    } catch (err) {
         stats = null;
+        loadError = err.message;
     }
 
     return h(Box, { flexGrow: 1 },
         h(Panel, { title: `DevForgeKit v${getVersion()}`, theme, flexGrow: 1 },
             h(Text, { color: theme.text, wrap: "wrap" },
-                "A macOS development workstation lifecycle manager grown into a platform: bootstrap, registry, profiles, recipes, plugins, project generator - and this dashboard (v1.2.3)."),
+                "A cross-platform development workstation lifecycle manager: bootstrap, registry, profiles, recipes, plugins, project generator - and this dashboard."),
+            loadError ? h(Box, { marginTop: 1 }, h(ErrorState, { message: `Registry data unavailable: ${loadError}`, theme })) : null,
             stats ? h(KeyValue, {
                 theme, labelWidth: 16,
                 pairs: [

@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: sdkman
+recommends: [java, kotlin, gradle, maven]
+conflicts: [asdf]

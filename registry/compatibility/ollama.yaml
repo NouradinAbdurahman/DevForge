@@ -1,0 +1,3 @@
+schemaVersion: 1
+name: ollama
+recommends: [llama-cpp, huggingface-cli]

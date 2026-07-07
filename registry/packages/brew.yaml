@@ -3,9 +3,11 @@ name: brew
 description: Homebrew - the macOS/Linux package manager this whole registry is built on
 category: package-managers
 platforms: [macos, linux]
+architectures: [intel, apple-silicon]
 install: { method: shell, command: "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"" }
 dependencies: []
 validate: brew --version
+versionCommand: "brew --version"
 repair: brew doctor
 update: brew update
 uninstall: { method: shell, command: "echo 'Uninstalling Homebrew is rarely what you want - see https://github.com/Homebrew/install#uninstall-homebrew'" }
@@ -13,6 +15,7 @@ post_install: []
 homepage: "https://brew.sh"
 repository: "https://github.com/Homebrew/brew"
 license: BSD-2-Clause
+documentation: "https://docs.brew.sh"
 maintainer: DevForgeKit Registry
 tags: [package-manager, macos]
 aliases: [homebrew]

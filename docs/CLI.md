@@ -31,20 +31,20 @@ has two layers:
 ./devforgekit recipe <action>                   list|show|install|create|import|search|publish - one-command environment workflows (Node CLI only)
 ./devforgekit config <action>                  get|set|list - configuration (Node CLI only)
 ./devforgekit component <action>                list|info|install|validate|repair|update|uninstall (Node CLI only)
-./devforgekit search <query> [--category/--tag]  search the 250-component registry (Node CLI only)
+./devforgekit search <query> [--category/--tag]  search the 261-component registry (Node CLI only)
 ./devforgekit info <name> [--live]                 rich component info + Manifest Quality Score (Node CLI only)
 ./devforgekit collection <action>                  list|info|install - curated component bundles (Node CLI only)
 ./devforgekit registry <generate|stats>             rebuild registry.json/docs, or show analytics (Node CLI only)
 ./devforgekit stats                                  installed components, disk, outdated, health score (Node CLI only)
 ./devforgekit plugin <action>                         list|info|run|create|test|build|package|publish|install|trust|keygen (Node CLI only)
-./devforgekit new <stack> [name]                        generate a complete project - 16 stacks (Node CLI only)
+./devforgekit new <stack> [name]                        generate a complete project - 17 stacks (Node CLI only)
 ./devforgekit workspace <action>                        create|list|show|switch|deactivate|delete|rename|clone|search|verify|repair|export|import|rollback|snapshot|env|ssh|git-capture|shell-init (Node CLI only)
 ./devforgekit self-update [--dry-run]                     Update the entire DevForgeKit platform (alias: upgrade) (Node CLI only)
 ./devforgekit snapshot <action>                            create|restore|list|inspect|verify|diff|export|delete - environment snapshot & restore (Node CLI only)
 ./devforgekit benchmark [profile]                           quick|standard|full - measure dev environment performance (aliases: bench, perf) (Node CLI only)
 ./devforgekit repair <action>                               run|scan|plan|explain|verify|rollback|history|export|delete|clean - intelligent repair engine (aliases: fix, heal) (Node CLI only)
 ./devforgekit package <action>                              analyze|info|tree|graph|orphan|duplicates|unused|outdated|recommend|impact|search|compare|history|export - package intelligence (aliases: packages, pkg) (Node CLI only)
-./devforgekit graph <action>                                 open|search|explain|export|verify|stats|path|impact|conflicts|orphan|focus|history - development environment graph (aliases: env, deps) (Node CLI only)
+./devforgekit graph <action>                                 open|search|explain|export|verify|stats|path|impact|conflicts|orphan|focus|history|cache - development environment graph (aliases: env, deps) (Node CLI only)
 ./devforgekit theme <action>                                 list|use|preview|random|export|import|gallery - TUI theme management (Node CLI only)
 ./devforgekit uninstall                        Not yet implemented
 ./devforgekit help                              Show usage
@@ -73,6 +73,7 @@ has two layers:
 ./devforgekit info flutter --live   # also checks homepage/repository reachability
 ./devforgekit stats
 ./devforgekit registry stats
+./devforgekit registry audit                  # health scorecard: coverage %, quality, recommendations
 ./devforgekit plugin list
 ./devforgekit plugin create my-plugin      # scaffold a new plugin project
 ./devforgekit plugin test my-plugin
@@ -103,7 +104,7 @@ devforgekit config set tuiTheme high-contrast   # dark | light | high-contrast |
 
 Pages: overview, workspaces (browse/create/switch/verify/snapshot),
 components (browse/filter/install with live output), profiles, recipes
-(with step preview), the 16-stack project generator wizard, plugins,
+(with step preview), the 17-stack project generator wizard, plugins,
 doctor, updates, inventory, configuration, session logs, help, about -
 plus global `/` search across all of them. Full
 reference, keyboard model, and design notes in [TUI.md](TUI.md).
@@ -111,7 +112,7 @@ reference, keyboard model, and design notes in [TUI.md](TUI.md).
 ## Components, collections, profiles, and search
 
 The component registry (`registry/`, see
-[PlatformArchitecture.md](PlatformArchitecture.md) section 3) ships 250
+[PlatformArchitecture.md](PlatformArchitecture.md) section 3) ships 261
 components across 35 categories today (languages, package managers,
 databases, containers, Kubernetes, cloud, DevOps, editors, fonts,
 terminals, browsers, AI, utilities, security, game development, design,
@@ -185,7 +186,7 @@ see the Plugin SDK section below for why.
 `./devforgekit new` (v1.2.2, see
 [PlatformArchitecture.md](PlatformArchitecture.md) section 8 and
 [ProjectGenerator.md](ProjectGenerator.md)) generates a complete,
-ready-to-code project for one of 16 stacks - not a copy of a static
+ready-to-code project for one of 17 stacks - not a copy of a static
 folder from `templates/`, but real files assembled per stack, scaffolded
 through the stack's own official CLI where one exists:
 
@@ -207,6 +208,19 @@ hand-written - no external CLI needed. Any stack-specific option not
 passed as a flag (state management, auth, Docker, ...) is prompted for
 interactively. Full per-stack table in
 [ProjectGenerator.md](ProjectGenerator.md).
+
+Project Generator Excellence (v2.1.2): project names are validated
+(syntax, Windows-reserved device names, existing directory) before
+anything is invoked; `--license mit|apache-2.0|gpl-3.0|none` (prompted if
+omitted, defaults to MIT) is applied to every stack from one place;
+real, registry-backed companion tools are shown before scaffolding
+(`recommends`); `devforgekit new --list`/`--quality` show each stack's
+Generator Quality Score (Documentation/Architecture/Testing/CI/Docker/
+Editor Support/Validation/Examples/Cross Platform); and generation ends
+with a structured summary read back from the real output on disk, not
+assumed from what was requested. See
+[ProjectGenerator.md](ProjectGenerator.md)'s "Project Generator
+Excellence" section.
 
 ## Plugin SDK
 
@@ -324,6 +338,7 @@ provider abstraction over OpenAI/Anthropic/Gemini/Groq/OpenRouter/Ollama/
 LM Studio:
 
 ```bash
+./devforgekit ai setup                          # guided provider setup (provider, key, model in one flow)
 ./devforgekit config set aiProvider ollama   # pick a provider once (or --provider per command)
 ./devforgekit ai doctor                       # plain-language summary/reason/fix/estimatedTime/risk
 ./devforgekit ai chat                          # interactive, grounded in real installed tools/compatibility/workspace/git status
@@ -331,6 +346,10 @@ LM Studio:
 ./devforgekit ai planner "I want to become a backend engineer"                 # maps onto real registry collections/recipes/components
 ./devforgekit ai repair                        # AI-narrated compatibility repair, same confirmation gate as 'compatibility repair'
 ./devforgekit ai providers --check             # every provider's configuration + live reachability
+./devforgekit ai compare pnpm npm              # compare two real components/stacks, grounded only in their real data
+./devforgekit ai health [--live]               # one AI Health Score (0-100%) with a per-check breakdown
+./devforgekit ai status                        # complete AI config status (provider, model, credentials, validation)
+./devforgekit ai fix                           # auto-fix AI configuration issues
 ```
 
 With no provider configured (the default), every subcommand prints a
@@ -338,9 +357,13 @@ clear, actionable message instead of crashing or fabricating a response.
 Every provider client is a real REST client; `ai generate`/`ai planner`
 only ever select from real Project Generator stacks / real registry
 entries, never invented ones, and `ai repair` never removes a conflicting
-package without confirmation. Full architecture, the provider wire
-formats, and the honest-scoping notes in
-[AIAssistant.md](AIAssistant.md), [ProviderAPI.md](ProviderAPI.md),
+package without confirmation. AI Assistant Excellence (v2.1.3) added the
+Health Score, `ai compare`, a broader context engine (real platform info,
+generator stacks, recent AI memory), and fixed a real bug where no
+provider client ever set its `supportsStreaming` capability flag despite
+`ai benchmark` reading it. Full architecture, the provider wire formats,
+and the honest-scoping notes in [AIAssistant.md](AIAssistant.md)'s "AI
+Assistant Excellence" section, [ProviderAPI.md](ProviderAPI.md),
 [ContextEngine.md](ContextEngine.md), [MemorySystem.md](MemorySystem.md),
 and [PromptLibrary.md](PromptLibrary.md).
 
@@ -428,25 +451,38 @@ every installed development tool:
 
 ## Development Environment Graph
 
-`./devforgekit graph` (v1.3.6, aliases: `env`, `deps`) builds a complete
-visual model of the developer's environment as an interactive dependency
-graph - 21 node types, 16 edge types, connecting every DevForgeKit
-subsystem:
+`./devforgekit graph` (v1.3.6, overhauled for Environment Graph
+Excellence in v2.1.4 - see [EnvironmentGraph.md](EnvironmentGraph.md),
+aliases: `env`, `deps`) builds a complete visual model of the developer's
+environment as an interactive dependency graph, connecting every
+DevForgeKit subsystem - registry packages, compatibility rules, Project
+Generator stacks, profiles/recipes/collections, workspaces, plugins, and
+repair history:
 
 ```bash
 ./devforgekit graph                 # build and display the graph (default: open)
 ./devforgekit graph search react    # search nodes by name/type/description
-./devforgekit graph explain node    # AI-powered explanation of a node
-./devforgekit graph export mermaid   # JSON/Markdown/HTML/DOT/Mermaid/PlantUML
+./devforgekit graph explain node    # AI-powered explanation of a node, grounded only in real graph data
+./devforgekit graph export mermaid  # json/markdown/html/dot/mermaid/svg/tree/plantuml
 ./devforgekit graph verify          # check graph integrity
-./devforgekit graph stats           # node/edge counts, depth, orphans, cycles
+./devforgekit graph stats           # node/edge counts, depth, orphans, cycles, category/platform/architecture distribution
 ./devforgekit graph path node1 node2  # shortest path between two nodes
-./devforgekit graph impact node     # everything affected by removing a node
+./devforgekit graph impact node     # everything affected by removing a node - including affected generator stacks and compatibility rules
 ./devforgekit graph conflicts       # all conflict edges
-./devforgekit graph orphan          # nodes with no connections
+./devforgekit graph orphan          # nodes with no connections, grouped by type
 ./devforgekit graph focus node      # subgraph around a single node
 ./devforgekit graph history         # past graph snapshots (--compare for diffs)
+./devforgekit graph cache --clear   # clear the 30-minute build cache
 ```
+
+Every subcommand reads through a 30-minute on-disk cache
+(`buildGraphCached()`) rather than rebuilding from scratch each time - a
+cold build scans the real registry (~15-20s); `--refresh` on any
+subcommand bypasses the cache. PNG export is deliberately not supported
+(no new dependency, no shelling out to an external tool) - see
+[EnvironmentGraph.md](EnvironmentGraph.md) for the full v2.1.4 writeup,
+including a real, severe bug the audit found and fixed (a node-ID
+mismatch that silently dropped ~22% of edges on the real registry).
 
 ## Enhanced Package Installation Status
 
@@ -468,7 +504,13 @@ status model. Every package installation now reports:
 
 `devforgekit registry doctor` now includes a quality score, and
 `devforgekit registry verify` reports all 17 status counts plus an overall
-reliability percentage.
+reliability percentage. `devforgekit registry audit` (v2.1.1) is a
+fourth, distinct view: a static (no live installs) curated health
+scorecard - package/verified/deprecated/broken-metadata counts, average
+quality, and coverage percentages across compatibility/documentation/
+validation/aliases/architecture - plus data-driven recommendations for
+the highest-leverage gap to close next. The same scorecard is available
+as a dashboard page (`y` - Registry).
 
 ## Theme System
 

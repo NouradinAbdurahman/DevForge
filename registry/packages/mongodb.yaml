@@ -2,20 +2,51 @@ schemaVersion: 1
 name: mongodb
 description: MongoDB - a document-oriented NoSQL database
 category: databases
-platforms: [macos]
-install: { method: brew-formula, id: "mongodb-community", tap: "mongodb/brew" }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: mongodb-community
+  tap: mongodb/brew
 dependencies: []
 validate: mongod --version
+versionCommand: mongod --version
 repair: brew services restart mongodb-community
 update: brew upgrade mongodb-community
-uninstall: { method: brew-formula, id: "mongodb-community", tap: "mongodb/brew" }
+uninstall:
+  method: brew-formula
+  id: mongodb-community
+  tap: mongodb/brew
 post_install:
-  - "brew services start mongodb-community"
-homepage: "https://www.mongodb.com"
-repository: "https://github.com/mongodb/mongo"
+  - brew services start mongodb-community
+homepage: https://www.mongodb.com
+repository: https://github.com/mongodb/mongo
 license: SSPL-1.0
+documentation: https://www.mongodb.com/docs/
 maintainer: DevForgeKit Registry
-tags: [database, nosql, document]
-aliases: [mongo]
+tags:
+  - database
+  - nosql
+  - document
+aliases:
+  - mongo
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - arangodb
+  - cassandra
+platformInstall:
+  macos:
+    method: brew-formula
+    id: mongodb-community
+    tap: mongodb/brew
+  linux:
+    method: apt
+    id: mongodb
+

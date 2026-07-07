@@ -1,8 +1,18 @@
-schemaVersion: 1
+schemaVersion: 2
 name: hello-world
 version: 0.1.0
 description: Example plugin proving the DevForgeKit command-hook extension point
+author: DevForgeKit
+license: MIT
+homepage: ""
+repository: ""
+keywords: ["example", "hello"]
 engine: ">=1.0.0"
+capabilities: ["command"]
+permissions: ["shell"]
+compatibility:
+  platforms: ["darwin", "linux", "win32"]
+  architectures: ["x64", "arm64"]
 commands:
   - name: hello
     description: Print a greeting from the hello-world example plugin

@@ -2,20 +2,49 @@ schemaVersion: 1
 name: tree
 description: Display directories as recursive, indented trees
 category: utilities
-platforms: [macos, linux]
-install: { method: brew-formula, id: tree }
+platforms:
+  - macos
+  - linux
+  - windows
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: tree
 dependencies: []
 validate: tree --version
+versionCommand: tree --version
 repair: brew reinstall tree
 update: brew upgrade tree
-uninstall: { method: brew-formula, id: tree }
+uninstall:
+  method: brew-formula
+  id: tree
 post_install: []
-homepage: "http://mama.indstate.edu/users/ice/tree"
-repository: ""
+homepage: http://mama.indstate.edu/users/ice/tree
+repository: https://gitlab.com/OldManProgrammer/unix-tree
 license: GPL-2.0
+documentation: http://mama.indstate.edu/users/ice/tree
 maintainer: DevForgeKit Registry
-tags: [utility, cli]
-aliases: []
+tags:
+  - utility
+  - cli
+aliases:
+  - tree-cli
 stability: stable
 lastVerified: "2026-07-05"
 ciVerified: true
+platformInstall:
+  macos:
+    method: brew-formula
+    id: tree
+  linux:
+    method: apt
+    id: tree
+  windows:
+    method: winget
+    id: JesseAdrien.Tree
+

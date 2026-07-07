@@ -13,9 +13,18 @@ providers map onto it.
   stream(messages, opts, onToken) -> Promise<{ content, model }>,
   embeddings(input, opts) -> Promise<{ vectors, model }>,   // throws AIProviderError({ code: "unsupported" }) if unavailable
   listModels(opts) -> Promise<string[]>,
-  checkHealth(opts) -> Promise<{ ok, reason? }>              // never throws
+  checkHealth(opts) -> Promise<{ ok, reason? }>,             // never throws
+  supportsStreaming: boolean                                 // true for all seven providers below (each implements a real stream())
 }
 ```
+
+`supportsStreaming` is a real capability flag, not a formality: it was
+added in v2.1.3 after an audit found `ai benchmark` and the TUI's AI
+Diagnostics page had been reading this exact field for a while, but no
+provider factory ever set it - so both always reported "no streaming"
+regardless of the provider actually being used. A future provider
+without a working `stream()` should set this `false` rather than omit
+it.
 
 `messages` is always `[{ role: "system"|"user"|"assistant", content }, ...]`
 regardless of provider - each client translates that into its own wire

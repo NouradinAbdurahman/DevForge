@@ -2,19 +2,46 @@ schemaVersion: 1
 name: eza
 description: A modern, maintained replacement for ls
 category: utilities
-platforms: [macos, linux]
-install: { method: brew-formula, id: eza }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: eza
 dependencies: []
 validate: eza --version
+versionCommand: eza --version
 repair: brew reinstall eza
 update: brew upgrade eza
-uninstall: { method: brew-formula, id: eza }
+uninstall:
+  method: brew-formula
+  id: eza
 post_install: []
-homepage: "https://eza.rocks"
-repository: "https://github.com/eza-community/eza"
+homepage: https://eza.rocks
+repository: https://github.com/eza-community/eza
 license: MIT
+documentation: https://github.com/eza-community/eza
 maintainer: DevForgeKit Registry
-tags: [utility, cli]
-aliases: []
+tags:
+  - utility
+  - cli
+aliases:
+  - exa
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - bat
+platformInstall:
+  macos:
+    method: brew-formula
+    id: eza
+  linux:
+    method: apt
+    id: eza
+

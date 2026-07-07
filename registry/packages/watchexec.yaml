@@ -1,0 +1,43 @@
+schemaVersion: 1
+name: watchexec
+description: A tool that executes commands in response to file modifications
+category: utilities
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: watchexec
+dependencies: []
+validate: watchexec --version
+versionCommand: watchexec --version
+repair: brew reinstall watchexec
+update: brew upgrade watchexec
+uninstall:
+  method: brew-formula
+  id: watchexec
+post_install: []
+homepage: https://watchexec.github.io/
+repository: https://github.com/watchexec/watchexec
+license: Apache-2.0
+documentation: https://watchexec.github.io/docs/
+maintainer: DevForgeKit Registry
+tags:
+  - file-watcher
+  - automation
+  - cli
+aliases:
+  - watchexec-cli
+stability: stable
+lastVerified: "2026-07-06"
+recommendedAlternatives:
+  - entr
+platformInstall:
+  macos:
+    method: brew-formula
+    id: watchexec
+

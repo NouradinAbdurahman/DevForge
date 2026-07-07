@@ -1,4 +1,4 @@
-// Project Generator: the interactive wizard over the same 16 generators
+// Project Generator: the interactive wizard over the same generators
 // `devforgekit new` uses (cli/src/generators/), plus the static
 // templates/ list for reference. The wizard collects every stack option
 // up front (the same flag surface commands/new.js exposes), then
@@ -6,12 +6,12 @@
 // terminal - scaffolding CLIs like `flutter create`/`create-next-app`
 // print their own output and that output belongs on the real screen,
 // not squeezed into a log pane (see docs/TUI.md's suspend/resume notes).
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Box, Text, useInput } from "ink";
 import path from "node:path";
 import { h, Panel, SelectList, KeyValue, KeyHints, TextField, useDetailWidth } from "../components/ui.js";
 import { useStore } from "../store.js";
-import { generators, templates } from "../data.js";
+import { generators, templates, generatorQualityScores, getPackageSafe } from "../data.js";
 import { runProjectGenerator } from "../../core/projectGenerator.js";
 
 // The same option surface commands/new.js exposes as flags, declared
@@ -58,6 +58,22 @@ export function GeneratorPage({ isActive }) {
 
     const stacks = generators();
     const optionDefs = stack ? (STACK_OPTIONS[stack.id] || []) : [];
+
+    // Stack Intelligence (Project Generator Excellence, v2.1.2 Phase 7 +
+    // 10): the currently-highlighted stack's real Generator Quality Score
+    // and registry-backed companion recommendations, shown live as the
+    // cursor moves - so choosing a stack in the TUI carries the same
+    // "what comes with this" signal `devforgekit new <stack> --quality`
+    // gives on the CLI, rather than the TUI being a strictly thinner path.
+    const [highlighted, setHighlighted] = useState(stacks[0] ?? null);
+    const [qualityScores, setQualityScores] = useState(new Map());
+    useEffect(() => {
+        let cancelled = false;
+        generatorQualityScores().then((map) => {
+            if (!cancelled) setQualityScores(map);
+        }).catch(() => {});
+        return () => { cancelled = true; };
+    }, []);
 
     function reset() {
         setStep("stack");
@@ -111,9 +127,10 @@ export function GeneratorPage({ isActive }) {
     return h(Box, { flexGrow: 1 },
         h(Panel, { title: `Project Generator (${stacks.length} stacks)`, theme, isActive, flexGrow: 1 },
             step === "stack" ? h(Box, { flexDirection: "column" },
-                h(KeyHints, { theme, hints: [["Enter", "pick a stack"]] }),
+                h(Box, { marginBottom: 1 }, h(KeyHints, { theme, hints: [["Enter", "pick a stack"]] })),
                 h(SelectList, {
                     items: stacks, isActive, height: 16, theme,
+                    onHighlight: (g) => setHighlighted(g),
                     onSelect: (g) => {
                         setStack(g);
                         setName(`my-${g.id}-app`);
@@ -123,7 +140,8 @@ export function GeneratorPage({ isActive }) {
                     renderItem: (g, selected) => h(Text, {
                         key: g.id,
                         backgroundColor: selected && isActive ? theme.selection : undefined,
-                        color: selected && isActive ? theme.selectionText : theme.text
+                        color: selected && isActive ? theme.selectionText : theme.text,
+                        wrap: "truncate-end"
                     }, `${selected ? "❯ " : "  "}${g.id.padEnd(14)} ${g.description.slice(0, 52)}`)
                 })
             ) : null,
@@ -133,7 +151,7 @@ export function GeneratorPage({ isActive }) {
                     h(Text, { color: theme.textMuted }, "Project name: "),
                     h(TextField, { value: name, onChange: setName, isActive, theme })
                 ),
-                h(KeyHints, { theme, hints: [["Enter", "continue"], ["Esc", "back"]] })
+                h(Box, { marginTop: 1 }, h(KeyHints, { theme, hints: [["Enter", "continue"], ["Esc", "back"]] }))
             ) : null,
             step === "options" ? h(Box, { flexDirection: "column" },
                 h(Text, { color: theme.text }, `${stack.label} · ${name} - options:`),
@@ -157,7 +175,7 @@ export function GeneratorPage({ isActive }) {
                         color: selected && isActive ? theme.selectionText : theme.text
                     }, `${selected ? "❯ " : "  "}${def.label.padEnd(26)} ${formatValue(choices[def.key] ?? def.values[0])}`)
                 }),
-                h(KeyHints, { theme, hints: [["↑↓", "move"], ["Enter/Space", "cycle"], ["c", "confirm"], ["Esc", "cancel"]] }),
+                h(Box, { marginTop: 1 }, h(KeyHints, { theme, hints: [["↑↓", "move"], ["Enter/Space", "cycle"], ["c", "confirm"], ["Esc", "cancel"]] })),
                 h(ConfirmKey, { isActive, onConfirm: () => setStep("confirm") })
             ) : null,
             step === "confirm" ? h(Box, { flexDirection: "column" },
@@ -178,11 +196,42 @@ export function GeneratorPage({ isActive }) {
                 }))
             ) : null
         ),
-        h(Panel, { title: `Static templates (${templates().length})`, theme, width: detailW },
-            h(Text, { color: theme.textMuted, wrap: "wrap" },
-                "Copyable starters under templates/ - independent of the generator:\n"),
-            h(Text, { color: theme.text, wrap: "wrap" }, templates().join(", "))
-        )
+        step === "stack" && highlighted
+            ? h(Panel, { title: `${highlighted.label} - Stack Intelligence`, theme, width: detailW },
+                h(StackIntelligence, { generator: highlighted, scored: qualityScores.get(highlighted.id), theme })
+            )
+            : h(Panel, { title: `Static templates (${templates().length})`, theme, width: detailW },
+                h(Text, { color: theme.textMuted, wrap: "wrap" },
+                    "Copyable starters under templates/ - independent of the generator:\n"),
+                h(Text, { color: theme.text, wrap: "wrap" }, templates().join(", "))
+            )
+    );
+}
+
+// StackIntelligence - the real Generator Quality Score breakdown plus
+// registry-backed companion recommendations for one stack (Phase 7 + 11),
+// kept intentionally compact (a handful of short lines) - this session's
+// own debugging found that Ink silently drops/merges rows rather than
+// truncating once a page's content exceeds its row budget, so new panels
+// stay well under it rather than listing every check/recommendation.
+function StackIntelligence({ generator, scored, theme }) {
+    const recommends = (generator.recommends || [])
+        .map((id) => getPackageSafe(id)?.name || id)
+        .join(", ");
+    return h(Box, { flexDirection: "column" },
+        h(KeyValue, {
+            theme, labelWidth: 12,
+            pairs: [
+                ["Quality", scored ? `${scored.score}%` : "..."],
+                ["Requires", generator.requiresTool?.command || "none"],
+                ["Recommends", recommends || "none"]
+            ]
+        }),
+        scored ? h(Box, { marginTop: 1, flexDirection: "column" },
+            ...scored.breakdown.slice(0, 6).map((b) => h(Text, {
+                key: b.category, color: theme.textMuted
+            }, `${b.category.padEnd(14)} ${b.passCount}/${b.total}`))
+        ) : null
     );
 }
 

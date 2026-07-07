@@ -3,15 +3,19 @@ name: c
 description: The C programming language toolchain, provided by Xcode Command Line Tools (clang)
 category: languages
 platforms: [macos]
+architectures: [intel, apple-silicon, linux]
 install: { method: shell, command: "xcode-select --install" }
 dependencies: []
 validate: clang --version
+versionCommand: "gcc --version"
 repair: "xcode-select --install"
+update: "brew upgrade gcc"
 uninstall: { method: shell, command: "sudo rm -rf /Library/Developer/CommandLineTools" }
 post_install: []
 homepage: "https://clang.llvm.org"
 repository: "https://github.com/llvm/llvm-project"
 license: Apache-2.0
+documentation: "https://clang.llvm.org/docs/"
 maintainer: DevForgeKit Registry
 tags: [language, systems]
 aliases: [clang]

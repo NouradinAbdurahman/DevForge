@@ -3,9 +3,11 @@ name: tauri-cli
 description: Build smaller, faster, and more secure desktop applications
 category: desktop
 platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install: { method: cargo, id: "tauri-cli" }
 dependencies: [rust]
 validate: "cargo tauri --version"
+versionCommand: "tauri --version"
 repair: "cargo install tauri-cli --force"
 update: "cargo install tauri-cli --force"
 uninstall: { method: cargo, id: "tauri-cli" }
@@ -13,8 +15,10 @@ post_install: []
 homepage: "https://tauri.app"
 repository: "https://github.com/tauri-apps/tauri"
 license: MIT
+documentation: "https://v2.tauri.app/"
 maintainer: DevForgeKit Registry
 tags: [desktop, framework]
 aliases: [tauri]
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives: [electron, flutter]
