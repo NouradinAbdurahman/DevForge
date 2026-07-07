@@ -65,8 +65,10 @@ test("selectBackend() returns MockBackend when CI=true", () => {
 test("selectBackend() respects DEVFORGEKIT_CRED_BACKEND override", () => {
     const originalNodeEnv = process.env.NODE_ENV;
     const originalOverride = process.env.DEVFORGEKIT_CRED_BACKEND;
+    const originalCI = process.env.CI;
     process.env.NODE_ENV = "production";
     process.env.DEVFORGEKIT_CRED_BACKEND = "file";
+    delete process.env.CI;
     try {
         resetBackend();
         const backend = selectBackend();
@@ -75,6 +77,8 @@ test("selectBackend() respects DEVFORGEKIT_CRED_BACKEND override", () => {
         process.env.NODE_ENV = originalNodeEnv;
         if (originalOverride === undefined) delete process.env.DEVFORGEKIT_CRED_BACKEND;
         else process.env.DEVFORGEKIT_CRED_BACKEND = originalOverride;
+        if (originalCI === undefined) delete process.env.CI;
+        else process.env.CI = originalCI;
         resetBackend();
     }
 });
