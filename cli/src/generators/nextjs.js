@@ -109,6 +109,8 @@ export const nextjsGenerator = {
     id: "nextjs",
     label: "Next.js",
     description: "TypeScript + Tailwind + shadcn/ui, ESLint, Prettier, Husky, Docker, GitHub Actions",
+    tags: ["frontend", "javascript", "js", "typescript", "react", "web"],
+    recommends: ["vercel", "eslint", "prettier"],
     requiresTool: { command: "npx", hint: "Install Node.js (e.g. `devforgekit component install node`), which ships npx." },
     promptOptions,
     skipGitInit: false,

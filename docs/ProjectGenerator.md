@@ -43,11 +43,53 @@ different problem:
 ./devforgekit new flutter my-app --state riverpod --backend supabase
 ./devforgekit new express my-api --auth --prisma --swagger --docker
 ./devforgekit new go-fiber my-service --dir ~/code                 # --dir sets the parent directory
+./devforgekit new express my-api --license apache-2.0 -y            # explicit license, skip prompts
+./devforgekit new flutter --quality                                 # show the Generator Quality Score, generate nothing
 ```
 
 Any stack-specific option not passed as a flag is prompted for
 interactively (state management, backend, auth, Docker, ...). Passing
 every relevant flag up front skips all prompting - useful for scripting.
+
+## Project Generator Excellence (v2.1.2)
+
+`devforgekit new` goes beyond scaffolding files - every stack now shares
+the same "premium" behavior, applied once at the engine/command level
+rather than duplicated 17 times:
+
+- **Validation before generation.** Project names are checked against a
+  syntax rule, Windows-reserved device names (`con`, `nul`, `com1`-`9`,
+  `lpt1`-`9` - filesystem paths that literally cannot exist on Windows),
+  leading `.`/`-`, and an existing-directory check - all before any tool
+  is invoked or any file is written, with a clear, actionable error
+  instead of a scaffold command failing halfway through.
+- **A real license choice.** `--license mit|apache-2.0|gpl-3.0|none`
+  (interactive prompt if omitted, defaults to MIT) is applied
+  universally by `core/projectGenerator.js` after every generator's
+  `generate`/`postGenerate` step runs, writing a real, complete license
+  text - never a placeholder - and never overwriting a LICENSE a
+  generator or its official scaffolding CLI already wrote itself.
+- **Stack Intelligence.** Before scaffolding starts, the CLI shows real,
+  registry-backed companion tools for the chosen stack (e.g. Flutter →
+  Firebase/Supabase/Android Studio/Dart) via each generator's
+  `recommends: [...]` array of real `registry/packages/` names - never a
+  fabricated list. The same data drives a live "Stack Intelligence" panel
+  in the TUI's Project Generator page as you move the cursor over a
+  stack.
+- **Generator Quality Score** (`devforgekit new <stack> --quality`,
+  `cli/src/core/generatorQuality.js`) - the Manifest Quality Score's
+  sibling for generators: a breakdown across Documentation/Architecture/
+  Testing/CI/Docker/Editor Support/Validation/Examples/Cross Platform,
+  computed by actually calling the generator's real, pure `generate()`
+  function and inspecting the file list it returns (never executed
+  against disk, never fabricated) - so a stack whose `generate()` only
+  layers a couple of config files onto an official scaffolding CLI scores
+  honestly lower than one that hand-writes a fuller project (see
+  `devforgekit new --list`, which shows every stack's score inline).
+- **A structured post-generation summary** - Location/Stack/License/Git/
+  CI workflow/Docker/README, each read back from the real generated
+  output on disk rather than assumed from what was requested, followed
+  by the stack's real next commands.
 
 ## Supported stacks
 
@@ -55,6 +97,7 @@ every relevant flag up front skips all prompting - useful for scripting.
 | --- | --- | --- | --- |
 | Flutter | `flutter` | `flutter create` | Clean Architecture (`core`/`data`/`domain`/`presentation`), Riverpod or Bloc, Supabase or Firebase, a real widget test, `flutter_lints`, GitHub Actions CI, optional Docker (nginx serving the web build) |
 | Next.js | `nextjs` | `create-next-app` | TypeScript, Tailwind, App Router, shadcn/ui (`components.json`, `lib/utils.ts`, a `Button`), Prettier, Husky + lint-staged, a standalone-build Dockerfile, CI |
+| SvelteKit | `sveltekit` | `sv create` (the official Svelte CLI - v2.0.9) | TypeScript, ESLint, Prettier, optional Tailwind CSS, optional Dockerfile, CI |
 | Express | `express` | hand-written | JWT auth (register/login), Prisma + PostgreSQL, Swagger/OpenAPI at `/docs`, Jest + Supertest, ESLint (flat config), Docker + docker-compose (app + Postgres), CI |
 | React | `react` | Vite (`react-ts` template) | TypeScript, ESLint, CI |
 | React Native | `react-native` | `create-expo-app --template bare-minimum` | real native `ios/`/`android/` folders (bare workflow - no Expo Go/EAS dependency), CI |
@@ -88,7 +131,7 @@ Error: 'flutter' is not installed or not on PATH - required to generate a Flutte
 | Stack(s) | Requires |
 | --- | --- |
 | Flutter | `flutter` |
-| Next.js, React, React Native, Expo, NestJS, Tauri | `npx` (ships with Node.js) |
+| Next.js, SvelteKit, React, React Native, Expo, NestJS, Tauri | `npx` (ships with Node.js) |
 | Django | `django-admin` (`pip install django`) |
 | Laravel | `composer` |
 | Spring Boot | `curl` and `unzip` only (Java/Maven are needed to build/run afterward, not to scaffold) |
@@ -106,6 +149,8 @@ export const exampleGenerator = {
     id: "example",
     label: "Example",
     description: "One-line summary shown in `devforgekit new --list`",
+    tags: ["backend", "example"],              // optional: search/discoverability
+    recommends: ["postgres", "docker"],        // optional: real registry package names, shown as Stack Intelligence
     requiresTool: { command: "some-cli", hint: "How to install it" }, // optional
     async promptOptions(flags) { ... },       // optional: ask for stack-specific choices
     async scaffold({ name, parentDir, dir, options }) { ... },  // optional: shell out, return an exit code

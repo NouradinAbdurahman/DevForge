@@ -2,19 +2,38 @@ schemaVersion: 1
 name: hack-nerd-font
 description: The Hack monospace font, patched with Nerd Font icons
 category: fonts
-platforms: [macos]
-install: { method: brew-cask, id: font-hack-nerd-font }
+platforms:
+  - macos
+architectures:
+  - intel
+  - apple-silicon
+install:
+  method: brew-cask
+  id: font-hack-nerd-font
 dependencies: []
-validate: "test -n \"$(find /Library/Fonts \"$HOME/Library/Fonts\" -iname '*HackNerdFont*' -print -quit 2>/dev/null)\""
+validate: test -n "$(find /Library/Fonts "$HOME/Library/Fonts" -iname '*HackNerdFont*' -print -quit 2>/dev/null)"
+versionCommand: ls ~/Library/Fonts | grep -i 'Hack Nerd'
 repair: brew reinstall --cask font-hack-nerd-font
 update: brew upgrade --cask font-hack-nerd-font
-uninstall: { method: brew-cask, id: font-hack-nerd-font }
+uninstall:
+  method: brew-cask
+  id: font-hack-nerd-font
 post_install: []
-homepage: "https://github.com/ryanoasis/nerd-fonts"
-repository: "https://github.com/ryanoasis/nerd-fonts"
+homepage: https://github.com/ryanoasis/nerd-fonts
+repository: https://github.com/ryanoasis/nerd-fonts
 license: OFL-1.1
+documentation: https://www.nerdfonts.com
 maintainer: DevForgeKit Registry
-tags: [font, monospace, nerd-font]
-aliases: []
+tags:
+  - font
+  - monospace
+  - nerd-font
+aliases:
+  - hack-nerd
 stability: stable
 lastVerified: "2026-07-05"
+platformInstall:
+  macos:
+    method: brew-cask
+    id: font-hack-nerd-font
+

@@ -2,19 +2,40 @@ schemaVersion: 1
 name: sublime-text
 description: A sophisticated text editor for code and prose
 category: editors
-platforms: [macos]
-install: { method: brew-cask, id: sublime-text }
+platforms:
+  - macos
+architectures:
+  - intel
+  - apple-silicon
+install:
+  method: brew-cask
+  id: sublime-text
 dependencies: []
-validate: "test -d '/Applications/Sublime Text.app'"
+validate: test -d '/Applications/Sublime Text.app'
+versionCommand: ls /Applications | grep 'Sublime Text'
 repair: brew reinstall --cask sublime-text
 update: brew upgrade --cask sublime-text
-uninstall: { method: brew-cask, id: sublime-text }
+uninstall:
+  method: brew-cask
+  id: sublime-text
 post_install: []
-homepage: "https://www.sublimetext.com"
-repository: ""
+homepage: https://www.sublimetext.com
+repository: https://www.sublimetext.com
 license: proprietary
+documentation: https://www.sublimetext.com/docs/index.html
 maintainer: DevForgeKit Registry
-tags: [editor]
-aliases: [sublime]
+tags:
+  - editor
+  - text
+aliases:
+  - sublime
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - vscode
+  - neovim
+platformInstall:
+  macos:
+    method: brew-cask
+    id: sublime-text
+

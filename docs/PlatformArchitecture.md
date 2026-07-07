@@ -101,7 +101,7 @@ registry/
 │                  # testing, package-signing, code-quality, documentation,
 │                  # api-development, web, desktop, apple-development,
 │                  # android, reverse-engineering
-├── packages/      # 250 component manifests (see below)
+├── packages/      # 261 component manifests (see below)
 ├── collections/   # 17 curated bundles (see below)
 ├── profiles/      # 50 environment profiles - compose collections + components + settings
 └── registry.json  # generated - do not hand-edit, see "Registry Builder"
@@ -181,7 +181,7 @@ categories, consistent with how every category is a broad bucket), and
 whole new categories for networking, monitoring, media, embedded, CI/CD,
 build systems, testing, package signing, code quality, documentation,
 API development, web, desktop, Apple development, Android, and reverse
-engineering - **250 manifests across 35 categories** today. Reaching the
+engineering - **261 manifests across 35 categories** today. Reaching the
 longer-term 500-800 goal is **incremental, future batches**: one new
 `packages/*.yaml` file, zero code changes, per addition - every session
 so far has intentionally stopped short of padding the count with
@@ -254,7 +254,7 @@ exists.
 ### Manifest Quality Score
 
 `core/quality.js`'s `scoreManifest(pkg)` is the objective, per-component
-standard contributors are held to as the registry scales past 250
+standard contributors are held to as the registry scales past 261
 entries - ten equally-weighted checks, each worth 10 points:
 
 ```text
@@ -284,7 +284,7 @@ ones needing a live HTTP request; `checkLiveReachability()` does a real
 `fetch` (HEAD, falling back to GET) with a timeout, but only runs when a
 caller explicitly opts in (`devforgekit info <name> --live`) - never
 automatically, for the same reason `registry-smoke.yml` stays a narrow,
-deliberately-scoped live check rather than testing all 250 packages'
+deliberately-scoped live check rather than testing all 261 packages'
 external URLs on every push: slow, and dependent on third-party servers
 staying up. Without `--live`, those two checks report "present" (a
 weaker, honest claim - the field exists, reachability wasn't verified),
@@ -705,16 +705,18 @@ sequence:
    dependencies into the `package.json` `create-next-app` already wrote).
 7. **`git init`** (skippable per generator via `skipGitInit`).
 
-**The 16 supported stacks**: Flutter (Clean Architecture - `core`/
+**The 17 supported stacks**: Flutter (Clean Architecture - `core`/
 `data`/`domain`/`presentation` - Riverpod or Bloc, Supabase or Firebase,
 CI via `subosito/flutter-action`), Next.js (TypeScript, Tailwind,
 shadcn/ui, Prettier, Husky + lint-staged, Docker standalone build),
-Express (JWT auth, Prisma + PostgreSQL, Swagger/OpenAPI, Docker +
-docker-compose), React (Vite), React Native (bare workflow), Expo,
-NestJS, FastAPI, Django, Laravel, Spring Boot, ASP.NET, Go Fiber, Rust
-Axum, Tauri, and Electron. Every one ships a GitHub Actions CI workflow,
-a README, and - where it makes sense for the stack - a Dockerfile and a
-test suite. Full per-stack reference: [ProjectGenerator.md](ProjectGenerator.md).
+SvelteKit (v2.0.9 - TypeScript, ESLint, Prettier, optional Tailwind,
+scaffolded via the official `sv create` CLI), Express (JWT auth, Prisma +
+PostgreSQL, Swagger/OpenAPI, Docker + docker-compose), React (Vite),
+React Native (bare workflow), Expo, NestJS, FastAPI, Django, Laravel,
+Spring Boot, ASP.NET, Go Fiber, Rust Axum, Tauri, and Electron. Every one
+ships a GitHub Actions CI workflow, a README, and - where it makes sense
+for the stack - a Dockerfile and a test suite. Full per-stack reference:
+[ProjectGenerator.md](ProjectGenerator.md).
 
 Two correctness properties worth calling out because they were real bugs
 caught while building this, not hypothetical ones:
@@ -1288,6 +1290,432 @@ See `docs/AIAssistant.md`, `docs/ProviderAPI.md`, `docs/ContextEngine.md`,
 
 ---
 
+## 24. Cross-Platform Architecture / OS Abstraction Layer (v2.0.7 - architecture only)
+
+Architecture-first, not feature-first: this milestone does **not** add
+Linux or Windows support. It removes the macOS assumptions that used to
+be scattered directly through Layer 2's shared systems, replacing them
+with one real abstraction (`cli/src/core/platform/`) that a future
+milestone can extend with actual Linux/Windows package-manager support
+without touching the systems that consume it.
+
+**The contract** (`platform/base.js`'s `Platform` class): every shared
+system that needs to know "what OS am I on" or "how do I install/upgrade
+a package here" calls `getPlatform()` (`platform/index.js`, a per-process
+singleton resolved from `os.platform()`) instead of checking
+`process.platform`/`os.platform()` itself. `Platform` implements every
+OS-agnostic operation directly (the `npm`/`pip`/`cargo`/`mise`/`shell`
+install methods already work identically everywhere) and throws a
+dedicated `PlatformNotSupportedError` for anything that's genuinely still
+macOS/Homebrew-only, so a shared system calling an unsupported operation
+on Linux/Windows fails with one clear, actionable message instead of a
+raw `ENOENT` from a missing `brew` binary.
+
+**Adapters**: `MacOSPlatform` (`platform/macos.js`) is where every
+Homebrew-specific command this codebase already ran (`brew install`/
+`uninstall`, `brew --prefix`/`--cellar`, `brew outdated`, `sw_vers`) now
+actually lives, instead of being duplicated inline across `installer.js`,
+`repair.js`, `installAudit.js`, `packageIntel.js`, `commands/info.js`,
+`commands/stats.js`, and `workspace/health.js`. `LinuxPlatform`
+(`platform/linux.js`) implements apt (Debian/Ubuntu), dnf (Fedora/RHEL),
+and pacman (Arch) with runtime detection via `existsSync` on binary
+paths. `WindowsPlatform` (`platform/windows.js`) implements winget,
+choco, and scoop with runtime detection. Both are fully functional (v2.2.3)
+— `installCommand`, `packagePrefix`, `outdatedPackages`, `upgradeCommand`,
+`packageManagerId`, `packageManagerCacheDir`, and `osVersion` all work.
+WSL is detected via `/proc/version` containing "microsoft". The
+`platformInstall` schema field lets one manifest support all 3 OSes.
+
+**What moved behind the adapter**: `installer.js`'s `commandForStep`
+(the install/uninstall command builder for every registry package),
+`compatibility/engine.js`'s `currentPlatform()`, `installAudit.js`'s
+`detectPlatform()`/`detectPlatformSync()` (previously three independent
+copies of the same darwin/linux/win32 mapping, now one), `repair.js`'s
+broken-symlink scan directories, `workspace/shellIntegration.js`'s shell
+rc file resolution (and its callers' `shell = "zsh"` defaults, now
+`getPlatform().defaultShell()`), `config.js`'s `shell`/`packageManager`
+defaults, and every direct `brew --prefix`/`--cellar`/`outdated` call in
+`packageIntel.js`, `commands/info.js`, `commands/stats.js`,
+`workspace/health.js`, and `tui/pages/UpdatesPage.js`.
+
+**What deliberately did not move**: per the standing architecture rule
+("only bootstrap/install/service management stays platform-specific"),
+`scripts/*.sh`/`bootstrap.sh` (Layer 1, bash 3.2, forever macOS+Homebrew)
+are untouched - Layer 1 was never in scope. `compatibility/engine.js`'s
+`currentArchitecture()` intentionally stays in the registry schema's own
+`intel`/`apple-silicon` vocabulary (`package.schema.json`'s
+`architectures` enum has no generic arm64/x64 values) rather than
+delegating to `Platform.architecture()`'s CPU-generic one - that
+function's contract is "match what a package manifest declares," not
+"describe the CPU." `commands/stats.js`'s `osInfo()`/`hardwareInfo()`
+stay direct `sw_vers`/`system_profiler` calls - those tools have no
+Linux/Windows equivalent at all, so there's nothing to abstract; both
+already degrade to `"unknown"` fields rather than throwing when run
+elsewhere. `repair.js`'s Homebrew-doctor scanner stays Homebrew-specific
+by name and by design (it's diagnosing Homebrew itself, already gated
+behind `commandExists("brew")`).
+
+**Registry impact**: every install `method` value in
+`registry/packages/*.yaml` is still `brew-formula`/`brew-cask`/`npm`/
+`pip`/`cargo`/`mise`/`shell` - no package declares a Linux/Windows install
+method yet, and none needs to for this milestone. A future Linux-support
+milestone would add `apt`/`dnf` (etc.) cases to `LinuxPlatform.
+installCommand()` and let individual manifests opt in per-package,
+without any other shared system changing.
+
+See `cli/test/platform.test.js` for the adapter contract tests.
+
+---
+
+## 25. Registry Excellence (v2.1.1)
+
+Quality, discoverability, and trust improvements across the existing
+registry - deliberately not "add hundreds of packages" (261 today, up
+from 251 only via 10 genuinely new, well-known, individually-verified
+tools: `lazygit`, `lazydocker`, `starship`, `atuin`, `just`, `watchexec`,
+`git-delta`, `difftastic`, `dive`, `mkcert`).
+
+**Manifest Quality Score redesigned** (`core/quality.js`): the old
+10-check version counted "Install tested"/"Verify tested"/"Uninstall
+tested" as three separate checks that were all the literal same
+`ciVerified` boolean - inflating one signal into 30% of the score. Now
+one honest "CI-verified" check, replaced by three checks that were
+already-schema fields nothing scored before: `aliases`/`tags` presence
+(Discoverability), a real `registry/compatibility/<name>.yaml` file
+existing for this package (Compatibility - checked via a cheap directory
+read, deliberately not importing `compatibility/rules.js`'s schema-
+validating loader, which would close an import cycle back through
+`registry.js`), and multi-platform/architecture declarations (Platform
+Support). Checks are now grouped into a `breakdown` (Metadata/
+Documentation/Reliability/Discoverability/Compatibility/Platform
+Support) so `devforgekit info <name>` shows *why* a package scores what
+it does, not just one flat number.
+
+**`devforgekit registry audit`** (`commands/registry.js`'s
+`computeRegistryAudit`) - a fourth registry subcommand, deliberately
+distinct from the pre-existing `stats`/`verify`/`doctor`: `stats` is raw
+analytics, `verify` actually runs installs (slow, machine-dependent),
+`doctor` dumps every individual structural issue. `audit` is the one
+static (no live installs), curated health scorecard - packages/verified/
+untested/deprecated/broken-metadata counts, average quality, and
+coverage percentages across compatibility/documentation/validation/
+aliases/architecture - plus a short list of data-driven, actionable
+recommendations (e.g. "N packages have no compatibility rule"). Every
+number is read straight from `getRegistryStats`/`registryDoctor` or
+computed as a plain coverage percentage - never fabricated. A 26th
+dashboard page (`tui/pages/RegistryPage.js`, shortcut `y`) is this same
+scorecard in dashboard form.
+
+**Architecture metadata**: a real, previously-unknown gap the audit
+surfaced immediately on first use - zero of 261 packages declared the
+optional `architectures` field (0% coverage), meaning the Compatibility
+Engine's architecture check was silently a no-op for the entire
+registry. Backfilled for the 224 packages whose primary install method
+is `brew-formula`/`brew-cask` (`[intel, apple-silicon]`, plus `linux`
+for the packages that also declare Linux support) - a safe, high-
+confidence bulk fact given Homebrew's near-universal Apple Silicon
+bottle/universal-binary support today, not individually verified
+per-package. Coverage: 0% → 86%.
+
+**Compatibility rules expanded** 24 → 34 rule files, all real,
+individually-justified relationships (not generated): nginx↔certbot,
+direnv→asdf, k6→grafana, supabase→postgres, firebase↔flutter, pnpm/yarn/
+cypress/playwright→node. Coverage: 9% → 13%. Still far from "every
+package," stated honestly rather than inflated - `registry audit`'s own
+recommendation surfaces the remaining gap.
+
+**Search**: `ComponentsPage`'s local filter was missing `aliases` from
+its searched text (tags were already included) - fixed. Project
+Generator stacks gained a `tags` field (e.g. `nextjs`: `[frontend,
+javascript, js, typescript, react, web]`) so the global search's
+"searching 'js' finds Node/Next/React/Express"-style family matching
+works for the stacks that speak to real technology families, without
+fabricating tags for stacks where they wouldn't be honest (framework
+generators only - registry packages already had tags from the start).
+
+**Components page**: gained a compact badge row (stability, quality
+score with a color tier, and a "compat rules" indicator when one exists)
+above the existing detailed status block - `ui.js`'s pre-existing
+`Badge` component, not a new one.
+
+See `docs/TUI.md`'s "v2.1.1 Registry Excellence" section for the
+Registry page itself and a real Ink page-height bug found and fixed
+while building it.
+
+## 26. Project Generator Excellence (v2.1.2)
+
+Deliberately not "add more templates" - every one of the 17 existing
+stacks gets the same production-quality behavior from one shared
+pipeline, rather than each generator reimplementing (or skipping) it.
+
+**Universal validation before generation** (`commands/new.js`'s
+`validateProjectName`): syntax (letters/numbers/dots/dashes/underscores
+only), Windows-reserved device names (`con`/`prn`/`aux`/`nul`/`com1`-`9`/
+`lpt1`-`9` - filenames that literally cannot exist on a Windows
+filesystem, not just "won't build"), leading `.`/`-`, and an
+existing-target-directory check - all run before any external tool is
+invoked, so a bad name fails with one clear reason instead of a scaffold
+command dying halfway through with a confusing raw error.
+
+**Universal license system**: `runProjectGenerator` (`core/
+projectGenerator.js`) writes a real LICENSE file for every stack from one
+place, after every generator's own `generate`/`postGenerate` steps run,
+using `generators/shared.js`'s `licenseText(license, author)` (`mit`/
+`apache-2.0`/`gpl-3.0`/`none`, defaulting to `mit`) - and never overwrites
+a LICENSE a generator or its official scaffolding CLI already wrote
+itself. Before this, 5 of 17 generators hardcoded their own MIT text
+(ignoring any other choice) and the other 12 wrote no LICENSE at all;
+`commands/new.js` exposes it as `--license <id>` or an interactive prompt
+if omitted.
+
+**Stack Intelligence**: every generator declares a `recommends: [...]`
+array of real `registry/packages/` names (e.g. Flutter →
+`firebase`/`supabase`/`android-studio`/`dart`; Express →
+`postgres`/`docker`/`eslint`) - resolved through the same
+`loadPackages()` the registry commands use, never a fabricated or
+hallucinated tool. `commands/new.js`'s `printRecommends()` shows them
+(with real descriptions) right after a stack is chosen and before
+anything scaffolds; the TUI's `GeneratorPage` shows the same data live,
+in a "Stack Intelligence" panel, as the cursor moves over the stack list
+(`SelectList`'s pre-existing `onHighlight` hook, not a new mechanism).
+
+**Generator Quality Score** (`core/generatorQuality.js`'s
+`scoreGenerator()`) - the Manifest Quality Score's sibling for
+generators, same category-breakdown shape. Unlike a package manifest (a
+static YAML file), a generator's real output only exists once you run
+it - so `scoreGenerator` actually calls the generator's real `generate()`
+function with harmless dummy args (`{name, dir: "", options: {}}`) and
+inspects the returned virtual file list (`generate()` is pure - it
+returns `[{path, content}]`; `writeGeneratedFiles` is the separate step
+that actually touches disk, see section 8 above), so scoring never
+writes a file, shells out, or fabricates a result. 14 checks across 9
+categories (Documentation/Architecture/Testing/CI/Docker/Editor Support/
+Validation/Examples/Cross Platform) - e.g. "real source files present,
+not just config" (Architecture), "CI workflow generated" (CI), "real
+companion-tool recommendations declared" (Examples). Deliberately scoped
+to what DevForgeKit's own `generate()` code contributes - a stack's
+`scaffold` step (the official CLI) can add files too, but those aren't
+knowable without actually running that CLI, so a scaffold-heavy stack
+like Laravel scores lower here honestly, not inflated to match a
+hand-written one like FastAPI or Go Fiber. Surfaced via `devforgekit new
+--list` (inline per stack), `devforgekit new <stack> --quality` (full
+breakdown), and the TUI's Stack Intelligence panel.
+
+**Structured post-generation summary**: `commands/new.js`'s action
+replaces the old plain `Created <dir>` + next-steps list with a
+"Project Created" block (Location/Stack/License/Git/CI workflow/Docker/
+README), each line read back from the real filesystem output
+(`existsSync` checks against the generated directory) rather than
+assumed from what options were requested - so "CI Ready: yes" is only
+ever shown when a `.github/workflows/` directory actually exists.
+
+**Bugs found and fixed auditing all 17 generators for this milestone**:
+SvelteKit and Electron generated a `lint` npm script with no ESLint
+config for it to run against (CI's `npm run lint --if-present` was a
+silent no-op); `spring-boot.js`'s `generate({options})` never destructured
+its own `name` parameter; `react.js` declared `requiresTool: { command:
+"npx" }` but its `scaffold` only ever shells out to `npm create vite`;
+Go Fiber and Rust Axum always wrote a Dockerfile with no way to opt out
+(no `promptOptions`, no `--docker` flag wired); Spring Boot generated
+zero documentation of any kind. Laravel's `.editorconfig` gap was
+deliberately left as-is rather than "fixed" - `composer create-project
+laravel/laravel`'s own scaffold already ships a PHP-appropriate one, and
+forcing the shared generic 2-space config on top would have been a
+regression, not an improvement.
+
+See `docs/ProjectGenerator.md`'s "Project Generator Excellence" section.
+
+## 27. AI Assistant Excellence (v2.1.3)
+
+The same "make what exists exceptional" treatment sections 25 and 26
+applied to the Registry and Project Generator, applied to section 23's
+AI Development Assistant - a real bug fix, a genuine health-scoring
+surface, a broader (but still honestly-scoped) context engine, and one
+new grounded capability, rather than a pile of new commands.
+
+**A real bug, found auditing every provider client**: none of the four
+provider factories under `providers/` ever set a `supportsStreaming`
+field on the object they return, even though `commands/ai.js`'s
+`ai benchmark` and `tui/pages/AIDiagnosticsPage.js`'s Streaming check
+both read `provider.supportsStreaming` - so `ai benchmark` always printed
+"stream: No" and Diagnostics always hardcoded a "PASS · Supported" line
+regardless of the actual provider being tested. Every provider already
+genuinely implements a real `stream()` (confirmed by grep before fixing
+anything), so all four now set `supportsStreaming: true`, and
+Diagnostics reads the real flag instead of a hardcoded pass -
+`providers/base.js`'s documented `AIProvider` shape gained the field.
+
+**AI Health Score** (`core/ai/health.js`'s `scoreAIHealth()`) - the
+Manifest/Generator Quality Score's sibling for the AI Assistant: a
+single percentage plus a transparent per-check breakdown
+(Provider/Credential/Model/Configuration/Memory/Context/Diagnostics/
+Streaming), each check a real, distinct signal already computed
+elsewhere (`validateAIConfig`, the credential manager, the context
+engine, the local memory store's directory permissions) - not three
+copies of the same boolean, the exact anti-pattern the Manifest Quality
+Score's own v2.1.1 redesign fixed. `Connection` is deliberately excluded
+from the score entirely unless a caller passes in an already-run
+`provider.checkHealth()` result (`ai health --live`, or the AI Overview
+page reusing its own mount-time connection test) - the same opt-in
+pattern `core/quality.js`'s `checkLiveReachability` uses for
+homepage/repository checks, so a real network call is never made just to
+compute a score. Surfaced via `devforgekit ai health` and folded into the
+AI Overview page's "AI Status" panel *title* rather than a new content
+row - adding a ninth `KeyValue` row there was tried first and reproduced
+the exact Ink row-budget bug v2.1.1's Registry page write-up already
+documented (content silently dropped once a page exceeds its height
+budget), so the fix piggybacks on the existing "Status" row's panel
+title instead of growing the panel.
+
+**A broader Context Engine** (`context/gather.js`): every
+`gatherContext()` call - not just `{ full: true }` - now includes a real
+platform/architecture summary via section 24's OS Abstraction Layer
+(never a raw `process.platform` string), the real list of Project
+Generator stack ids, and the last few AI memory events (structured facts
+only, never chat contents, per the Memory System's existing privacy
+posture). These are cheap enough (no I/O, or one small local JSON read)
+to include in the default gather every `ai chat`/`ai explain` call
+already pays for. Registry-wide stats (`getRegistryStats` - real counts
+across ~261 packages/collections/profiles/recipes) join
+`installedComponents`/`compatibility` under the existing `full: true`
+gate instead, since reading the whole registry isn't cheap enough for
+every turn.
+
+**AI Package/Project Intelligence** (`core/ai/compare.js`,
+`devforgekit ai compare <a> <b>`) - resolves each argument as a real
+registry package or Project Generator stack (auto-detected, packages
+checked first), builds a fact object straight from the manifest/generator
+object plus its real quality score (`scoreManifest`/`scoreGenerator`),
+and asks the model to compare using ONLY those facts - the new `compare`
+prompt kind in `prompts/library.js` explicitly instructs the model to
+say a fact is unknown rather than invent one when it's missing from one
+side.
+
+**Parity fix**: `ai history` gained `--clear`/`--export <file>`, matching
+the shape `ai stats --clear` already had - the same local memory command
+family should offer the same controls, not one flag on one command and a
+different one on its sibling.
+
+**TUI**: the AI Assistant chat page's input line - previously a detached
+row below both the Chat and Context panels, with no visual link to the
+conversation it fed - moved inside the Chat panel itself with a `❯`
+prompt marker, fixing a real, user-reported "where do I type" confusion.
+
+See `docs/AIAssistant.md`'s "AI Assistant Excellence" section.
+
+**v2.1.3.1 follow-up - AI Chat Rendering & Response Experience**: shipped
+immediately after the above, once real usage showed the Chat page's
+answers were reasonable but its *presentation* wasn't - responses printed
+`## headers`, `**bold**`, `<br>`, and Markdown tables as literal
+characters instead of terminal formatting. `tui/lib/markdown.js` (a
+pure, dependency-free parser - no Ink/React) turns a response into typed
+blocks; `tui/components/markdown.js`'s `MarkdownText` renders them as
+real Ink elements (bordered headings, rounded code blocks, the existing
+shared `Table` component for markdown tables, consistent bullets) -
+`AIPage.js` routes every assistant message through it instead of ever
+printing a raw model string. A new TUI-specific system prompt addendum
+(`prompts/library.js`'s `TUI_SYSTEM_ADDENDUM`, opted into via
+`buildPrompt(kind, context, input, { surface: "tui" })`) asks the model
+for terminal-shaped, concise output in the first place - the renderer and
+the prompt are deliberately both real, not one instead of the other. See
+`docs/TUI.md`'s and `docs/AIAssistant.md`'s own v2.1.3.1 sections for the
+full breakdown.
+
+## 28. Environment Graph Excellence (v2.1.4)
+
+The same "make what exists exceptional" treatment sections 25-27 applied
+to the Registry, Project Generator, and AI Assistant, applied to the
+Development Environment Graph (`core/devGraph.js`, v1.3.6) - and this one
+started with a genuinely severe bug, not just polish.
+
+**The bug**: `determineNodeType(pkg)` (a node's own type - full package
+object, category-aware) and `determineNodeTypeForName(name)` (an edge
+target's type - name only, no category access) disagreed for any package
+typed via `category` rather than a hardcoded name list (`dart`, `git`,
+`vscode`, ...). Same real name, two different node ids depending on
+whether it was an edge source or target - measured at ~22% of all edges
+on the real registry, silently dangling and dropped from every
+traversal. `graph impact dart` returned nothing despite Flutter
+genuinely depending on it. Fixed by threading a `name → package` lookup
+map into `determineNodeTypeForName` so it calls the exact same
+`determineNodeType()` logic when a real package exists. Verified via a
+new, deliberately real (non-mocked) integration test file,
+`cli/test/devGraph-build.test.js` - the previous 60 tests all exercised
+pure algorithms against a hand-built fixture and never called
+`buildGraph()` itself, exactly where this bug lived.
+
+**Real duplicated logic found and removed**: orphan detection and
+conflict-edge filtering were each implemented twice, byte-for-byte,
+inside `computeStats()` and again as their own exported functions - now
+both call shared private helpers. `commands/graph.js`'s `focus`
+subcommand reimplemented DOT/Mermaid formatting inline instead of
+calling the engine's own `exportGraph()` - fixed the same way. Five of
+`applyGraphFilter()`'s filter branches (`duplicate`/`large`/`recent`/
+`outdated`, half of `unused`) filtered on node properties `buildGraph()`
+never set on anything - always silently empty. Removed rather than kept
+as filters that claim to work but never had real data behind them;
+`unused`/`broken` are now genuinely real. A private stub,
+`graph_reverseEmpty()`, whose own comment admitted it was a hardcoded
+`return false` placeholder, is gone.
+
+**Real relationships, not a wishlist implemented by guessing**: two
+node types that existed in `NODE_TYPES` but were structurally impossible
+to populate are now real - `compatibility-rule` (one per
+`registry/compatibility/*.yaml`, 34 files, wired with new `REQUIRES`/
+`RECOMMENDS` edge types from that rule's own `requires`/`recommends`
+fields) and `generator` (one per Project Generator stack, 17, wired with
+`RECOMMENDS` edges from that stack's real `recommends` array - the same
+field Project Generator Excellence, v2.1.2, added). `REQUIRES`/
+`RECOMMENDS` map onto real schema fields; `Optional`/`Enhances`
+relationships from a broader wishlist aren't modeled, since no existing
+field distinctly captures that semantic. Once these edges exist,
+`analyzeImpact()`'s existing reverse-BFS algorithm - unchanged - starts
+surfacing affected generator stacks and compatibility rules for free: a
+capability gained by fixing the data model, not by special-casing the
+impact algorithm. Repair-history nodes, previously always 100% orphaned
+by construction (the history-nodes section only ever called `addNode`,
+never `addEdge`), now get real `REPAIRS` edges to the tools a repair
+record's `issue.tool` fields actually touched - snapshot/benchmark
+records don't have an equivalent per-tool reference, so both are
+excluded from orphan analysis (`NON_ORPHANABLE_TYPES`) rather than given
+a fabricated edge.
+
+**Performance**: `buildGraph()` measured ~15-20s cold (a real, batched-
+but-still-real scan of all 261 registry packages, plus a real
+compatibility scan) - unacceptable to pay on every one of 13 CLI
+subcommands or every TUI page visit. The installed-package probe is now
+batched (8 at a time with a timer yield, the same pattern
+`tui/data.js`'s `installedStatuses()` already established) instead of
+fully sequential. `buildGraphCached()` adds a real, 30-minute-TTL,
+always-overwritten on-disk cache - the same pattern `packageIntel.js`'s
+own `loadCache()`/`saveCache()` already established for an identical
+scan - deliberately distinct from the pre-existing `saveGraph()`/`graph
+history` (explicit, permanent, user-chosen snapshots). Measured: ~1ms on
+a cache hit. Every CLI subcommand reads through this cache by default
+(`--refresh` bypasses it); `graph cache --clear` clears it outright.
+
+**New**: SVG export (`exportSVG()`) - a real, hand-rolled, well-formed
+SVG generator, honestly scoped as a deterministic grid layout (not
+force-directed), with no new dependency and no shelling out to an
+external tool. PNG is deliberately not implemented for the identical
+dependency-free reasoning, stated in the export error message rather
+than silently omitted. A dedicated AI prompt kind (`graph-explain` in
+`core/ai/prompts/library.js`) replaces the previous generic-`explain`-
+template reuse that produced an awkward doubled "Explain ... Explain
+this node..." phrasing.
+
+**A new dashboard page** (`tui/pages/GraphPage.js`, shortcut `G`) - the
+graph had zero TUI presence before this. Follows the established
+list+detail pattern (`CompatibilityPage`); see `docs/TUI.md`'s own
+v2.1.4 section for both the page itself and a real test-isolation lesson
+building an automated test for it surfaced (an unmount guard needed
+`useRef`, not a plain object literal, to correctly guard a later
+`F`-key-triggered reload from a stale closure).
+
+See `docs/EnvironmentGraph.md` for the full write-up.
+
+---
+
 ## What v1.1 / v1.1.1 / v1.1.2 / v1.1.3 / v1.2.0 / v1.2.1 / v1.2.2 / v1.2.3 / v1.2.4 / v1.2.5 / v1.3.0 / v1.3.1 / v1.3.2 / v1.3.3 / v1.3.4 / v1.3.5 / v1.3.6 / v1.3.7 actually ship
 
 All of the above sections 2, 3 (including Collections/Search/Dependency
@@ -1298,15 +1726,15 @@ contribution - everything except the hosted marketplace subsection,
 which stays design-only), 5 (both profile and recipe flavors, fully
 built), 6, 7 (fully built, including the config migration), 8 (both the
 pre-existing static `templates/` and the new `devforgekit new` Project
-Generator - 16 stacks, fully built), 9 (native-checks half), 12, 13, 14
+Generator - 17 stacks, fully built), 9 (native-checks half), 12, 13, 14
 (now two real migration-table entries: the config migration and the
 workspace schema's v1→v2), 15, 16, 20 (the Interactive Terminal
 Dashboard), 21 (the Workspace Manager), 22 (the Compatibility Engine), and
 23 (the AI Development Assistant) are real, working code as of this
 release - not just design. Sections 10, 11 describe extension points that already exist
 structurally (the shell bridge, the plugin schema) but whose *expansion*
-is intentionally deferred. The registry itself has 251 components/35 categories/17
-collections/50 profiles today (251 since section 22 added `xcode`) -
+is intentionally deferred. The registry itself has 261 components/35 categories/17
+collections/50 profiles today -
 real, working, and diverse across
 languages, package managers, databases, containers, Kubernetes, cloud,
 DevOps, editors, fonts, terminals, browsers, AI, utilities, security,
@@ -1321,20 +1749,74 @@ v1.3.3 (Benchmark Engine), v1.3.4 (Intelligent Repair Engine), v1.3.5
 (Package Intelligence & Analytics), v1.3.6 (Development Environment
 Graph), and v1.3.7 (Enhanced Package Installation Status) are all fully
 shipped** - each is real, working code with full test coverage. See the
-CHANGELOG for details on each release. The v1.3 platform is now mature;
-the next phase is v2.0 (Cloud-Connected Developer Platform).
+CHANGELOG for details on each release. The v1.3 platform is now mature.
 
-**Note on the roadmap evolution:** earlier product messages proposed
-various version labels for what was then unbuilt work. As of v1.3.7,
-the entire v1.x platform is shipped and mature. The remaining unbuilt
-roadmap is v2.0 (Cloud-Connected Developer Platform: accounts, cloud
-sync, multi-machine, team workspaces, web dashboard, public API,
-cross-platform bootstrap for Windows/Linux) and v2.x (Community:
-docs/marketplace site at devforgekit.dev, Extension SDK, community-
-contributed profiles/templates). All of this needs real infrastructure
-(hosted accounts, a marketplace backend, a separate GUI codebase, actual
-Windows/Linux environments) beyond what a single local session can
-stand up honestly.
+**Note on the roadmap evolution (superseding the earlier "Cloud-Connected
+Developer Platform" note below this line in older revisions of this
+doc):** the v2.x line is **not** building hosted accounts, cloud sync,
+team workspaces, a web dashboard, or any other SaaS/cloud-connected
+surface - that direction was deliberately dropped. DevForgeKit's v2.x
+goal is to be the best **standalone, local-first** developer environment
+toolkit, not a cloud platform. Shipped so far: v2.0.0-v2.0.6 (TUI
+Foundation & Component Library, Navigation & Command Palette, Search &
+Filtering, Notifications/Progress/Feedback, Onboarding & First Run,
+Themes/Accessibility/Responsive Layout, Performance & Rendering) - a
+full UI/UX polish pass over the Interactive Terminal Dashboard, no new
+subsystems. v2.0.7 (OS Abstraction Layer, architecture only, no Linux/
+Windows support yet - section 24). v2.0.8 (Registry Expansion - the
+first pass) and v2.0.9 (Project Generator Expansion - SvelteKit). v2.1.0
+(UX & Product Consistency Audit - `docs/TUI.md`). v2.1.1 (Registry
+Excellence - section 25 above): not "add hundreds of packages," but
+making every existing one feel production-quality - a redesigned quality
+score breakdown, a new `registry audit` health scorecard, real
+architecture-metadata and compatibility-rule coverage gaps found and
+substantially closed. v2.1.2 (Project Generator Excellence - section 26
+above): the same "make what exists exceptional" treatment applied to
+`devforgekit new`'s 17 stacks - universal validation/license/
+post-generation-summary handling, real registry-backed Stack
+Intelligence recommendations, and a Generator Quality Score, plus several
+genuine per-generator bugs (broken lint configs, a silently-dropped
+`name` param, a wrong `requiresTool`, no Docker opt-out, missing
+documentation) found and fixed along the way. The Registry and Project
+Generator were judged the two features users interact with most, ahead
+of continuing to add net-new capabilities. v2.1.3 (AI Assistant
+Excellence - section 27 above) applied the same treatment to the `ai`
+command family: a real `supportsStreaming` bug fixed across all four
+provider clients, a new AI Health Score, a broader context engine, and a
+new `ai compare` capability grounded only in real registry/generator
+data - the AI Assistant, Registry, and Project Generator together were
+the three highest-leverage pillars for this polish line, and all three
+have now shipped. v2.1.4 (Environment Graph Excellence - section 28
+above) found and fixed a genuinely severe bug (a node-ID mismatch
+silently dropping ~22% of real edges), removed real duplicated logic, and
+added a real 30-minute build cache, real compatibility-rule/generator-
+stack nodes, SVG export, and a first-ever TUI page for the graph.
+v2.1.5 (Snapshot Excellence), v2.1.6 (Repair Engine Excellence), v2.1.7
+(Benchmark Excellence), v2.1.8 (Workspace Excellence), and v2.1.9 (Plugin
+SDK Excellence) have all shipped - the same no-new-subsystems,
+polish-and-depth treatment applied to `snapshot.js`/
+`compatibility/repair.js`/`benchmark.js`/the Workspace Manager/the Plugin
+SDK in turn. v2.2.0 (Documentation & Developer Experience) added
+architecture diagrams, a complete command reference, keyboard shortcut
+reference, expanded troubleshooting, migration guide, and CONTRIBUTING.md.
+v2.2.0.1 redesigned the README as a premium landing page. v2.2.1 (Package
+Ecosystem Excellence) audited and enriched all 261 packages: 100% metadata
+coverage (aliases, architectures, repository, versionCommand, tags),
+compatibility rules expanded from 13% to 75%, recommendedAlternatives added
+to 185+ packages, search ranking improved with quality-score tiebreaker,
+average quality score raised from 77% to 88%. v2.2.2 (Performance &
+Startup Excellence) added in-memory caching for all registry loaders
+(loadPackages/loadCategories/loadCollections/loadProfiles/loadRecipes),
+a cached name→package Map for O(1) getPackage(), a pre-built search
+index, and quality-score caching — cutting CLI response times by ~50%
+(registry stats: 0.40s→0.19s). v2.2.3 (Cross-Platform Implementation)
+delivered real Linux and Windows support: LinuxPlatform implements
+apt/dnf/pacman with runtime distro detection, WindowsPlatform implements
+winget/choco/scoop with runtime detection, WSL is detected via
+/proc/version, a new `platformInstall` schema field lets one manifest
+support all 3 OSes, and 222 packages were updated with cross-platform
+install steps. The plan going forward is v2.2.4 (Final Polish &
+Production Readiness), then v3.0.0 Stable.
 
 See [Architecture.md](Architecture.md) for the pre-existing Layer 1 bash
 architecture (unchanged by this document) and [CLI.md](CLI.md) for the

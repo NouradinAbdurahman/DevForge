@@ -9,6 +9,8 @@ export const expoGenerator = {
     id: "expo",
     label: "Expo",
     description: "Managed React Native via Expo (TypeScript template), CI",
+    tags: ["mobile", "react-native", "javascript", "js", "ios", "android"],
+    recommends: ["android-studio", "fastlane"],
     requiresTool: { command: "npx", hint: "Install Node.js (e.g. `devforgekit component install node`), which ships npx." },
     compatibilityCheck: ["node", "watchman"],
 

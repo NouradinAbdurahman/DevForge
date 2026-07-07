@@ -2,20 +2,47 @@ schemaVersion: 1
 name: nginx
 description: A high-performance web server and reverse proxy
 category: web
-platforms: [macos, linux]
-install: { method: brew-formula, id: nginx }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: nginx
 dependencies: []
 validate: nginx -v
+versionCommand: nginx -v
 repair: brew reinstall nginx
 update: brew upgrade nginx
-uninstall: { method: brew-formula, id: nginx }
+uninstall:
+  method: brew-formula
+  id: nginx
 post_install:
-  - "brew services start nginx"
-homepage: "https://nginx.org"
-repository: "https://github.com/nginx/nginx"
+  - brew services start nginx
+homepage: https://nginx.org
+repository: https://github.com/nginx/nginx
 license: BSD-2-Clause
+documentation: https://nginx.org/en/docs/
 maintainer: DevForgeKit Registry
-tags: [web, server]
-aliases: []
+tags:
+  - web
+  - server
+aliases:
+  - nginx-web
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - caddy
+platformInstall:
+  macos:
+    method: brew-formula
+    id: nginx
+  linux:
+    method: apt
+    id: nginx
+

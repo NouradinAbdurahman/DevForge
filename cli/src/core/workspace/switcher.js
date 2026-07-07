@@ -12,7 +12,7 @@
 // global git/docker/kubectl config to revert to (the same reasoning
 // git.js's additive-only aliases already documents); only the generated
 // shell-export file and the active pointer are cleared.
-import { getWorkspace, setActiveWorkspaceName, getActiveWorkspaceName } from "./store.js";
+import { getWorkspace, saveWorkspace, setActiveWorkspaceName, getActiveWorkspaceName } from "./store.js";
 import { applyWorkspaceGit } from "./git.js";
 import { applyWorkspaceSsh } from "./ssh.js";
 import { applyWorkspaceDocker } from "./docker.js";
@@ -29,6 +29,7 @@ import { createSnapshot, restoreSnapshot } from "./snapshot.js";
 // decrypted secrets on top of everything else.
 export async function switchToWorkspace(name, { onOutput } = {}) {
     const workspace = getWorkspace(name);
+    const stamped = saveWorkspace({ ...workspace, lastUsedAt: new Date().toISOString() });
 
     const subsystems = {};
     subsystems.git = await applyWorkspaceGit(workspace, { onOutput });
@@ -62,7 +63,9 @@ export function deactivateWorkspace() {
 // rolling back an inactive workspace's stored document has nothing live
 // to re-apply until it's switched to.
 export async function rollbackToSnapshot(name, snapshotId, { onOutput } = {}) {
-    createSnapshot(name, { message: `Auto-snapshot before rolling back to ${snapshotId}` });
+    if (getActiveWorkspaceName() === name) {
+        createSnapshot(name, { message: `Auto-snapshot before rolling back to ${snapshotId}` });
+    }
     const workspace = restoreSnapshot(name, snapshotId);
 
     if (getActiveWorkspaceName() !== name) {

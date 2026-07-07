@@ -2,19 +2,41 @@ schemaVersion: 1
 name: arc
 description: The Browser Company's Arc browser
 category: browsers
-platforms: [macos]
-install: { method: brew-cask, id: arc }
+platforms:
+  - macos
+architectures:
+  - intel
+  - apple-silicon
+install:
+  method: brew-cask
+  id: arc
 dependencies: []
-validate: "test -d '/Applications/Arc.app'"
+validate: test -d '/Applications/Arc.app'
+versionCommand: arc --version
 repair: brew reinstall --cask arc
 update: brew upgrade --cask arc
-uninstall: { method: brew-cask, id: arc }
+uninstall:
+  method: brew-cask
+  id: arc
 post_install: []
-homepage: "https://arc.net"
-repository: ""
+homepage: https://arc.net
+repository: https://arc.net
 license: proprietary
+documentation: https://resources.arc.net/hc/en-us
 maintainer: DevForgeKit Registry
-tags: [browser]
-aliases: []
+tags:
+  - browser
+  - web
+aliases:
+  - arc-browser
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - brave
+  - firefox
+  - chrome
+platformInstall:
+  macos:
+    method: brew-cask
+    id: arc
+

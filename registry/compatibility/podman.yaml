@@ -1,0 +1,4 @@
+schemaVersion: 1
+name: podman
+recommends: [buildah, skopeo]
+conflicts: [docker]

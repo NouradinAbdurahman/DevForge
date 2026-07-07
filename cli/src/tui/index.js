@@ -56,6 +56,7 @@ import { registrySnapshot, plugins, workspaceList, activeWorkspaceName } from ".
 import { loadConfig } from "../core/config.js";
 import { loadCompatibilityRules } from "../core/compatibility/rules.js";
 import { shouldShowAnimation, resolveAnimationSpeed, runStartupAnimation } from "./startup/startupAnimation.js";
+import { validateAIConfig, autoRepairConfig } from "../core/ai/validation.js";
 
 const ENTER_ALT_SCREEN = "\x1b[?1049h";
 const EXIT_ALT_SCREEN = "\x1b[?1049l";
@@ -150,6 +151,12 @@ export async function launchDashboard({ initialPage } = {}) {
             { label: "Loading recipes", run: () => registrySnapshot() },
             { label: "Loading compatibility engine", run: () => loadCompatibilityRules() },
             { label: "Initializing workspace manager", run: () => { workspaceList(); activeWorkspaceName(); } },
+            { label: "Validating AI configuration", run: () => {
+                const repair = autoRepairConfig();
+                void repair;
+                const report = validateAIConfig();
+                void report;
+            } },
             { label: "Preparing dashboard", run: () => loadConfig() }
         ];
         process.stdout.write(ENTER_ALT_SCREEN);

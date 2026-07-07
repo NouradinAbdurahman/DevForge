@@ -39,7 +39,7 @@ echo "[${name}] install.afterInstall fired: \${DEVFORGEKIT_EVENT_PAYLOAD:-{}}"
 const EXAMPLE_TEST_SCRIPT = `#!/usr/bin/env bash
 set -Eeuo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
-"$here/../commands/hello.sh"
+test -f "$here/../plugin.yml"
 `;
 
 // generateReadme(manifest) -> Markdown string - the "plugin documentation
@@ -56,9 +56,26 @@ export function generateReadme(manifest) {
         manifest.author ? `**Author:** ${manifest.author}` : null,
         manifest.license ? `**License:** ${manifest.license}` : null,
         manifest.homepage ? `**Homepage:** ${manifest.homepage}` : null,
+        manifest.repository ? `**Repository:** ${manifest.repository}` : null,
         `**Requires DevForgeKit:** ${manifest.engine}`,
         ""
     ].filter((line) => line !== null);
+
+    if (manifest.keywords?.length) {
+        lines.push(`**Keywords:** ${manifest.keywords.join(", ")}`, "");
+    }
+    if (manifest.capabilities?.length) {
+        lines.push(`**Capabilities:** ${manifest.capabilities.join(", ")}`, "");
+    }
+    if (manifest.permissions?.length) {
+        lines.push(`**Permissions:** ${manifest.permissions.join(", ")}`, "");
+    }
+    if (manifest.compatibility) {
+        const parts = [];
+        if (manifest.compatibility.platforms?.length) parts.push(`Platforms: ${manifest.compatibility.platforms.join(", ")}`);
+        if (manifest.compatibility.architectures?.length) parts.push(`Architectures: ${manifest.compatibility.architectures.join(", ")}`);
+        if (parts.length) lines.push(`**Compatibility:** ${parts.join(" | ")}`, "");
+    }
 
     if (manifest.commands?.length) {
         lines.push("## Commands", "");
@@ -91,10 +108,15 @@ export function generateReadme(manifest) {
     return lines.join("\n");
 }
 
-// createPlugin(name, destDir) -> the created plugin's directory path.
-// Scaffolds a real, runnable plugin: an example command, an example
-// event hook, and a test that actually exercises the example command.
-export function createPlugin(name, destDir = process.cwd()) {
+// createPlugin(name, destDir, { template }) -> the created plugin's
+// directory path. Scaffolds a real, runnable plugin from one of several
+// templates. Default template is "simple-command" (the original behavior).
+export function createPlugin(name, destDir = process.cwd(), { template = "simple-command" } = {}) {
+    const tpl = TEMPLATES[template];
+    if (!tpl) {
+        throw new DevForgeError(`Unknown template '${template}'. Available: ${Object.keys(TEMPLATES).join(", ")}`);
+    }
+
     const pluginDir = path.join(destDir, name);
     if (existsSync(pluginDir)) {
         throw new DevForgeError(`Directory already exists: ${pluginDir}`);
@@ -104,29 +126,148 @@ export function createPlugin(name, destDir = process.cwd()) {
     mkdirSync(path.join(pluginDir, "hooks"), { recursive: true });
     mkdirSync(path.join(pluginDir, "tests"), { recursive: true });
 
-    const manifest = {
-        schemaVersion: 1,
-        name,
-        version: "0.1.0",
-        description: `${name} - a DevForgeKit plugin`,
-        engine: `>=${getVersion()}`,
-        dependencies: [],
-        commands: [
-            { name: "hello", description: `Example command from ${name}`, run: "./commands/hello.sh" }
-        ],
-        events: [
-            { event: "install.afterInstall", description: "Example: reacts after any component install", run: "./hooks/after-install.sh" }
-        ]
-    };
-
+    const manifest = tpl.manifest(name, getVersion());
     writeFileSync(path.join(pluginDir, "plugin.yml"), yaml.dump(manifest));
-    writeFileSync(path.join(pluginDir, "commands", "hello.sh"), EXAMPLE_COMMAND_SCRIPT(name), { mode: 0o755 });
-    writeFileSync(path.join(pluginDir, "hooks", "after-install.sh"), EXAMPLE_EVENT_SCRIPT(name), { mode: 0o755 });
-    writeFileSync(path.join(pluginDir, "tests", "manifest.test.sh"), EXAMPLE_TEST_SCRIPT, { mode: 0o755 });
+
+    for (const [relPath, content] of Object.entries(tpl.files(name))) {
+        const fullPath = path.join(pluginDir, relPath);
+        mkdirSync(path.dirname(fullPath), { recursive: true });
+        writeFileSync(fullPath, content, { mode: 0o755 });
+    }
+
     writeFileSync(path.join(pluginDir, "README.md"), generateReadme(manifest));
 
     return pluginDir;
 }
+
+// Template definitions. Each template has:
+// - manifest(name, version) -> manifest object
+// - files(name) -> { [relPath]: content } of scripts to scaffold
+const TEMPLATES = {
+    "simple-command": {
+        manifest: (name, ver) => ({
+            schemaVersion: 2, name, version: "0.1.0",
+            description: `${name} - a DevForgeKit plugin`,
+            author: "", license: "MIT", homepage: "", repository: "",
+            keywords: [], engine: `>=${ver}`, dependencies: [],
+            capabilities: ["command"], permissions: ["shell"],
+            compatibility: { platforms: ["darwin", "linux", "win32"], architectures: ["x64", "arm64"] },
+            commands: [{ name: "hello", description: `Example command from ${name}`, run: "./commands/hello.sh" }],
+            events: [{ event: "install.afterInstall", description: "Example: reacts after any component install", run: "./hooks/after-install.sh" }]
+        }),
+        files: (name) => ({
+            "commands/hello.sh": EXAMPLE_COMMAND_SCRIPT(name),
+            "hooks/after-install.sh": EXAMPLE_EVENT_SCRIPT(name),
+            "tests/manifest.test.sh": EXAMPLE_TEST_SCRIPT,
+        })
+    },
+    "tui-page": {
+        manifest: (name, ver) => ({
+            schemaVersion: 2, name, version: "0.1.0",
+            description: `${name} - a TUI page plugin for DevForgeKit`,
+            author: "", license: "MIT", homepage: "", repository: "",
+            keywords: ["tui", "page"], engine: `>=${ver}`, dependencies: [],
+            capabilities: ["tui-page"], permissions: ["shell"],
+            compatibility: { platforms: ["darwin", "linux"], architectures: ["x64", "arm64"] },
+            commands: [{ name: "open-page", description: `Open the ${name} TUI page`, run: "./commands/open-page.sh" }],
+        }),
+        files: (name) => ({
+            "commands/open-page.sh": `#!/usr/bin/env bash\nset -Eeuo pipefail\necho "Opening ${name} TUI page..."\necho "TUI page plugins render inside the DevForgeKit dashboard."\n`,
+            "tests/manifest.test.sh": EXAMPLE_TEST_SCRIPT,
+        })
+    },
+    "generator": {
+        manifest: (name, ver) => ({
+            schemaVersion: 2, name, version: "0.1.0",
+            description: `${name} - a project generator plugin for DevForgeKit`,
+            author: "", license: "MIT", homepage: "", repository: "",
+            keywords: ["generator", "scaffold"], engine: `>=${ver}`, dependencies: [],
+            capabilities: ["generator"], permissions: ["shell", "filesystem"],
+            compatibility: { platforms: ["darwin", "linux", "win32"], architectures: ["x64", "arm64"] },
+            commands: [{ name: "generate", description: `Generate a project with ${name}`, run: "./commands/generate.sh" }],
+        }),
+        files: (name) => ({
+            "commands/generate.sh": `#!/usr/bin/env bash\nset -Eeuo pipefail\necho "Generating project with ${name}..."\necho "Generator plugins scaffold new projects from custom templates."\n`,
+            "tests/manifest.test.sh": EXAMPLE_TEST_SCRIPT,
+        })
+    },
+    "benchmark": {
+        manifest: (name, ver) => ({
+            schemaVersion: 2, name, version: "0.1.0",
+            description: `${name} - a benchmark plugin for DevForgeKit`,
+            author: "", license: "MIT", homepage: "", repository: "",
+            keywords: ["benchmark", "performance"], engine: `>=${ver}`, dependencies: [],
+            capabilities: ["benchmark"], permissions: ["shell", "subprocess"],
+            compatibility: { platforms: ["darwin", "linux", "win32"], architectures: ["x64", "arm64"] },
+            commands: [{ name: "bench", description: `Run ${name} benchmark`, run: "./commands/bench.sh" }],
+        }),
+        files: (name) => ({
+            "commands/bench.sh": `#!/usr/bin/env bash\nset -Eeuo pipefail\nstart=$(date +%s%N)\nsleep 0.1\nend=$(date +%s%N)\necho "${name} benchmark: $(( (end - start) / 1000000 ))ms"\n`,
+            "tests/manifest.test.sh": EXAMPLE_TEST_SCRIPT,
+        })
+    },
+    "repair": {
+        manifest: (name, ver) => ({
+            schemaVersion: 2, name, version: "0.1.0",
+            description: `${name} - a repair plugin for DevForgeKit`,
+            author: "", license: "MIT", homepage: "", repository: "",
+            keywords: ["repair", "fix"], engine: `>=${ver}`, dependencies: [],
+            capabilities: ["repair"], permissions: ["shell", "filesystem"],
+            compatibility: { platforms: ["darwin", "linux", "win32"], architectures: ["x64", "arm64"] },
+            commands: [{ name: "repair", description: `Run ${name} repair`, run: "./commands/repair.sh" }],
+        }),
+        files: (name) => ({
+            "commands/repair.sh": `#!/usr/bin/env bash\nset -Eeuo pipefail\necho "Running ${name} repair..."\necho "Repair plugins diagnose and fix environment issues."\n`,
+            "tests/manifest.test.sh": EXAMPLE_TEST_SCRIPT,
+        })
+    },
+    "graph-extension": {
+        manifest: (name, ver) => ({
+            schemaVersion: 2, name, version: "0.1.0",
+            description: `${name} - a DEV Graph extension plugin for DevForgeKit`,
+            author: "", license: "MIT", homepage: "", repository: "",
+            keywords: ["graph", "dependency"], engine: `>=${ver}`, dependencies: [],
+            capabilities: ["graph"], permissions: ["shell"],
+            compatibility: { platforms: ["darwin", "linux", "win32"], architectures: ["x64", "arm64"] },
+            commands: [{ name: "graph-query", description: `Query the DEV Graph via ${name}`, run: "./commands/graph-query.sh" }],
+        }),
+        files: (name) => ({
+            "commands/graph-query.sh": `#!/usr/bin/env bash\nset -Eeuo pipefail\necho "Querying DEV Graph via ${name}..."\necho "Graph extension plugins add custom nodes and edges to the DEV Graph."\n`,
+            "tests/manifest.test.sh": EXAMPLE_TEST_SCRIPT,
+        })
+    },
+    "ai-provider": {
+        manifest: (name, ver) => ({
+            schemaVersion: 2, name, version: "0.1.0",
+            description: `${name} - an AI provider plugin for DevForgeKit`,
+            author: "", license: "MIT", homepage: "", repository: "",
+            keywords: ["ai", "provider", "llm"], engine: `>=${ver}`, dependencies: [],
+            capabilities: ["ai-provider"], permissions: ["network", "env"],
+            compatibility: { platforms: ["darwin", "linux", "win32"], architectures: ["x64", "arm64"] },
+            commands: [{ name: "ask", description: `Ask ${name} AI provider`, run: "./commands/ask.sh" }],
+        }),
+        files: (name) => ({
+            "commands/ask.sh": `#!/usr/bin/env bash\nset -Eeuo pipefail\necho "Asking ${name} AI provider..."\necho "AI provider plugins integrate custom LLM endpoints into DevForgeKit."\n`,
+            "tests/manifest.test.sh": EXAMPLE_TEST_SCRIPT,
+        })
+    },
+    "compatibility-rule": {
+        manifest: (name, ver) => ({
+            schemaVersion: 2, name, version: "0.1.0",
+            description: `${name} - a compatibility rule plugin for DevForgeKit`,
+            author: "", license: "MIT", homepage: "", repository: "",
+            keywords: ["compatibility", "rules"], engine: `>=${ver}`, dependencies: [],
+            capabilities: ["compatibility-rule"], permissions: [],
+            compatibility: { platforms: ["darwin", "linux", "win32"], architectures: ["x64", "arm64"] },
+            rules: { requires: {}, conflicts: [], recommends: {} },
+            commands: [{ name: "check-compat", description: `Check compatibility rules from ${name}`, run: "./commands/check-compat.sh" }],
+        }),
+        files: (name) => ({
+            "commands/check-compat.sh": `#!/usr/bin/env bash\nset -Eeuo pipefail\necho "Checking compatibility rules from ${name}..."\necho "Compatibility rule plugins add version constraints to the Compatibility Engine."\n`,
+            "tests/manifest.test.sh": EXAMPLE_TEST_SCRIPT,
+        })
+    },
+};
 
 // testPlugin(dir) -> { manifest, results, score, verdict } - schema
 // validation, engine semver-range sanity, "every referenced script
@@ -226,18 +367,23 @@ export async function buildPlugin(dir) {
     return { manifest, lock, testScore: score };
 }
 
-// packagePlugin(dir, outDir) -> { archivePath, checksum, signaturePath }.
-// Builds (if the lock file is missing) then shells out to `tar -czf`
-// (reusing the existing shell bridge rather than adding a tar/zip npm
-// dependency) and signs the resulting archive with this machine's local
-// key (core/signing.js - auto-generated on first use). `outDir` defaults
-// to the plugin's *parent* directory, not the plugin directory itself -
-// writing the archive inside the very directory being archived makes
-// tar (at least BSD tar, macOS's default) fail with "file changed as we
-// read it" since the output file appears mid-read.
+// packagePlugin(dir, outDir) -> { archivePath, checksum, signaturePath,
+// manifest, lock }. Builds (if the lock file is missing) then shells
+// out to `tar -czf` (reusing the existing shell bridge rather than
+// adding a tar/zip npm dependency) and signs the resulting archive with
+// this machine's local key (core/signing.js - auto-generated on first
+// use). `outDir` defaults to the plugin's *parent* directory, not the
+// plugin directory itself - writing the archive inside the very
+// directory being archived makes tar (at least BSD tar, macOS's default)
+// fail with "file changed as we read it" since the output file appears
+// mid-read.
 export async function packagePlugin(dir, outDir = path.dirname(dir)) {
+    let lock;
     if (!existsSync(path.join(dir, "plugin.lock.json"))) {
-        await buildPlugin(dir);
+        const buildResult = await buildPlugin(dir);
+        lock = buildResult.lock;
+    } else {
+        lock = JSON.parse(readFileSync(path.join(dir, "plugin.lock.json"), "utf8"));
     }
     const manifest = yaml.load(readFileSync(path.join(dir, "plugin.yml"), "utf8"));
 
@@ -259,7 +405,7 @@ export async function packagePlugin(dir, outDir = path.dirname(dir)) {
     const signaturePath = `${archivePath}.sig`;
     writeFileSync(signaturePath, `${signature}\n`);
 
-    return { archivePath, checksum, signaturePath };
+    return { archivePath, checksum, signaturePath, manifest, lock };
 }
 
 // publishPlugin(archivePath, destDir) -> { destArchive, indexPath}.

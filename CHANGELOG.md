@@ -7,6 +7,517 @@ and version numbers follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **v3.0.0 First Public GitHub Release** - production-ready first
+  public release. No new features.
+  - **CODE_OF_CONDUCT.md** - Contributor Covenant v2.0 code of conduct
+    added.
+  - **Pull request template** - `.github/PULL_REQUEST_TEMPLATE.md`
+    with description, type-of-change, related-issues, and checklist
+    sections.
+  - **Dependabot CLI monitoring** - added `/cli` npm ecosystem entry
+    to `.github/dependabot.yml` so the CLI's dependencies are tracked
+    alongside the template dependencies.
+
+### Changed
+
+- Version bumped to 3.0.0.
+
+- **README screenshots cleaned up** - removed broken image
+  references for screenshots that don't exist yet (ai.png,
+  generator.png, workspace.png). Removed `architecture.svg`
+  reference from repository structure. Only existing screenshots
+  (dashboard, components, graph, repair) are referenced. Replaced
+  "Screenshots will be added" placeholder with a note about future
+  screenshots.
+- **README roadmap** - v3.0.0 moved from Planned to Shipped.
+
+- **v2.2.4 Final Polish & Production Readiness** - comprehensive audit
+  and documentation consistency pass across all subsystems. No new
+  features.
+  - **Cross-platform language audit** - replaced all stale
+    "macOS-only"/"macOS development workstation" references with
+    cross-platform language across README.md, CLAUDE.md,
+    Architecture.md, PlatformArchitecture.md, TUI.md, CLI.md,
+    AIAssistant.md, and CLI/TUI source files. Layer 1 bash scripts
+    correctly remain macOS-specific by design.
+  - **CommandReference.md completeness** - added missing subcommands
+    for workspace (metadata, deactivate, rename, clone, search, repair,
+    diff, health, git-capture, shell-init, benchmark, snapshot
+    restore/compare/delete/export, env, ssh), repair (explain-issues,
+    rollback-repair, rollback-list, benchmark), benchmark (quick,
+    standard, full, trend, intelligence, report), graph (open, cache),
+    snapshot (delete, explain), component (info, validate, repair,
+    update), theme (list, use, preview, random, export, import,
+    gallery), and ai (import). Removed non-existent `config edit` and
+    `config reset`; added `config list`.
+  - **README.md commands table** - expanded all command categories to
+    reflect the full set of subcommands in the code, matching
+    CommandReference.md.
+  - **AIAssistant.md** - updated secure storage description from
+    "macOS Keychain" to cross-platform "OS secure storage — Keychain
+    on macOS, encrypted file on Linux/Windows".
+  - **KeyboardShortcuts.md** - corrected navigation shortcuts table to
+    match the actual `store.js` PAGES array and updated the built-in
+    themes list to match the 20 themes in `themes/builtin.js`.
+  - **ArchitectureDiagrams.md** - updated compatibility rule count
+    from 34 to 196.
+  - **PlatformArchitecture.md** - updated LinuxPlatform and
+    WindowsPlatform descriptions from "stub" to "fully implemented
+    (v2.2.3)".
+  - **TUI.md** - updated Updates page and performance section from
+    brew-specific to cross-platform package managers.
+  - **CLI.md** - added missing AI commands (setup, status, fix) to
+    example usage block.
+  - **package-lock.json** - fixed stale version (1.1.0 → 2.2.3).
+  - All 1,088 tests pass with no regressions.
+
+### Changed
+
+- Version bumped to 2.2.4.
+
+- **v2.2.3 Cross-Platform Implementation** - real Linux and Windows
+  support with 7 package managers, `platformInstall` for per-OS install
+  steps, and WSL detection.
+  - **Linux platform adapter** - full implementation of `LinuxPlatform`
+    with `apt` (Debian/Ubuntu), `dnf` (Fedora/RHEL), and `pacman` (Arch)
+    support. Detects the available package manager at runtime via
+    `existsSync` on binary paths (apt > dnf > pacman precedence).
+    Implements `installCommand()`, `packagePrefix()`, `outdatedPackages()`,
+    `upgradeCommand()`, `packageManagerId()`, `packageManagerCacheDir()`,
+    and `osVersion()` (from `/etc/os-release`).
+  - **Windows platform adapter** - full implementation of
+    `WindowsPlatform` with `winget` (Windows Package Manager),
+    `choco` (Chocolatey), and `scoop` support. Detects the available
+    package manager at runtime (winget > choco > scoop precedence).
+    Implements `installCommand()`, `packagePrefix()`,
+    `outdatedPackages()`, `upgradeCommand()`, `packageManagerId()`,
+    `packageManagerCacheDir()`, `osVersion()`, and `binSearchDirs()`.
+  - **WSL detection** - `LinuxPlatform.wsl` getter detects Windows
+    Subsystem for Linux via `/proc/version` containing "microsoft".
+  - **platformInstall field** - new schema field on both packages and
+    variants: `platformInstall: { macos: {...}, linux: {...}, windows: {...} }`.
+    The installer picks the entry matching the current platform; falls
+    back to the top-level `install` field if no match. Lets a single
+    manifest support macOS (brew), Linux (apt), and Windows (winget)
+    without separate files.
+  - **New install methods** - `apt`, `dnf`, `pacman`, `winget`, `choco`,
+    `scoop` added to the package schema's `installStep.method` enum.
+  - **New architectures** - `x64` and `arm64` added to the schema's
+    `architectures` enum for Linux/Windows support.
+  - **222 packages updated** with `platformInstall` entries mapping
+    brew names to apt and winget equivalents via a curated mapping
+    table. Key packages (docker, node, wget, curl, git, etc.) manually
+    curated with correct package manager IDs.
+  - **Docker variants expanded** - added `docker-engine` variant for
+    Linux (apt: `docker-ce`), `docker-desktop` now has `platformInstall`
+    for Windows (winget: `Docker.DockerDesktop`).
+  - **Installer updated** - `resolveInstallStep()` now checks
+    `variant.platformInstall` and `pkg.platformInstall` before falling
+    back to the top-level install field. `uninstall()` also resolves
+    the platform-specific step.
+  - **7 new platform tests** - apt/dnf/pacman install commands,
+    winget/choco/scoop install commands, cross-platform
+    PlatformNotSupportedError checks, and `platformInstall` resolution
+    tests for macOS/Linux/Windows/fallback. All 1,088 tests pass.
+
+### Changed
+
+- Version bumped to 2.2.3.
+
+- **v2.2.2 Performance & Startup Excellence** - in-memory caching for
+  the registry's hottest paths, cutting CLI response times by ~50%.
+  - **Registry loading cache** - `loadPackages`, `loadCategories`,
+    `loadCollections`, `loadProfiles`, and `loadRecipes` now cache
+    their results in a module-level `Map` keyed by directory path.
+    Previously, every call to `getPackage()`, `getCollection()`,
+    `searchPackages()`, etc. re-read and re-parsed all 261 YAML files
+    from disk. Now the first call loads + caches, subsequent calls
+    return instantly. `clearRegistryCache()` is exported for
+    `registry generate` to invalidate after writing.
+  - **Package lookup optimization** - `getPackage()` now uses a cached
+    `name → package` `Map` for O(1) lookup instead of linear `find()`
+    across 261 packages.
+  - **Search index cache** - `searchPackages()` pre-builds a lowercased
+    search index (name, tags, aliases, description, category) once,
+    avoiding 261 × 5 `toLowerCase()` calls per search.
+  - **Quality score cache** - `getRegistryStats()` caches each
+    package's `scoreManifest()` result on the package object
+    (`_qualityScore`), avoiding 13 × 261 re-evaluations per call.
+    The search ranking tiebreaker reuses this cached score.
+  - **Measured improvement** - `registry stats` cold-start: 0.40s →
+    0.19s (52% faster). `info <name>`: 0.25s → 0.18s (28% faster).
+    All 1,081 tests pass with no regressions.
+
+### Changed
+
+- Version bumped to 2.2.2.
+
+- **v2.2.1 Package Ecosystem Excellence** - a comprehensive audit and
+  enrichment of all 261 packages in the registry, making every package
+  feel curated, verified, and production-ready.
+  - **Metadata completeness** - 100% coverage across all 261 packages for
+    homepage, repository, license, documentation, stability, lastVerified,
+    aliases, architectures, validate, uninstall, and tags (≥2 per package).
+    Previously: aliases 30%, architectures 86%, repository 95%.
+  - **Version detection** - added `versionCommand` to all 258 packages that
+    were missing it (99% → 100%). Each command is tailored to the tool's
+    actual `--version` output format.
+  - **Update commands** - added `update` field to the 4 packages missing it
+    (`c`, `docker`, `swift`, `xcode`).
+  - **Compatibility rules** - created 162 new compatibility rule files,
+    bringing coverage from 13% (34 rules) to 75% (196 rules). Rules cover
+    language runtime ↔ package manager relationships, container/K8s
+    ecosystem pairings, database conflicts (mysql ↔ mariadb), editor
+    toolchains, DevOps tool chains, security tool pairings, and more.
+  - **Package recommendations** - added `recommendedAlternatives` to 185+
+    packages, enabling the Compatibility Engine to suggest real alternatives
+    (e.g. `podman` for `docker`, `neovim` for `vim`, `pnpm` for `npm`).
+  - **Search ranking improvement** - `searchPackages` now uses quality score
+    as a tiebreaker when match scores are equal, and distinguishes exact
+    alias matches (score 70) from alias substring matches (score 60).
+  - **Quality score improvement** - average Manifest Quality Score raised
+    from 77% to 88% across the registry.
+  - **Registry health** - doctor issues reduced from 312 to 258 (remaining
+    are "never install-verified" info items, expected for non-CI packages).
+
+### Changed
+
+- Version bumped to 2.2.1.
+
+- **v2.1.9 Plugin SDK Excellence** - a comprehensive quality pass on the
+  Plugin SDK, bringing it to the same standard as the Registry, Project
+  Generator, AI Assistant, Environment Graph, Snapshot, Repair,
+  Benchmark, and Workspace subsystems.
+  - **Schema v2 metadata** - added `repository`, `keywords`, `icon`,
+    `compatibility` (platforms/architectures), `permissions`, and
+    `capabilities` fields to the plugin manifest schema. All optional,
+    fully backward-compatible with v1 manifests.
+  - **Plugin Validation** - `devforgekit plugin validate [dir]` runs
+    comprehensive structural checks: manifest schema, engine
+    compatibility, script existence/executability, README/LICENSE/icon
+    presence, platform/architecture compatibility, dependency resolution,
+    duplicate command names, semver versioning, tests/ directory. `--json`
+    for machine-readable output.
+  - **Plugin Quality Score** - `devforgekit plugin quality [name|dir]`
+    scores across 9 categories (Documentation, Architecture, Testing,
+    Signing, Compatibility, Versioning, Manifest, Permissions, Examples).
+    `--json` for machine-readable output.
+  - **Plugin Diagnostics** - `devforgekit plugin doctor` scans all
+    discovered plugins for invalid manifests, incompatible engines,
+    duplicate commands, missing scripts, missing dependencies, unbuilt
+    plugins, deprecated schema v1, missing README/LICENSE, and
+    platform/architecture incompatibility. `--json` for machine-readable
+    output.
+  - **8 Plugin Templates** - `devforgekit plugin create <name>
+    --template <template>` scaffolds from one of 8 templates:
+    `simple-command`, `tui-page`, `generator`, `benchmark`, `repair`,
+    `graph-extension`, `ai-provider`, `compatibility-rule`. Each
+    template produces a valid, passing plugin with appropriate
+    capabilities, permissions, and command scripts.
+  - **Enhanced plugin test** - `--json` flag for machine-readable output.
+  - **Enhanced plugin package** - improved output with archive size,
+    signature status, and engine info. `--json` flag. `packagePlugin()`
+    now returns `manifest` and `lock` objects in its result.
+  - **TUI Plugins page redesign** - tabbed interface with 4 tabs:
+    Installed (browse with capabilities/permissions), Validation
+    (per-plugin validation results), Quality (per-plugin quality scores),
+    Details (full manifest breakdown).
+  - **Plugin SDK documentation** - comprehensive `docs/PluginSdk.md`
+    with manifest reference, templates, lifecycle, signing/trust, event
+    hooks, TUI integration, command reference, best practices, and
+    migration guide.
+  - 31 new tests in `test/plugin-excellence.test.js` covering all v2.1.9
+    features. All 40 plugin tests + 38 TUI tests passing.
+  - Fixed incorrect `import { process } from "node:process"` in
+    `pluginValidation.js` (process is a global, not a named export).
+  - Made example test script generic (checks `plugin.yml` exists instead
+    of running a specific command script) so all 8 templates pass
+    `testPlugin` out of the box.
+
+- **v2.2.0 Documentation & Developer Experience** - a comprehensive
+  documentation overhaul making the project accessible to new
+  contributors.
+  - **README.md rewrite** - added table of contents, Plugin SDK section,
+    updated roadmap from the obsolete "v2.0 Cloud Platform" to the new
+    v2.2 plan (Documentation, Package Ecosystem, Performance,
+    Cross-Platform, Final Polish, v3.0.0 Stable), streamlined
+    Contributing section.
+  - **CONTRIBUTING.md** - new contributing guide with development setup,
+    project structure, coding standards (bash 3.2, ESM/JS, YAML),
+    testing conventions, validation steps, "how to add things" table,
+    documentation guide, and PR process.
+  - **docs/ArchitectureDiagrams.md** - ASCII + Mermaid diagrams for
+    four-layer architecture, command dispatch flow, TUI render pipeline,
+    plugin lifecycle, registry data flow, compatibility engine flow, AI
+    assistant sequence, workspace switch sequence, DEV Graph node types,
+    OS abstraction layer, and config file hierarchy.
+  - **docs/CommandReference.md** - complete command reference table
+    covering every `devforgekit` command across all subsystems (core
+    lifecycle, diagnostics, profiles, recipes, components, registry,
+    project generator, plugin SDK, workspace, compatibility, AI, graph,
+    package intelligence, benchmark, repair, snapshot, configuration,
+    release, TUI).
+  - **docs/KeyboardShortcuts.md** - complete TUI keyboard shortcut
+    reference: global keys, navigation, list navigation, search, command
+    palette, plugins page tabs, configuration, text input, suspend/
+    resume, startup animation, debug, and theme shortcuts.
+  - **docs/MigrationGuide.md** - version migration guide covering
+    config format changes, plugin schema v1→v2, workspace schema v1→v2,
+    registry quality fields, TUI addition, AI assistant, DEV Graph,
+    plugin SDK evolution, version compatibility matrix, and the config
+    migration framework.
+  - **docs/Troubleshooting.md** - expanded from 71 lines to 208 lines
+    with new sections: Compatibility, AI Assistant, TUI/Dashboard,
+    Plugins, Workspace Manager, Project Generator, Registry, Self-Update,
+    and Getting Help cross-references.
+  - **README.md premium redesign (v2.2.0.1)** - complete rewrite from 708
+    lines to 479 lines as a flagship-quality landing page. Centered hero
+    with banner image placeholder, real project statistics (261 packages,
+    17 generators, 20 themes, 1,081 tests, etc.), quick navigation table,
+    feature cards, Mermaid architecture diagram, screenshot gallery
+    placeholders, categorized documentation hub, repository tree, project
+    statistics table, capability checklist, concise roadmap, and
+    professional footer. Created `assets/github/` directory structure for
+    banner and screenshots. No fake badges, no exaggerated claims.
+- **v2.0.0 TUI Foundation & Component Library** - a shared UI component
+  library (`Badge`, `StatusIndicator`, `Card`, `EmptyState`, `ErrorState`,
+  `LoadingState`, `Table`, `ScrollList`, `FilterBar`, `DetailPanel`,
+  `PageShell`, `InstallProgress`) and one page-layout system, migrated
+  across every dashboard page to replace ad hoc, inconsistent per-page
+  implementations. Toast notifications (auto-dismissing) and an in-Ink
+  `ModalHost` (confirm/text prompts) replace suspend-to-bare-prompt for
+  simple flows.
+- **v2.0.1 Navigation & Command Palette** - `:`/`Ctrl+P` opens a fuzzy
+  page-jump and global-action palette (`tui/fuzzy.js`, fzf-style scoring).
+- **v2.0.2 Search & Filtering** - Components/AI Models/Search pages
+  migrated to real fuzzy matching with character-level highlighting.
+  Fixed a race where the global `/` search handler could fire alongside a
+  page's own local filter on the very first keystroke.
+- **v2.0.3 Notifications, Progress & Feedback** - toast de-duplication, a
+  shared `InstallProgress` component, and a notification wording/level
+  audit across every page.
+- **v2.0.4 Onboarding & First-Run Experience** - a 6-step first-run
+  wizard (theme, shortcuts, pages, profile, AI setup), shown once via a
+  persisted `onboardingSeen` config flag.
+- **v2.0.5 Themes, Accessibility & Responsive Layout** - extended the
+  WCAG contrast checker to cover selection/search-highlight/table-header
+  colors, fixing 4 real contrast failures across 4 built-in themes;
+  reduced-motion support (`reducedMotion` config field, static spinners).
+- **v2.0.6 Performance & Rendering Optimizations** - fixed `StatusBar`'s
+  `React.memo`, which was a silent no-op because it read `useStore()`
+  directly instead of taking props (context reads bypass memo entirely).
+- **v2.0.7 Cross-Platform Architecture** - a new OS Abstraction Layer
+  (`cli/src/core/platform/`, see `docs/PlatformArchitecture.md` section
+  24): `getPlatform()` replaces direct `process.platform` checks across
+  every shared system (installer, compatibility engine, repair, package
+  intel, workspace manager); `MacOSPlatform` centralizes every Homebrew/
+  `sw_vers` call this codebase already made; `LinuxPlatform`/
+  `WindowsPlatform` exist for real, testable shape but honestly report no
+  package manager yet (architecture-only - no Linux/Windows support in
+  this release). Fixed a latent bug found during migration: `packageIntel.js`'s
+  install-location and outdated-detection checks compared against
+  `"brew"`, but the real manifest method value is `"brew-formula"` - the
+  check never matched, silently skipping both checks for every
+  brew-formula package.
+- **v2.0.8 Registry Expansion** - quality over quantity: added a
+  `documentation` field to all 251 pre-existing registry packages (0/251
+  had one before - the single biggest lever on the Manifest Quality
+  Score, raising the registry-wide average from 60% to 70%); expanded
+  compatibility rule coverage from 2% (5 packages) to 9% (24 rule files),
+  adding real, defensible `conflicts` (MariaDB/MySQL port collision,
+  asdf/Volta PATH-shim collision) and `recommends` pairings (kubectl
+  ecosystem, git/GitHub CLI, Python/Poetry/uv, Terraform/Vault,
+  Prometheus/Grafana, ESLint/Prettier, Neovim/tmux, fzf/ripgrep/zoxide/
+  bat); added 10 new, real, well-verified packages (`lazygit`,
+  `lazydocker`, `starship`, `atuin`, `just`, `watchexec`, `git-delta`,
+  `difftastic`, `dive`, `mkcert`), bringing the registry to 261
+  components.
+- **v2.0.9 Project Generator Expansion** - added a 17th stack, SvelteKit
+  (`devforgekit new sveltekit`), scaffolded via the official `sv create`
+  CLI (the successor to the deprecated `create-svelte`/`npm create
+  svelte@latest` flow) with TypeScript, ESLint, Prettier, optional
+  Tailwind CSS, optional Dockerfile, and CI layered on top - the same
+  official-CLI-plus-hand-written-layer pattern every other CLI-scaffolded
+  stack (Next.js, Expo, NestJS...) already uses.
+- **v2.1.0 UX & Product Consistency Audit** - a polish-only pass (no new
+  features) auditing every dashboard page against `components/ui.js`'s
+  own conventions for wording, spacing, color, key hints, navigation, and
+  destructive-action safety. Found and fixed a real bug (`AIDiagnosticsPage`
+  used `"WARN"` instead of the recognized `"WARNING"` status, silently
+  rendering warnings in muted gray instead of the warning color) and a
+  three-way drift in AI-health severity classification between
+  `DashboardPage`, `AIStatusCard`, and `commands/ai.js`'s `ai status`
+  (unified into one canonical `aiHealthTone()` export). Replaced
+  hand-rolled list navigation on two AI pages with the shared
+  `SelectList` (restoring `j`/`k`/`PageUp`/`PageDown`/`g`/`G` support),
+  extended `statusColor()` to recognize the app's lowercase toast/log
+  severity vocabulary, unified loading/empty/error states across a dozen
+  pages onto `LoadingState`/`EmptyState`/`ErrorState`/`InstallProgress`,
+  rebuilt `ProfilesPage`/`RecipesPage`'s detail panels on `DetailPanel`,
+  added a confirm-before-remove guard to `ComponentsPage` (wiring up
+  `actions.confirmAsync`, defined since v2.0.0 but never actually called
+  anywhere), and standardized wording (empty-provider messaging, toast
+  punctuation, "filter" vs "search" terminology) across the AI pages,
+  Commands, and Updates. See `docs/TUI.md`'s new "v2.1.0 UX & Product
+  Consistency Audit" section for the full list.
+- **v2.1.1 Registry Excellence** - not "add hundreds of packages" but
+  making every existing one feel production-quality. Redesigned the
+  Manifest Quality Score (`core/quality.js`) from 10 checks (3 of which
+  were literally the same `ciVerified` boolean counted three times) to 13
+  checks grouped into a real category breakdown (Metadata/Documentation/
+  Reliability/Discoverability/Compatibility/Platform Support), so
+  `devforgekit info <name>` shows *why* a package scores what it does.
+  Added a fourth registry subcommand, `devforgekit registry audit` -
+  a static health scorecard (package/verified/deprecated counts, average
+  quality, coverage percentages) with data-driven recommendations,
+  distinct from the pre-existing `stats`/`verify`/`doctor` - plus a new
+  dashboard page (`tui/pages/RegistryPage.js`, shortcut `y`) showing the
+  same scorecard. The audit immediately surfaced a real, previously-
+  unknown gap: 0% of packages declared the optional `architectures`
+  field; backfilled for the 224 packages installed via Homebrew (0% →
+  86% coverage). Expanded compatibility rules 24 → 34 files (nginx↔
+  certbot, direnv→asdf, k6→grafana, supabase→postgres, firebase↔flutter,
+  pnpm/yarn/cypress/playwright→node). Fixed a real search gap
+  (`ComponentsPage`'s local filter didn't search `aliases`, only `tags`)
+  and added `tags` to all 17 Project Generator stacks so global search's
+  "searching 'js' finds Node/Next/React/Express" family matching works.
+  Added 10 new, individually-verified packages (`lazygit`, `lazydocker`,
+  `starship`, `atuin`, `just`, `watchexec`, `git-delta`, `difftastic`,
+  `dive`, `mkcert` - registry now 261 components). Along the way, found
+  and fixed a genuine Ink rendering bug affecting any page whose combined
+  panel content exceeds the documented per-page height budget - see
+  `docs/TUI.md`'s "v2.1.1 Registry Excellence" section.
+- **v2.1.2 Project Generator Excellence** - not "add more templates" but
+  making every generated project feel production-ready and every stack
+  behave consistently. Real validation before generation
+  (`validateProjectName`: syntax, Windows-reserved device names like
+  `con`/`nul`/`com1`-`9`, existing-directory check) with clear,
+  actionable errors instead of a scaffold command failing partway
+  through. A universal license system - `--license
+  mit|apache-2.0|gpl-3.0|none` (interactive prompt if omitted, defaults
+  to MIT), applied once in `core/projectGenerator.js` for every stack
+  rather than 5 of 17 generators hardcoding their own MIT text and the
+  other 12 writing none at all; added `licenseText()`/`apache2License()`/
+  `gpl3License()` to `generators/shared.js`. Stack Intelligence - every
+  generator now declares a real, registry-backed `recommends: [...]`
+  array (e.g. Flutter → Firebase/Supabase/Android Studio/Dart), shown
+  before scaffolding starts and live in the TUI's Project Generator page
+  as the cursor moves. A new Generator Quality Score
+  (`core/generatorQuality.js`'s `scoreGenerator()`, the Manifest Quality
+  Score's sibling) scores each stack's real, pure `generate()` output
+  across Documentation/Architecture/Testing/CI/Docker/Editor Support/
+  Validation/Examples/Cross Platform - surfaced inline in `devforgekit new
+  --list`, in full via `devforgekit new <stack> --quality`, and in the
+  TUI's new "Stack Intelligence" panel. A structured "Project Created"
+  post-generation summary reads Git/CI/Docker/README status back from the
+  real output on disk instead of assuming it. Fixed real, independently-
+  found bugs along the way: SvelteKit and Electron generated a `lint`
+  script with no ESLint config to run it against; `spring-boot.js`'s
+  `generate({options})` silently ignored its own `name` parameter;
+  `react.js` declared `requiresTool: "npx"` but only ever shelled out to
+  `npm`; Go Fiber/Rust Axum always wrote Docker files and never asked (no
+  `promptOptions`, no `--docker` opt-out); Spring Boot generated zero
+  README/documentation. See `docs/ProjectGenerator.md`'s "Project
+  Generator Excellence" section.
+- **v2.1.3 AI Assistant Excellence** - not a pile of new commands, but
+  making the existing AI Assistant feel deeply integrated and
+  trustworthy. Fixed a real bug found auditing every provider client: no
+  `AIProvider` factory ever set a `supportsStreaming` field despite
+  `ai benchmark` and the TUI's AI Diagnostics page both reading it - so
+  `ai benchmark` always printed "stream: No" and Diagnostics always
+  hardcoded a fake "Supported" pass regardless of the real provider; all
+  four provider factories now set the real flag, and Diagnostics reads
+  it instead of hardcoding. Added `core/ai/health.js`'s `scoreAIHealth()`
+  - the Manifest/Generator Quality Score's sibling for the AI Assistant:
+  a single percentage plus a transparent Provider/Credential/Model/
+  Configuration/Memory/Context/Diagnostics/Streaming checklist, every
+  check a real signal already computed elsewhere - surfaced via
+  `devforgekit ai health [--live]` and the AI Overview page's "AI
+  Status" panel title (folded into the title, not a new row, after
+  hitting the same Ink row-budget limit v2.1.1 already documented).
+  Broadened the Context Engine (`gatherContext()`) with a real platform/
+  architecture summary, the real list of Project Generator stacks, and
+  recent AI memory events in every gather, plus registry-wide stats
+  under `full: true`. Added `core/ai/compare.js` and
+  `devforgekit ai compare <a> <b>` - compares two real registry
+  components or Project Generator stacks grounded only in their actual
+  data, never invented facts. `ai history` gained `--clear`/`--export`
+  for parity with `ai stats --clear`. Fixed a real, reported TUI bug: the
+  AI Assistant chat page's input line was a detached row below both
+  panels with no visual link to the conversation above it - moved inside
+  the Chat panel itself with a `❯` prompt marker. See
+  `docs/AIAssistant.md`'s "AI Assistant Excellence" section.
+- **v2.1.3.1 AI Chat Rendering & Response Experience** - a direct
+  follow-up: the Chat page's answers were reasonable, but the TUI was
+  printing raw LLM output almost verbatim - `## headers`, `**bold**`,
+  `<br>` tags, and `| A | B |` Markdown tables all showed up as literal
+  characters instead of terminal formatting. Added a real rendering
+  pipeline between the model and the screen: `tui/lib/markdown.js` (a
+  pure, dependency-free parser - headings, paragraphs, bullet/numbered
+  lists, fenced code blocks, tables, dividers, plus bold/italic/
+  inline-code/link spans) and `tui/components/markdown.js`'s
+  `MarkdownText` (renders those blocks as real Ink elements - bordered
+  headings, rounded code blocks, the existing shared `Table` component
+  for markdown tables, consistent bullets); `AIPage.js` now routes every
+  assistant message through it instead of ever printing a raw model
+  string. Added a TUI-specific system prompt addendum
+  (`prompts/library.js`'s `TUI_SYSTEM_ADDENDUM`, opted into via
+  `buildPrompt(kind, context, input, { surface: "tui" })`) asking the
+  model for concise, terminal-shaped output with no Markdown tables, no
+  HTML, and no repeating facts already visible on screen - the plain CLI
+  `ai chat` REPL is unaffected. 31 new tests
+  (`markdown-parser.test.js`/`markdown-render.test.js`/prompt-library and
+  chat-session additions) assert the exact failure this fixes: no raw
+  `##`/`**`/`<br>`/table-pipe syntax ever reaches the rendered output.
+- **v2.1.3.2** - fixed a real reported bug: the AI Assistant chat page's
+  `1 Doctor · 2 Generate · 3 Planner · 4 Explain · 5 Review · 6 Optimize
+  · 7 Fix` quick-action hints only rendered in the empty-state welcome
+  message, so they visually disappeared after the first message even
+  though the `1`-`7` shortcuts kept working. Moved the list into the
+  always-visible Context panel. Doing so reproduced the same Ink
+  row-budget corruption v2.1.1/v2.1.3 already documented (KeyValue rows
+  vanishing, action lines bleeding into each other); bisected by actually
+  rendering at candidate terminal heights and found the real threshold -
+  `hooks/useTerminalSize.js`'s `ai` page entry is now `{ rows: 34 }` (up
+  from 24, verified corrupt at 30 and clean from 32).
+- **v2.1.4 Environment Graph Excellence** - started with a full audit of
+  `core/devGraph.js` and found a genuinely severe bug: a node-ID mismatch
+  between how a node's own type is resolved (category-aware) and how an
+  edge target's type is resolved (name-only, no category access) meant
+  any package typed via `category` rather than a hardcoded name list
+  (`dart`, `git`, `vscode`, ...) got a different node id as an edge
+  source vs. an edge target - ~22% of all edges on the real registry were
+  silently dangling, and `graph impact dart` returned nothing despite
+  Flutter genuinely depending on it. Fixed, and verified via a new,
+  deliberately real (non-mocked) integration test file,
+  `devGraph-build.test.js` - the previous 60 tests all used a synthetic
+  fixture and never called `buildGraph()` itself, exactly where the bug
+  lived. Also found and fixed real duplicated logic (orphan/conflict
+  detection implemented twice, DOT/Mermaid formatting reimplemented
+  inline in `commands/graph.js` instead of calling `exportGraph()`), a
+  hardcoded stub (`graph_reverseEmpty()`, admitted as much in its own
+  comment), and five dead `applyGraphFilter` branches that filtered on
+  properties `buildGraph()` never set (always silently empty) - removed
+  rather than kept. Added real compatibility-rule nodes (34, one per
+  `registry/compatibility/*.yaml`) and generator-stack nodes (17, wired
+  to their real `recommends` arrays) with new `REQUIRES`/`RECOMMENDS`
+  edge types sourced from real schema fields; repair-history nodes (
+  previously always 100%-orphaned by construction) now get real
+  `REPAIRS` edges to the tools they actually touched. Once these edges
+  exist, `analyzeImpact()`'s existing algorithm - unchanged - started
+  surfacing affected generator stacks and compatibility rules for free.
+  Added a real 30-minute on-disk build cache (`buildGraphCached()`,
+  ~15-20s cold → ~1ms cached, the same pattern `packageIntel.js` already
+  uses) and batched the installed-package probe. Added SVG export (a
+  real, hand-rolled, dependency-free generator) and documented PNG as
+  deliberately not supported. Added a first-ever TUI page for the graph
+  (`G`), and along the way found and fixed a real test-isolation issue
+  (an unmount guard needed `useRef`, not a plain object, to correctly
+  guard a later reload from a stale closure). See
+  `docs/EnvironmentGraph.md`.
+
 ## [1.3.7] - 2025-07-06
 
 ### Added

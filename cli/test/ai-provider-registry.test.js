@@ -1,11 +1,22 @@
-import { test } from "node:test";
+import { test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { getProvider, resolveApiKey, requiresApiKey, envVarForProvider, listProviders, KNOWN_PROVIDERS } from "../src/core/ai/providers/index.js";
+import { resetBackend, setBackend } from "../src/core/ai/credentials/selector.js";
+import { MemoryBackend } from "../src/core/ai/credentials/backends/memory.js";
 import { createWorkspace, saveWorkspace } from "../src/core/workspace/store.js";
 import { setSecret } from "../src/core/workspace/env.js";
+
+// Each test gets a fresh in-memory backend — zero OS keychain access.
+beforeEach(() => {
+    setBackend(new MemoryBackend());
+});
+
+afterEach(() => {
+    resetBackend();
+});
 
 function withTempHome(fn) {
     const originalHome = process.env.HOME;

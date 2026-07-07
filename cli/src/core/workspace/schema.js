@@ -16,7 +16,7 @@ const ajv = new Ajv2020({ allErrors: true });
 const schemaPath = fileURLToPath(new URL("../../schemas/workspace.schema.json", import.meta.url));
 const compiledWorkspaceSchema = ajv.compile(JSON.parse(readFileSync(schemaPath, "utf8")));
 
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 3;
 
 function formatAjvErrors(errors) {
     return (errors || []).map((e) => `  ${e.instancePath || "/"} ${e.message}`).join("\n");
@@ -60,7 +60,8 @@ export function createWorkspaceDoc({ name, description, owner = "" }) {
         plugins: [],
         templates: [],
         projectHistory: [],
-        variables: {},
+        lastUsedAt: null,
+        healthScore: null,
         git: {
             name: null,
             email: null,
@@ -114,7 +115,11 @@ export function createWorkspaceDoc({ name, description, owner = "" }) {
 // upgrading just adds it with its documented default shape rather than
 // guessing at history that was never recorded.
 const migrations = {
-    1: (doc) => ({ ...doc, schemaVersion: 2, compatibility: { scanHistory: [], repairHistory: [] } })
+    1: (doc) => ({ ...doc, schemaVersion: 2, compatibility: { scanHistory: [], repairHistory: [] } }),
+    2: (doc) => {
+        const { variables, ...rest } = doc;
+        return { ...rest, schemaVersion: 3, lastUsedAt: rest.lastUsedAt || null, healthScore: rest.healthScore ?? null };
+    }
 };
 
 // migrateWorkspace(doc) -> a document valid under CURRENT_SCHEMA_VERSION,

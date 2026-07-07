@@ -4,7 +4,9 @@
 // `devforgekit profile install <name>`.
 import { useState } from "react";
 import { Box, Text, useInput } from "ink";
-import { h, Panel, SelectList, KeyValue, KeyHints, ProgressBar, useDetailWidth } from "../components/ui.js";
+import { h, Panel, SelectList, DetailPanel, InstallProgress, useDetailWidth } from "../components/ui.js";
+
+const EMPTY_TEXT = "No profiles found.";
 import { useStore } from "../store.js";
 import { registrySnapshot } from "../data.js";
 import { expandProfile } from "../../core/registry.js";
@@ -70,6 +72,7 @@ export function ProfilesPage({ isActive }) {
                 // footprint the old single-line list used; SelectList's
                 // own scroll window handles the rest of the 50 profiles.
                 items: profiles, isActive, height: 8, theme,
+                emptyText: EMPTY_TEXT,
                 onHighlight: setHighlighted,
                 // Two-line card (bold name, then description indented
                 // underneath) instead of cramming both onto one line -
@@ -91,25 +94,30 @@ export function ProfilesPage({ isActive }) {
                 }
             })
         ),
-        h(Panel, { title: current ? `Profile: ${current.name}` : "Details", theme, width: detailW },
-            current ? h(Box, { flexDirection: "column" },
-                h(Text, { color: theme.text, wrap: "wrap" }, current.description || ""),
-                h(KeyValue, {
-                    theme, labelWidth: 14,
-                    pairs: [
-                        ["Collections", (current.collections || []).join(", ") || "none"],
-                        ["Extra", (current.components || []).join(", ") || "none"],
-                        ["Resolves to", expandError ? `error: ${expandError}` : `${expanded.length} components`],
-                        ["Settings", current.settings ? Object.entries(current.settings).map(([k, v]) => `${k}=${v}`).join(" ") : "none"]
-                    ]
-                }),
-                expandError ? null : h(Text, { color: theme.textMuted, wrap: "wrap" }, `\n${expanded.slice(0, 20).join(", ")}${expanded.length > 20 ? ", ..." : ""}`),
-                h(Box, { marginTop: 1 }, h(KeyHints, { theme, hints: [["a", "install"], ["s", "set as default"]] })),
-                running ? h(Box, { flexDirection: "column", marginTop: 1 },
-                    h(ProgressBar, { value: running.step, total: running.total, theme, label: running.stepName || "" }),
-                    ...running.lines.map((line, i) => h(Text, { key: line + i, color: theme.textMuted }, line.slice(0, 44)))
-                ) : null
-            ) : h(Text, { color: theme.textMuted }, "No profiles found.")
-        )
+        h(DetailPanel, {
+            title: current ? `Profile: ${current.name}` : "Details",
+            theme, width: detailW,
+            emptyText: EMPTY_TEXT,
+            sections: current ? [{
+                pairs: [
+                    ["Description", current.description || "none"],
+                    ["Collections", (current.collections || []).join(", ") || "none"],
+                    ["Extra", (current.components || []).join(", ") || "none"],
+                    ["Resolves to", expandError ? `error: ${expandError}` : `${expanded.length} components`, expandError ? theme.error : undefined],
+                    ["Settings", current.settings ? Object.entries(current.settings).map(([k, v]) => `${k}=${v}`).join(" ") : "none"],
+                    ...(expandError ? [] : [["Components", `${expanded.slice(0, 20).join(", ")}${expanded.length > 20 ? ", ..." : ""}`]])
+                ],
+                labelWidth: 14
+            }] : [],
+            hints: current ? [["a", "install"], ["s", "set as default"]] : undefined,
+            footer: running ? h(InstallProgress, {
+                theme,
+                label: `Installing profile: ${running.name}`,
+                unit: running.stepName || "",
+                value: running.step,
+                total: running.total,
+                lines: running.lines.map((line) => line.slice(0, 44))
+            }) : null
+        })
     );
 }

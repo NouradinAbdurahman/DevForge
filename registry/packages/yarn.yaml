@@ -2,19 +2,53 @@ schemaVersion: 1
 name: yarn
 description: A package manager for JavaScript, an alternative to npm
 category: package-managers
-platforms: [macos, linux]
-install: { method: brew-formula, id: yarn }
-dependencies: [node]
+platforms:
+  - macos
+  - linux
+  - windows
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: yarn
+dependencies:
+  - node
 validate: yarn --version
+versionCommand: yarn --version
 repair: brew reinstall yarn
 update: brew upgrade yarn
-uninstall: { method: brew-formula, id: yarn }
+uninstall:
+  method: brew-formula
+  id: yarn
 post_install: []
-homepage: "https://yarnpkg.com"
-repository: "https://github.com/yarnpkg/berry"
+homepage: https://yarnpkg.com
+repository: https://github.com/yarnpkg/berry
 license: BSD-2-Clause
+documentation: https://yarnpkg.com/getting-started
 maintainer: DevForgeKit Registry
-tags: [package-manager, javascript, node]
-aliases: []
+tags:
+  - package-manager
+  - javascript
+  - node
+aliases:
+  - yarn-pkg
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - npm
+  - pnpm
+platformInstall:
+  macos:
+    method: brew-formula
+    id: yarn
+  linux:
+    method: apt
+    id: yarn
+  windows:
+    method: winget
+    id: Yarn.Yarn
+

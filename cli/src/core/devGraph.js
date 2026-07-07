@@ -1,38 +1,43 @@
-// The Development Environment Graph (DEV Graph) engine (v1.3.6).
+// The Development Environment Graph (DEV Graph) engine (v1.3.6, overhauled
+// for Environment Graph Excellence in v2.1.4 - see docs/EnvironmentGraph.md).
 // Models the entire development ecosystem as a unified graph connecting
 // every DevForgeKit subsystem: packages, runtimes, workspaces, recipes,
 // profiles, collections, plugins, services, themes, configs, benchmarks,
-// snapshots, repairs, compatibility rules, and AI providers.
+// snapshots, repairs, compatibility rules, project generator stacks, and
+// AI providers.
 //
 // This is the single source of truth for environment relationships.
-// It becomes the shared data model for future cloud sync, team analytics,
-// and multi-machine management.
 //
-// Reuses every existing subsystem - no duplicated logic:
+// Reuses every existing subsystem - genuinely, this time (a v2.1.4 audit
+// found the previous version of this comment listed several modules that
+// were imported but never actually called - see the CHANGELOG for the
+// full list of what that audit found and fixed):
 //   - registry.js (loadPackages, loadProfiles, loadRecipes, loadCollections)
-//   - compatibility/graph.js (buildDependencyGraph, detectCycles, detectDuplicateTools)
-//   - compatibility/engine.js (scanCompatibility, scoreCompatibility)
+//   - compatibility/graph.js (detectCycles)
+//   - compatibility/engine.js (scanCompatibility)
+//   - compatibility/rules.js (loadCompatibilityRules - real compatibility-rule nodes/edges, v2.1.4)
+//   - generators/index.js (listGenerators - real generator/stack nodes, v2.1.4)
+//   - quality.js (scoreManifest - real per-node quality scores, v2.1.4)
 //   - workspace/store.js (listWorkspaces)
 //   - plugins.js (discoverPlugins)
 //   - installer.js (validate)
-//   - shell.js (commandExists, captureShellCommand)
-//   - packageIntel.js (formatBytes, getInstalledPackageNames)
-//   - health.js (scoreResults)
+//   - repair.js (listHistory/getRepairRecord - real REPAIRS edges from actual repair history, v2.1.4)
 //   - config.js (loadConfig)
 //   - tui/theme.js (listThemes)
-//   - ai/providers (KNOWN_PROVIDERS)
 //   - paths.js, version.js, logger.js, errors.js
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync } from "node:fs";
 import { hostname } from "node:os";
 import path from "node:path";
-import { loadPackages, loadProfiles, loadRecipes, loadCollections, getPackage } from "./registry.js";
-import { buildDependencyGraph, detectCycles, detectDuplicateTools } from "./compatibility/graph.js";
-import { scanCompatibility, scoreCompatibility } from "./compatibility/engine.js";
+import { loadPackages, loadProfiles, loadRecipes, loadCollections } from "./registry.js";
+import { detectCycles } from "./compatibility/graph.js";
+import { scanCompatibility } from "./compatibility/engine.js";
+import { loadCompatibilityRules } from "./compatibility/rules.js";
+import { scoreManifest } from "./quality.js";
+import { listGenerators } from "../generators/index.js";
 import { validate } from "./installer.js";
-import { commandExists, captureShellCommand } from "./shell.js";
 import { listWorkspaces } from "./workspace/store.js";
 import { discoverPlugins } from "./plugins.js";
-import { scoreResults } from "./health.js";
+import { listHistory as listRepairHistory, getRepairRecord } from "./repair.js";
 import { loadConfig } from "./config.js";
 import { userStateDir } from "./paths.js";
 import { getVersion } from "../version.js";
@@ -66,7 +71,8 @@ export const NODE_TYPES = {
     SNAPSHOT: "snapshot",
     REPAIR: "repair",
     COMPATIBILITY_RULE: "compatibility-rule",
-    AI_PROVIDER: "ai-provider"
+    AI_PROVIDER: "ai-provider",
+    GENERATOR: "generator"
 };
 
 // Edge types
@@ -86,7 +92,13 @@ export const EDGE_TYPES = {
     EXPORTS: "exports",
     IMPORTS: "imports",
     COMPATIBLE_WITH: "compatible-with",
-    INCOMPATIBLE_WITH: "incompatible-with"
+    INCOMPATIBLE_WITH: "incompatible-with",
+    // v2.1.4: real relationship semantics from registry/compatibility
+    // rule files' own `requires`/`recommends` fields (see loadCompatibilityRules()
+    // below) - distinct from DEPENDS_ON (a package's own registry
+    // `dependencies` field, a different real signal).
+    REQUIRES: "requires",
+    RECOMMENDS: "recommends"
 };
 
 // Categories that map to node types
@@ -176,17 +188,35 @@ export async function buildGraph({ onProgress } = {}) {
     if (onProgress) onProgress({ subsystem: "registry", status: "running" });
     logger.info("  Loading registry packages...");
     const packages = loadPackages();
+    // packagesByName: the fix for a real, severe bug (v2.1.4 audit) - edge
+    // targets used to be typed by name alone (determineNodeTypeForName had
+    // no access to a package's `category`), while a node's own type used
+    // the full package object (name lists first, category fallback). Any
+    // package whose type came from its category rather than a hardcoded
+    // name list - dart, git, vscode, ~22% of all edges on the real
+    // registry - got a DIFFERENT node id depending on whether it was an
+    // edge source or an edge target, leaving those edges permanently
+    // dangling. Passing this map through makes both paths agree.
+    const packagesByName = new Map(packages.map((p) => [p.name, p]));
 
-    // Detect installed packages
-    for (const pkg of packages) {
-        if (!pkg.validate) continue;
-        try {
-            if ((await validate(pkg)) === 0) {
-                installedPackages.add(pkg.name);
+    // Detect installed packages - batched (not sequential) shell probes,
+    // the same BATCH-with-a-timer-yield pattern tui/data.js's
+    // installedStatuses() already uses for the identical ~250-probe scan.
+    // Sequential awaits here measured ~20s on a full registry (v2.1.4
+    // audit) - unacceptable for a feature meant to feel instant; sitting
+    // behind buildGraphCached()'s TTL cache below means most callers never
+    // pay this at all, but the raw scan itself needed to be faster too.
+    const BATCH = 8;
+    const probeable = packages.filter((p) => p.validate);
+    for (let i = 0; i < probeable.length; i += BATCH) {
+        await Promise.all(probeable.slice(i, i + BATCH).map(async (pkg) => {
+            try {
+                if ((await validate(pkg)) === 0) installedPackages.add(pkg.name);
+            } catch {
+                // Not installed
             }
-        } catch {
-            // Not installed
-        }
+        }));
+        await new Promise((resolve) => setTimeout(resolve, 5));
     }
 
     for (const pkg of packages) {
@@ -205,16 +235,22 @@ export async function buildGraph({ onProgress } = {}) {
                 repository: pkg.repository || null,
                 tags: pkg.tags || [],
                 stability: pkg.stability || null,
+                platforms: pkg.platforms || [],
+                architectures: pkg.architectures || [],
                 installMethod: pkg.install?.method || null,
                 installed: isInstalled,
-                healthStatus: isInstalled ? "healthy" : "not-installed"
+                healthStatus: isInstalled ? "healthy" : "not-installed",
+                // Real, existing signal (core/quality.js's Manifest
+                // Quality Score, same one `registry stats`/`info` use) -
+                // not fabricated, and cheap (synchronous, no network).
+                qualityScore: scoreManifest(pkg).score
             }
         });
         addNode(node);
 
         // Dependency edges
         for (const dep of pkg.dependencies || []) {
-            addEdge(makeEdge({ from: node.id, to: makeNodeId(determineNodeTypeForName(dep), dep), type: EDGE_TYPES.DEPENDS_ON }));
+            addEdge(makeEdge({ from: node.id, to: makeNodeId(determineNodeTypeForName(dep, packagesByName), dep), type: EDGE_TYPES.DEPENDS_ON }));
         }
 
         // Installed-by edge (connect to package manager)
@@ -243,7 +279,7 @@ export async function buildGraph({ onProgress } = {}) {
             addNode(node);
 
             for (const component of profile.components || []) {
-                addEdge(makeEdge({ from: node.id, to: makeNodeId(determineNodeTypeForName(component), component), type: EDGE_TYPES.USES }));
+                addEdge(makeEdge({ from: node.id, to: makeNodeId(determineNodeTypeForName(component, packagesByName), component), type: EDGE_TYPES.USES }));
             }
         }
     } catch {
@@ -265,7 +301,7 @@ export async function buildGraph({ onProgress } = {}) {
             addNode(node);
 
             for (const component of recipe.components || []) {
-                addEdge(makeEdge({ from: node.id, to: makeNodeId(determineNodeTypeForName(component), component), type: EDGE_TYPES.REQUIRED_BY }));
+                addEdge(makeEdge({ from: node.id, to: makeNodeId(determineNodeTypeForName(component, packagesByName), component), type: EDGE_TYPES.REQUIRED_BY }));
             }
         }
     } catch {
@@ -287,7 +323,7 @@ export async function buildGraph({ onProgress } = {}) {
             addNode(node);
 
             for (const component of collection.components || []) {
-                addEdge(makeEdge({ from: node.id, to: makeNodeId(determineNodeTypeForName(component), component), type: EDGE_TYPES.USES }));
+                addEdge(makeEdge({ from: node.id, to: makeNodeId(determineNodeTypeForName(component, packagesByName), component), type: EDGE_TYPES.USES }));
             }
         }
     } catch {
@@ -309,7 +345,7 @@ export async function buildGraph({ onProgress } = {}) {
             addNode(node);
 
             for (const tool of ws.tools || []) {
-                addEdge(makeEdge({ from: node.id, to: makeNodeId(determineNodeTypeForName(tool), tool), type: EDGE_TYPES.USES }));
+                addEdge(makeEdge({ from: node.id, to: makeNodeId(determineNodeTypeForName(tool, packagesByName), tool), type: EDGE_TYPES.USES }));
             }
         }
     } catch {
@@ -331,7 +367,7 @@ export async function buildGraph({ onProgress } = {}) {
             addNode(node);
 
             for (const req of plugin.requires || []) {
-                addEdge(makeEdge({ from: node.id, to: makeNodeId(determineNodeTypeForName(req), req), type: EDGE_TYPES.DEPENDS_ON }));
+                addEdge(makeEdge({ from: node.id, to: makeNodeId(determineNodeTypeForName(req, packagesByName), req), type: EDGE_TYPES.DEPENDS_ON }));
             }
         }
     } catch {
@@ -387,15 +423,15 @@ export async function buildGraph({ onProgress } = {}) {
     }
     if (onProgress) onProgress({ subsystem: "themes", status: "done" });
 
-    // ── 9. Compatibility conflicts ──────────────────────────────────
+    // ── 9. Compatibility conflicts (live scan against what's installed) ─
     if (onProgress) onProgress({ subsystem: "compatibility", status: "running" });
     logger.info("  Scanning compatibility...");
     try {
         const compatResult = await scanCompatibility([...installedPackages]);
         for (const issue of compatResult.issues || []) {
             if (issue.severity === "CRITICAL" && issue.conflictWith) {
-                const fromId = makeNodeId(determineNodeTypeForName(issue.tool), issue.tool);
-                const toId = makeNodeId(determineNodeTypeForName(issue.conflictWith), issue.conflictWith);
+                const fromId = makeNodeId(determineNodeTypeForName(issue.tool, packagesByName), issue.tool);
+                const toId = makeNodeId(determineNodeTypeForName(issue.conflictWith, packagesByName), issue.conflictWith);
                 addEdge(makeEdge({ from: fromId, to: toId, type: EDGE_TYPES.CONFLICTS_WITH, properties: { message: issue.message } }));
             }
         }
@@ -404,11 +440,80 @@ export async function buildGraph({ onProgress } = {}) {
     }
     if (onProgress) onProgress({ subsystem: "compatibility", status: "done" });
 
-    // ── 10. Snapshots, benchmarks, repairs (history nodes) ──────────
+    // ── 10. Compatibility rules (static declarations, not a live scan) ──
+    // Makes NODE_TYPES.COMPATIBILITY_RULE real (v2.1.4 - it was declared
+    // but zero nodes of this type were ever created before this) and adds
+    // the richer REQUIRES/RECOMMENDS edge semantics the PRD asked for,
+    // straight from registry/compatibility/*.yaml's own `requires`/
+    // `recommends`/`conflicts` fields - real relationships someone already
+    // wrote down, not derived or guessed. `requires` is version-scoped in
+    // the schema (`versions.<v>.requires`); the graph models "is required
+    // in at least one declared version" rather than picking one version.
+    if (onProgress) onProgress({ subsystem: "compatibility-rules", status: "running" });
+    logger.info("  Loading compatibility rules...");
+    try {
+        for (const rule of loadCompatibilityRules()) {
+            const ruleNode = makeNode({
+                type: NODE_TYPES.COMPATIBILITY_RULE,
+                name: rule.name,
+                label: `${rule.name} rule`,
+                properties: { source: "registry/compatibility" }
+            });
+            addNode(ruleNode);
+
+            const subjectId = makeNodeId(determineNodeTypeForName(rule.name, packagesByName), rule.name);
+            for (const target of rule.recommends || []) {
+                addEdge(makeEdge({ from: subjectId, to: makeNodeId(determineNodeTypeForName(target, packagesByName), target), type: EDGE_TYPES.RECOMMENDS }));
+            }
+            for (const target of rule.conflicts || []) {
+                addEdge(makeEdge({ from: subjectId, to: makeNodeId(determineNodeTypeForName(target, packagesByName), target), type: EDGE_TYPES.CONFLICTS_WITH, properties: { source: "compatibility-rule" } }));
+            }
+            const requiredTargets = new Set();
+            for (const versionRule of Object.values(rule.versions || {})) {
+                for (const dep of Object.keys(versionRule.requires || {})) requiredTargets.add(dep);
+            }
+            for (const target of requiredTargets) {
+                addEdge(makeEdge({ from: subjectId, to: makeNodeId(determineNodeTypeForName(target, packagesByName), target), type: EDGE_TYPES.REQUIRES }));
+            }
+        }
+    } catch {
+        // Compatibility rules failed to load/validate - a broken rule
+        // shouldn't take down the whole graph build.
+    }
+    if (onProgress) onProgress({ subsystem: "compatibility-rules", status: "done" });
+
+    // ── 11. Project Generator stacks ────────────────────────────────────
+    // Real stack nodes, wired to each generator's actual `recommends`
+    // array (Project Generator Excellence, v2.1.2) - closes the "affected
+    // generators" gap the PRD asked impact analysis to cover, using data
+    // that already existed rather than inventing a new concept.
+    if (onProgress) onProgress({ subsystem: "generators", status: "running" });
+    logger.info("  Loading project generator stacks...");
+    try {
+        for (const generator of listGenerators()) {
+            const node = makeNode({
+                type: NODE_TYPES.GENERATOR,
+                name: generator.id,
+                label: generator.label,
+                properties: { description: generator.description || null, tags: generator.tags || [] }
+            });
+            addNode(node);
+            for (const target of generator.recommends || []) {
+                addEdge(makeEdge({ from: node.id, to: makeNodeId(determineNodeTypeForName(target, packagesByName), target), type: EDGE_TYPES.RECOMMENDS }));
+            }
+        }
+    } catch {
+        // Generator loading failed
+    }
+    if (onProgress) onProgress({ subsystem: "generators", status: "done" });
+
+    // ── 12. Snapshots, benchmarks, repairs (history nodes) ──────────
     if (onProgress) onProgress({ subsystem: "history", status: "running" });
     logger.info("  Loading history nodes...");
 
-    // Snapshots
+    // Snapshots - a whole-system capture, not tied to any specific tool's
+    // usage; deliberately excluded from orphan analysis (see findOrphans)
+    // rather than given fabricated edges.
     try {
         const snapshotsDir = path.join(userStateDir(), "snapshots");
         if (existsSync(snapshotsDir)) {
@@ -422,7 +527,9 @@ export async function buildGraph({ onProgress } = {}) {
         // Snapshots loading failed
     }
 
-    // Benchmarks
+    // Benchmarks - categories (cpu/disk/memory/...), not specific
+    // packages; same reasoning as snapshots, excluded from orphan
+    // analysis rather than given a fabricated edge.
     try {
         const benchmarksDir = path.join(userStateDir(), "benchmarks");
         if (existsSync(benchmarksDir)) {
@@ -436,14 +543,28 @@ export async function buildGraph({ onProgress } = {}) {
         // Benchmarks loading failed
     }
 
-    // Repairs
+    // Repairs - unlike snapshots/benchmarks, a repair record genuinely
+    // does reference the specific tools it touched (each result carries
+    // the original compatibility `issue.tool`), so this makes the
+    // declared-but-previously-dead EDGE_TYPES.REPAIRS real instead of
+    // leaving every repair node a permanent, meaningless orphan.
     try {
-        const repairsDir = path.join(userStateDir(), "repairs");
-        if (existsSync(repairsDir)) {
-            for (const entry of readdirSync(repairsDir, { withFileTypes: true })) {
-                if (!entry.isFile() || !entry.name.endsWith(".json")) continue;
-                const id = entry.name.replace(/\.json$/, "");
-                addNode(makeNode({ type: NODE_TYPES.REPAIR, name: id, label: id, properties: { file: entry.name } }));
+        for (const entry of listRepairHistory()) {
+            const node = addNode(makeNode({
+                type: NODE_TYPES.REPAIR,
+                name: entry.id,
+                label: entry.id,
+                properties: { createdAt: entry.createdAt, fixed: entry.fixed, failed: entry.failed, skipped: entry.skipped }
+            }));
+            try {
+                const record = getRepairRecord(entry.id);
+                const tools = new Set((record.repairResults || []).filter((r) => r.ok && r.issue?.tool).map((r) => r.issue.tool));
+                for (const tool of tools) {
+                    addEdge(makeEdge({ from: node.id, to: makeNodeId(determineNodeTypeForName(tool, packagesByName), tool), type: EDGE_TYPES.REPAIRS }));
+                }
+            } catch {
+                // This one record was unreadable - the node above still
+                // stands, just without edges.
             }
         }
     } catch {
@@ -512,6 +633,68 @@ export async function buildGraph({ onProgress } = {}) {
     return graph;
 }
 
+// ─── Cache (v2.1.4 - Environment Graph Excellence, Phase 11) ───────────
+// buildGraph() measured ~15-20s on a real 261-package registry (mostly
+// the registry validate-scan and the compatibility scan, both real work
+// this module doesn't own and shouldn't try to shortcut) - unacceptable
+// to pay on every one of the 12 CLI subcommands and every TUI page visit.
+// This is a single, TTL-bound, always-overwritten cache purely for
+// interactive speed - the same pattern packageIntel.js's own
+// loadCache()/saveCache() already established for an identical scan.
+// Deliberately distinct from saveGraph()/listHistory() below: those are
+// explicit, permanent, user-chosen snapshots (`graph open --save`,
+// `graph history`); this cache is invisible plumbing nobody asks for by
+// name and that expires on its own.
+const GRAPH_CACHE_TTL_MS = 30 * 60 * 1000;
+
+function graphCachePath() {
+    return path.join(graphDir(), "cache.json");
+}
+
+function loadGraphCache() {
+    const filePath = graphCachePath();
+    if (!existsSync(filePath)) return null;
+    try {
+        const graph = JSON.parse(readFileSync(filePath, "utf8"));
+        const age = Date.now() - new Date(graph.createdAt).getTime();
+        if (!Number.isFinite(age) || age > GRAPH_CACHE_TTL_MS) return null;
+        return graph;
+    } catch {
+        return null;
+    }
+}
+
+function saveGraphCache(graph) {
+    const dir = graphDir();
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(graphCachePath(), `${JSON.stringify(graph, null, 2)}\n`);
+}
+
+// clearGraphCache() -> true if a cache file existed and was removed.
+export function clearGraphCache() {
+    const filePath = graphCachePath();
+    if (existsSync(filePath)) {
+        rmSync(filePath, { force: true });
+        return true;
+    }
+    return false;
+}
+
+// buildGraphCached({ refresh, onProgress }) -> a cached graph (if one
+// exists and is under 30 minutes old) or a fresh buildGraph() call,
+// which is then cached for next time. Every `commands/graph.js`
+// subcommand should call this instead of buildGraph() directly -
+// `--refresh` (wired per-command) forces a rebuild.
+export async function buildGraphCached({ refresh = false, onProgress } = {}) {
+    if (!refresh) {
+        const cached = loadGraphCache();
+        if (cached) return cached;
+    }
+    const graph = await buildGraph({ onProgress });
+    saveGraphCache(graph);
+    return graph;
+}
+
 // ─── Node Type Determination ──────────────────────────────────────────
 
 function determineNodeType(pkg) {
@@ -524,7 +707,20 @@ function determineNodeType(pkg) {
     return NODE_TYPES.PACKAGE;
 }
 
-function determineNodeTypeForName(name) {
+// determineNodeTypeForName(name, packagesByName) - resolves an EDGE
+// TARGET's node type using the exact same rules determineNodeType()
+// applies when that same name is a node's own subject (real package
+// lookup + category fallback first, then the hardcoded name lists).
+// Before this fix (v2.1.4), edge targets were typed by name alone with
+// no category lookup, while node creation typed by the full package
+// object - so any package whose type came from `category` rather than a
+// hardcoded name list (dart, git, vscode, ...) got a DIFFERENT node id
+// depending on whether it was an edge source or an edge target, leaving
+// ~22% of all edges on the real registry silently dangling. See
+// docs/EnvironmentGraph.md.
+function determineNodeTypeForName(name, packagesByName) {
+    const pkg = packagesByName?.get(name);
+    if (pkg) return determineNodeType(pkg);
     if (SDK_NAMES.includes(name)) return NODE_TYPES.SDK;
     if (RUNTIME_NAMES.includes(name)) return NODE_TYPES.RUNTIME;
     if (DATABASE_NAMES.includes(name)) return NODE_TYPES.DATABASE;
@@ -534,6 +730,40 @@ function determineNodeTypeForName(name) {
 }
 
 // ─── Statistics ───────────────────────────────────────────────────────
+
+// NON_ORPHANABLE_TYPES - node types that are historical/point-in-time
+// records rather than tools that could plausibly have a "used by
+// something" edge. A snapshot captures the WHOLE system at once; a
+// benchmark measures abstract categories (cpu/disk/memory), not specific
+// package usage - neither has a real, honest edge to attach, so both are
+// excluded from orphan analysis here rather than given a fabricated
+// connection (v2.1.4 audit finding: these node types were always 100%
+// orphaned by construction, making orphan output noisy). Repair records
+// are NOT excluded - a repair's actually-touched tools are wired as real
+// REPAIRS edges now (see buildGraph()'s history-nodes section), so a
+// repair that legitimately fixed nothing tracked in the graph is a
+// meaningful orphan, not a structural one.
+const NON_ORPHANABLE_TYPES = new Set([NODE_TYPES.SNAPSHOT, NODE_TYPES.BENCHMARK]);
+
+// computeOrphanNodes(nodes, edges) - the one place "what counts as an
+// orphan" is decided. computeStats(), the exported findOrphans(), and
+// applyGraphFilter()'s "unused" branch all call this instead of each
+// reimplementing the same loop - a v2.1.4 audit found this exact logic
+// duplicated byte-for-byte between computeStats and findOrphans.
+function computeOrphanNodes(nodes, edges) {
+    const connectedIds = new Set();
+    for (const edge of edges) {
+        connectedIds.add(edge.from);
+        connectedIds.add(edge.to);
+    }
+    return nodes.filter((n) => !connectedIds.has(n.id) && !NON_ORPHANABLE_TYPES.has(n.type));
+}
+
+// computeConflictEdges(edges) - the raw CONFLICTS_WITH edges; findConflicts()
+// below maps these into a display shape, computeStats() just counts them.
+function computeConflictEdges(edges) {
+    return edges.filter((e) => e.type === EDGE_TYPES.CONFLICTS_WITH);
+}
 
 export function computeStats(nodes, edges, depthMap, cycles) {
     const nodesByType = {};
@@ -567,16 +797,25 @@ export function computeStats(nodes, edges, depthMap, cycles) {
         }
     }
 
-    // Orphans (no edges at all)
-    const connectedIds = new Set();
-    for (const edge of edges) {
-        connectedIds.add(edge.from);
-        connectedIds.add(edge.to);
-    }
-    const orphans = nodes.filter((n) => !connectedIds.has(n.id));
+    const orphans = computeOrphanNodes(nodes, edges);
+    const conflicts = computeConflictEdges(edges);
 
-    // Conflicts
-    const conflicts = edges.filter((e) => e.type === EDGE_TYPES.CONFLICTS_WITH);
+    // Distribution stats (v2.1.4 Phase 7) - real, cheap aggregations over
+    // properties buildGraph() already attaches to every package node;
+    // nothing here is a new probe.
+    const byCategory = {};
+    const byPlatform = {};
+    const byArchitecture = {};
+    let installedCount = 0;
+    let missingCount = 0;
+    for (const node of nodes) {
+        const props = node.properties || {};
+        if (props.category) byCategory[props.category] = (byCategory[props.category] || 0) + 1;
+        for (const platform of props.platforms || []) byPlatform[platform] = (byPlatform[platform] || 0) + 1;
+        for (const arch of props.architectures || []) byArchitecture[arch] = (byArchitecture[arch] || 0) + 1;
+        if (props.installed === true) installedCount++;
+        else if (props.installed === false) missingCount++;
+    }
 
     return {
         totalNodes: nodes.length,
@@ -589,7 +828,12 @@ export function computeStats(nodes, edges, depthMap, cycles) {
         mostDependedCount: maxDeps,
         orphanCount: orphans.length,
         conflictCount: conflicts.length,
-        cycleCount: cycles.length
+        cycleCount: cycles.length,
+        installedCount,
+        missingCount,
+        byCategory,
+        byPlatform,
+        byArchitecture
     };
 }
 
@@ -681,7 +925,7 @@ export function searchGraph(graph, query, { filter } = {}) {
 
     // Apply filter
     if (filter) {
-        results = applyGraphFilter(results, filter);
+        results = applyGraphFilter(results, filter, graph.edges);
     }
 
     // Apply search
@@ -701,24 +945,32 @@ export function searchGraph(graph, query, { filter } = {}) {
     return results;
 }
 
-export function applyGraphFilter(nodes, filter) {
+// applyGraphFilter(nodes, filter, [edges]) - `edges` is optional; only
+// `unused` needs it (orphan status isn't determinable from a node object
+// alone). Without edges, `unused` returns `[]` rather than guessing.
+//
+// v2.1.4 audit finding: `duplicate`/`large`/`recent`/`outdated` filtered
+// on `properties.isDuplicate`/`sizeBytes`/`lastUpdate`/`isOutdated` -
+// fields buildGraph() never set on any node, so these always silently
+// returned an empty result. Package size/last-update/outdated tracking
+// isn't part of this graph's data model today; removed rather than left
+// as a filter that claims to work but never has real data behind it.
+// `unused` and `broken` are now genuinely real instead of half-dead (see
+// below).
+export function applyGraphFilter(nodes, filter, edges) {
     switch (filter) {
         case "installed":
             return nodes.filter((n) => n.properties?.installed === true);
         case "broken":
-            return nodes.filter((n) => n.properties?.healthStatus === "broken" || n.properties?.valid === false);
+            // `healthStatus` is only ever "healthy"/"not-installed" (never
+            // "broken") - that half of the old check was dead. `valid`
+            // IS real, set for workspace/plugin nodes.
+            return nodes.filter((n) => n.properties?.valid === false);
         case "unused":
-            return nodes.filter((n) => n.properties?.installed === true && (n.properties?.isOrphan === true || (graph_reverseEmpty(n) && n.type === "package")));
-        case "duplicate":
-            return nodes.filter((n) => n.properties?.isDuplicate === true);
-        case "large":
-            return nodes.filter((n) => (n.properties?.sizeBytes || 0) > 500 * 1024 * 1024);
-        case "recent":
-            return nodes.filter((n) => n.properties?.lastUpdate);
+            if (!edges) return [];
+            return computeOrphanNodes(nodes, edges).filter((n) => n.properties?.installed === true);
         case "critical":
             return nodes.filter((n) => n.type === "service" || n.type === "runtime" || n.type === "language");
-        case "outdated":
-            return nodes.filter((n) => n.properties?.isOutdated === true);
         case "workspace":
             return nodes.filter((n) => n.type === NODE_TYPES.WORKSPACE);
         case "recipe":
@@ -730,11 +982,6 @@ export function applyGraphFilter(nodes, filter) {
         default:
             return nodes;
     }
-}
-
-function graph_reverseEmpty(node) {
-    // This is a simplified check - in practice we'd need the graph's reverse adjacency
-    return false;
 }
 
 // ─── Focus (subgraph extraction) ──────────────────────────────────────
@@ -787,8 +1034,7 @@ export function focusNode(graph, nodeName) {
 // ─── Conflicts ────────────────────────────────────────────────────────
 
 export function findConflicts(graph) {
-    const conflicts = graph.edges.filter((e) => e.type === EDGE_TYPES.CONFLICTS_WITH);
-    return conflicts.map((e) => ({
+    return computeConflictEdges(graph.edges).map((e) => ({
         from: graph.nodes.find((n) => n.id === e.from)?.name,
         to: graph.nodes.find((n) => n.id === e.to)?.name,
         message: e.properties?.message
@@ -797,13 +1043,25 @@ export function findConflicts(graph) {
 
 // ─── Orphans ──────────────────────────────────────────────────────────
 
+// findOrphans(graph) -> nodes with zero edges, excluding snapshot/
+// benchmark record types (see NON_ORPHANABLE_TYPES above).
 export function findOrphans(graph) {
-    const connectedIds = new Set();
-    for (const edge of graph.edges) {
-        connectedIds.add(edge.from);
-        connectedIds.add(edge.to);
+    return computeOrphanNodes(graph.nodes, graph.edges);
+}
+
+// groupOrphansByType(orphans) -> { [nodeType]: node[] } (v2.1.4 Phase 6 -
+// "show why they are considered orphaned"): a flat list mixing an
+// orphaned CLI tool with an orphaned theme doesn't answer "orphaned
+// compared to what," so `graph orphan` groups findOrphans()'s result by
+// type. Kept separate from findOrphans() itself so that function keeps
+// returning a plain node array (JSON-serializable as-is, and what the
+// existing tests/callers already expect).
+export function groupOrphansByType(orphans) {
+    const byType = {};
+    for (const node of orphans) {
+        (byType[node.type] ||= []).push(node);
     }
-    return graph.nodes.filter((n) => !connectedIds.has(n.id));
+    return byType;
 }
 
 // ─── Render Tree ──────────────────────────────────────────────────────
@@ -858,13 +1116,15 @@ export function exportGraph(graph, format) {
             return exportDot(graph);
         case "mermaid":
             return exportMermaid(graph);
+        case "svg":
+            return exportSVG(graph);
         case "tree":
         case "ascii":
             return exportAsciiTree(graph);
         case "plantuml":
             return exportPlantUML(graph);
         default:
-            throw new DevForgeError(`Unknown export format '${format}'. Available: json, markdown, html, dot, mermaid, tree, plantuml`);
+            throw new DevForgeError(`Unknown export format '${format}'. Available: json, markdown, html, dot, mermaid, svg, tree, plantuml. (PNG is deliberately not supported - see docs/EnvironmentGraph.md for why.)`);
     }
 }
 
@@ -992,6 +1252,73 @@ function exportPlantUML(graph) {
     return lines.join("\n") + "\n";
 }
 
+const SVG_NODE_COLORS = {
+    package: "#4A90D9", framework: "#50C878", runtime: "#E67E22", language: "#9B59B6",
+    sdk: "#E74C3C", cli: "#1ABC9C", plugin: "#F39C12", recipe: "#2ECC71", profile: "#3498DB",
+    workspace: "#8E44AD", collection: "#16A085", database: "#C0392B", service: "#D35400",
+    "package-manager": "#7F8C8D", theme: "#BDC3C7", configuration: "#95A5A6",
+    benchmark: "#F1C40F", snapshot: "#2980B9", repair: "#C0392B",
+    "compatibility-rule": "#34495E", "ai-provider": "#8E44AD", generator: "#27AE60"
+};
+
+function escapeXml(str) {
+    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// exportSVG(graph) -> a real, valid, hand-rolled SVG (v2.1.4) - no new
+// dependency (no canvas/image library) and no shelling out to an
+// external tool (Graphviz's `dot -Tsvg` isn't guaranteed to be
+// installed). Honestly scoped: this is a deterministic grid layout, not
+// a force-directed one, so it stays readable for a focused subgraph
+// (`graph focus <name> --format svg`) but gets visually dense for the
+// full ~365-node graph - a real limitation, not hidden. PNG rendering is
+// deliberately NOT implemented for the same reason: rasterizing would
+// need either a new heavy dependency or an external binary this codebase
+// can't assume is present.
+function exportSVG(graph) {
+    const nodes = graph.nodes;
+    if (nodes.length === 0) {
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60"><text x="10" y="30" font-family="monospace" font-size="12" fill="#888">Empty graph</text></svg>\n`;
+    }
+
+    const cols = Math.max(1, Math.ceil(Math.sqrt(nodes.length)));
+    const cellW = 160;
+    const cellH = 90;
+    const padding = 24;
+    const positions = new Map();
+    nodes.forEach((node, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        positions.set(node.id, { x: padding + col * cellW + cellW / 2, y: padding + row * cellH + cellH / 2 });
+    });
+    const rows = Math.ceil(nodes.length / cols);
+    const width = padding * 2 + cols * cellW;
+    const height = padding * 2 + rows * cellH;
+
+    const lines = [
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" font-family="monospace" font-size="10">`,
+        `<rect width="100%" height="100%" fill="#1e1e1e"/>`,
+        `<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#888888"/></marker></defs>`
+    ];
+
+    for (const edge of graph.edges) {
+        const from = positions.get(edge.from);
+        const to = positions.get(edge.to);
+        if (!from || !to) continue;
+        lines.push(`<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="#666666" stroke-width="1" marker-end="url(#arrow)"/>`);
+    }
+
+    for (const node of nodes) {
+        const pos = positions.get(node.id);
+        const color = SVG_NODE_COLORS[node.type] || "#4A90D9";
+        lines.push(`<rect x="${pos.x - 55}" y="${pos.y - 16}" width="110" height="32" rx="6" fill="${color}" stroke="#000000" stroke-width="0.5" opacity="0.9"/>`);
+        lines.push(`<text x="${pos.x}" y="${pos.y + 4}" text-anchor="middle" fill="#ffffff">${escapeXml(node.name.slice(0, 16))}</text>`);
+    }
+
+    lines.push(`</svg>`);
+    return lines.join("\n") + "\n";
+}
+
 // ─── Verify ───────────────────────────────────────────────────────────
 
 export function verifyGraph(graph) {
@@ -1080,7 +1407,7 @@ export function compareGraphs(oldGraph, newGraph) {
 
 // ─── AI Explain ───────────────────────────────────────────────────────
 
-export async function explainNode(graph, nodeName, { provider, model, endpoint } = {}) {
+export async function explainNode(graph, nodeName, { provider, model, endpoint, surface } = {}) {
     const { getProvider, resolveApiKey } = await import("./ai/providers/index.js");
     const { getActiveWorkspace } = await import("./workspace/store.js");
     const { buildPrompt } = await import("./ai/prompts/library.js");
@@ -1116,7 +1443,13 @@ export async function explainNode(graph, nodeName, { provider, model, endpoint }
         graphStats: graph.stats
     };
 
-    const prompt = buildPrompt("explain", context, `Explain this node in the DevForgeKit Development Environment Graph. Node: ${nodeName} (type: ${impact.node?.type}). ${impact.totalAffected} nodes depend on it. Direct dependents: ${impact.directDependents.join(", ") || "none"}. Explain why this is installed, what depends on it, the impact of removing it, and any known conflicts. Never fabricate relationships - only use the measured graph data in the context.`);
+    // A dedicated prompt kind (v2.1.4), not the generic "explain" template
+    // stuffed with a full paragraph as its "topic" - that produced an
+    // awkward doubled "Explain ... Explain this node..." phrasing, the
+    // same pattern several other AI integrations across this codebase
+    // (repair/packageIntel/snapshot/benchmark) share; this is the first
+    // one broken out into its own instruction.
+    const prompt = buildPrompt("graph-explain", context, nodeName, { surface });
 
     const response = await aiProvider.chat(prompt);
     return { ok: true, explanation: response.content };

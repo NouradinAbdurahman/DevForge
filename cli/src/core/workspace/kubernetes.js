@@ -42,7 +42,3 @@ export async function applyWorkspaceKubernetes(workspace, { onOutput } = {}) {
     const nsCode = await runShellCommand(`kubectl config set-context --current --namespace=${shellQuote(k8s.namespace)}`, { onOutput, silent: !onOutput });
     return { applied: true, namespaceApplied: nsCode === 0, reason: nsCode === 0 ? null : `namespace set exited ${nsCode}` };
 }
-
-export function describeKubernetesReferences(workspace) {
-    return { clusters: (workspace.kubernetes || {}).clusters || [] };
-}

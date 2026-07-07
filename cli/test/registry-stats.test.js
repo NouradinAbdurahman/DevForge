@@ -75,13 +75,13 @@ test("the real registry has zero duplicate aliases and reports a sensible metada
 
 test("quality score is the average per-package Manifest Quality Score (core/quality.js's scoreManifest)", () => {
     const packages = [
-        // 2 of 10 checks pass: schema valid (always) + documentation exists -> 20
+        // 2 of 13 checks pass: schema valid (always) + documentation exists -> round(2/13*100) = 15
         { name: "a", category: "languages", documentation: "x" },
-        // 1 of 10 checks pass: schema valid only -> 10
+        // 1 of 13 checks pass: schema valid only -> round(1/13*100) = 8
         { name: "b", category: "languages" }
     ];
     const stats = getRegistryStats({ categories, packages, collections: [], profiles: [] });
-    assert.equal(stats.qualityScore, 15); // average of 20 and 10
+    assert.equal(stats.qualityScore, 12); // round(average of 15 and 8)
 });
 
 test("ciVerifiedCount counts only packages explicitly marked ciVerified", () => {

@@ -2,19 +2,53 @@ schemaVersion: 1
 name: ffmpeg
 description: A complete cross-platform solution to record, convert, and stream audio/video
 category: media
-platforms: [macos, linux]
-install: { method: brew-formula, id: ffmpeg }
+platforms:
+  - macos
+  - linux
+  - windows
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: ffmpeg
 dependencies: []
 validate: ffmpeg -version
+versionCommand: ffmpeg -version
 repair: brew reinstall ffmpeg
 update: brew upgrade ffmpeg
-uninstall: { method: brew-formula, id: ffmpeg }
+uninstall:
+  method: brew-formula
+  id: ffmpeg
 post_install: []
-homepage: "https://ffmpeg.org"
-repository: "https://github.com/FFmpeg/FFmpeg"
+homepage: https://ffmpeg.org
+repository: https://github.com/FFmpeg/FFmpeg
 license: LGPL-2.1
+documentation: https://ffmpeg.org/documentation.html
 maintainer: DevForgeKit Registry
-tags: [media, video, audio]
-aliases: []
+tags:
+  - media
+  - video
+  - audio
+aliases:
+  - ffprobe
+  - ffplay
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - imagemagick
+  - sox
+platformInstall:
+  macos:
+    method: brew-formula
+    id: ffmpeg
+  linux:
+    method: apt
+    id: ffmpeg
+  windows:
+    method: winget
+    id: Gyan.FFmpeg
+

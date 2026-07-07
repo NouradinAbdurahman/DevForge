@@ -124,7 +124,7 @@ new.js` and `core/projectGenerator.js` are both stack-agnostic. Reuse
 `.editorconfig`, `.vscode/settings.json`, the common README shape, the
 shared Node CI workflow) instead of duplicating it. See
 [../docs/ProjectGenerator.md](../docs/ProjectGenerator.md) for the full
-design and the 16 stacks shipped today.
+design and the 17 stacks shipped today.
 
 ## Adding a plugin
 

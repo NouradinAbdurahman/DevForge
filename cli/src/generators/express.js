@@ -4,7 +4,7 @@
 // is plain Node.js files, so generating them directly is both simpler
 // and more reliable than shelling out to anything.
 import { confirm } from "../lib/prompts.js";
-import { mitLicense, EDITORCONFIG, vscodeSettings, vscodeExtensions, readme, ciNodeWorkflow, dockerignoreNode } from "./shared.js";
+import { EDITORCONFIG, vscodeSettings, vscodeExtensions, readme, ciNodeWorkflow, dockerignoreNode } from "./shared.js";
 
 async function promptOptions(flags) {
     const auth = flags.auth ?? await confirm("Include JWT authentication (register/login)?", true);
@@ -384,6 +384,8 @@ export const expressGenerator = {
     id: "express",
     label: "Express",
     description: "Node.js API with JWT auth, Prisma + PostgreSQL, Docker, and Swagger",
+    tags: ["backend", "javascript", "js", "node", "api", "web"],
+    recommends: ["postgres", "docker", "eslint"],
     promptOptions,
 
     generate({ name, options }) {
@@ -396,7 +398,6 @@ export const expressGenerator = {
             { path: "tests/health.test.js", content: healthTest() },
             { path: ".editorconfig", content: EDITORCONFIG },
             { path: ".gitignore", content: "node_modules/\n.env\n*.log\n.DS_Store\ncoverage/\n" },
-            { path: "LICENSE", content: mitLicense() },
             { path: ".env.example", content: `PORT=3000\n${options.auth ? "JWT_SECRET=change-me\n" : ""}${options.prisma ? `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/${name.replace(/-/g, "_")}\n` : ""}` },
             { path: "eslint.config.js", content: eslintConfig() },
             { path: ".vscode/settings.json", content: vscodeSettings() },

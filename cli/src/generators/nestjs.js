@@ -35,6 +35,8 @@ export const nestjsGenerator = {
     id: "nestjs",
     label: "NestJS",
     description: "NestJS API scaffolded via the official Nest CLI, Docker, CI",
+    tags: ["backend", "javascript", "js", "typescript", "node", "api"],
+    recommends: ["postgres", "docker", "eslint"],
     requiresTool: { command: "npx", hint: "Install Node.js (e.g. `devforgekit component install node`), which ships npx." },
     promptOptions,
 
@@ -48,6 +50,7 @@ export const nestjsGenerator = {
     generate({ name, options }) {
         const files = [
             { path: ".editorconfig", content: EDITORCONFIG },
+            { path: ".env.example", content: "PORT=3000\n" },
             { path: ".vscode/settings.json", content: vscodeSettings() },
             { path: ".vscode/extensions.json", content: vscodeExtensions(["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]) },
             { path: ".github/workflows/ci.yml", content: ciNodeWorkflow() },

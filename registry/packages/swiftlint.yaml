@@ -2,19 +2,38 @@ schemaVersion: 1
 name: swiftlint
 description: A tool to enforce Swift style and conventions
 category: apple-development
-platforms: [macos]
-install: { method: brew-formula, id: swiftlint }
+platforms:
+  - macos
+architectures:
+  - intel
+  - apple-silicon
+install:
+  method: brew-formula
+  id: swiftlint
 dependencies: []
 validate: swiftlint version
+versionCommand: swiftlint version
 repair: brew reinstall swiftlint
 update: brew upgrade swiftlint
-uninstall: { method: brew-formula, id: swiftlint }
+uninstall:
+  method: brew-formula
+  id: swiftlint
 post_install: []
-homepage: "https://github.com/realm/SwiftLint"
-repository: "https://github.com/realm/SwiftLint"
+homepage: https://github.com/realm/SwiftLint
+repository: https://github.com/realm/SwiftLint
 license: MIT
+documentation: https://github.com/realm/SwiftLint
 maintainer: DevForgeKit Registry
-tags: [apple-development, code-quality, linter]
-aliases: []
+tags:
+  - apple-development
+  - code-quality
+  - linter
+aliases:
+  - swiftlint-cli
 stability: stable
 lastVerified: "2026-07-05"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: swiftlint
+

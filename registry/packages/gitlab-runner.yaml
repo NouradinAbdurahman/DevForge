@@ -2,19 +2,42 @@ schemaVersion: 1
 name: gitlab-runner
 description: The official GitLab CI/CD runner
 category: ci-cd
-platforms: [macos, linux]
-install: { method: brew-formula, id: gitlab-runner }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: gitlab-runner
 dependencies: []
 validate: gitlab-runner --version
+versionCommand: gitlab-runner --version
 repair: brew reinstall gitlab-runner
 update: brew upgrade gitlab-runner
-uninstall: { method: brew-formula, id: gitlab-runner }
+uninstall:
+  method: brew-formula
+  id: gitlab-runner
 post_install: []
-homepage: "https://docs.gitlab.com/runner"
-repository: "https://gitlab.com/gitlab-org/gitlab-runner"
+homepage: https://docs.gitlab.com/runner
+repository: https://gitlab.com/gitlab-org/gitlab-runner
 license: MIT
+documentation: https://docs.gitlab.com/runner
 maintainer: DevForgeKit Registry
-tags: [ci-cd, gitlab]
-aliases: []
+tags:
+  - ci-cd
+  - gitlab
+aliases:
+  - gitlab-ci
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - circleci
+  - buildkite-agent
+platformInstall:
+  macos:
+    method: brew-formula
+    id: gitlab-runner
+

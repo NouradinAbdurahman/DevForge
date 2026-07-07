@@ -2,19 +2,41 @@ schemaVersion: 1
 name: fastlane
 description: Automates building and releasing iOS and Android apps
 category: apple-development
-platforms: [macos]
-install: { method: brew-formula, id: fastlane }
-dependencies: [ruby]
+platforms:
+  - macos
+architectures:
+  - intel
+  - apple-silicon
+install:
+  method: brew-formula
+  id: fastlane
+dependencies:
+  - ruby
 validate: fastlane --version
+versionCommand: fastlane --version
 repair: brew reinstall fastlane
 update: brew upgrade fastlane
-uninstall: { method: brew-formula, id: fastlane }
+uninstall:
+  method: brew-formula
+  id: fastlane
 post_install: []
-homepage: "https://fastlane.tools"
-repository: "https://github.com/fastlane/fastlane"
+homepage: https://fastlane.tools
+repository: https://github.com/fastlane/fastlane
 license: MIT
+documentation: https://docs.fastlane.tools
 maintainer: DevForgeKit Registry
-tags: [apple-development, mobile, ci-cd]
-aliases: []
+tags:
+  - apple-development
+  - mobile
+  - ci-cd
+aliases:
+  - fastlane-ci
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - xcodegen
+platformInstall:
+  macos:
+    method: brew-formula
+    id: fastlane
+

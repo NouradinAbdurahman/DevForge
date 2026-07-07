@@ -7,6 +7,7 @@ import path from "node:path";
 import yaml from "js-yaml";
 import { repoRoot, userConfigDir } from "./paths.js";
 import { DevForgeError } from "./errors.js";
+import { getPlatform } from "./platform/index.js";
 
 // Every field the v1.1.2 configuration system defines, plus `aiModel`/
 // `aiEndpoint` (v1.3.0 - see core/ai/). `mirrors`, `registryUrl`, and
@@ -16,15 +17,27 @@ import { DevForgeError } from "./errors.js";
 // `aiModel`/`aiEndpoint` ARE consumed now: `commands/ai.js` reads them as
 // the default provider/model/endpoint when a command doesn't override
 // them with an explicit flag.
+// shell/packageManager below are resolved from the current platform
+// adapter (see core/platform/) rather than hardcoded - "zsh"/"brew" are
+// still what a fresh macOS machine gets by default (the only platform
+// DevForgeKit actually drives today), but this keeps the one place that
+// decision is made honest instead of assuming macOS everywhere `DEFAULTS`
+// is read.
+function platformDefaults() {
+    const platform = getPlatform();
+    return { shell: platform.defaultShell(), packageManager: platform.packageManagerId() || "unknown" };
+}
+
 const DEFAULTS = {
     editor: "vscode",
-    shell: "zsh",
-    packageManager: "brew",
+    ...platformDefaults(),
     fonts: [],
     browser: "chrome",
     aiProvider: "none",
     aiModel: null,
     aiEndpoint: null,
+    aiFavoriteModels: [],
+    aiRecentModels: [],
     defaultProfile: "minimal",
     updateSchedule: "manual",
     telemetry: false,
@@ -32,7 +45,9 @@ const DEFAULTS = {
     registryUrl: null,
     colorOutput: true,
     startupAnimation: true,
-    startupAnimationSpeed: "normal"
+    startupAnimationSpeed: "normal",
+    onboardingSeen: false,
+    reducedMotion: false
 };
 
 function repoConfigPath() {

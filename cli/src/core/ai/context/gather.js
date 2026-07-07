@@ -4,11 +4,30 @@
 // registry, the compatibility engine, the workspace manager, config) - see
 // docs/ContextEngine.md.
 import { loadConfig } from "../../config.js";
-import { loadPackages } from "../../registry.js";
+import { loadPackages, getRegistryStats, loadCategories, loadCollections, loadProfiles, loadRecipes } from "../../registry.js";
 import { validate } from "../../installer.js";
 import { captureShellCommand, commandExists } from "../../shell.js";
 import { getActiveWorkspace } from "../../workspace/store.js";
 import { scanCompatibility } from "../../compatibility/engine.js";
+import { getPlatform } from "../../platform/index.js";
+import { listGenerators } from "../../../generators/index.js";
+import { getHistory } from "../memory/history.js";
+
+// platformSummary() - a real, cheap (no I/O) OS/arch fact using the same
+// OS Abstraction Layer (core/platform/) the installer/compatibility
+// engine already resolve against - never a raw process.platform string,
+// so "macos"/"apple-silicon" reads the same way here as everywhere else.
+function platformSummary() {
+    const platform = getPlatform();
+    return { id: platform.id, label: platform.label, architecture: platform.architecture() };
+}
+
+// recentActivity() - the last few AI memory events (never chat contents -
+// see memory/history.js), so the assistant can answer "what did I just
+// do" without re-deriving it from the current conversation alone.
+function recentActivity(limit = 5) {
+    return getHistory().slice(-limit).map((e) => ({ type: e.type, summary: e.summary, timestamp: e.timestamp }));
+}
 
 async function gatherGitStatus(cwd) {
     const { code: isRepoCode } = await captureShellCommand(`git -C "${cwd}" rev-parse --is-inside-work-tree`);
@@ -67,16 +86,27 @@ export async function gatherContext({ full = false, cwd = process.cwd() } = {}) 
 
     const context = {
         cwd,
+        platform: platformSummary(),
         config: { editor: config.editor, shell: config.shell, packageManager: config.packageManager, aiProvider: config.aiProvider, aiModel: config.aiModel },
         workspace: summarizeWorkspace(workspace),
         git,
-        dockerAvailable
+        dockerAvailable,
+        availableGeneratorStacks: listGenerators().map((g) => g.id),
+        recentActivity: recentActivity()
     };
 
+    // Registry-wide stats need to read every package/collection/profile/
+    // recipe YAML file (~261 packages) - real, but not cheap enough to
+    // pay on every `ai chat` turn, so it's grouped with the other
+    // `full`-only work below rather than the light fields above.
     if (full) {
         const installedComponents = await installedComponentNames();
         context.installedComponents = installedComponents;
         context.compatibility = await scanCompatibility(installedComponents);
+        context.registry = getRegistryStats({
+            categories: loadCategories(), packages: loadPackages(), collections: loadCollections(),
+            profiles: loadProfiles(), recipes: loadRecipes()
+        });
     }
 
     return context;

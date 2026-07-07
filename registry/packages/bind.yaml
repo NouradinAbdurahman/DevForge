@@ -2,19 +2,40 @@ schemaVersion: 1
 name: bind
 description: The BIND DNS toolkit, providing a newer 'dig' than macOS ships
 category: networking
-platforms: [macos, linux]
-install: { method: brew-formula, id: bind }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: bind
 dependencies: []
-validate: "dig -v"
+validate: dig -v
+versionCommand: named -v
 repair: brew reinstall bind
 update: brew upgrade bind
-uninstall: { method: brew-formula, id: bind }
+uninstall:
+  method: brew-formula
+  id: bind
 post_install: []
-homepage: "https://www.isc.org/bind"
-repository: "https://gitlab.isc.org/isc-projects/bind9"
+homepage: https://www.isc.org/bind
+repository: https://gitlab.isc.org/isc-projects/bind9
 license: MPL-2.0
+documentation: https://bind9.readthedocs.io
 maintainer: DevForgeKit Registry
-tags: [networking, dns, diagnostics]
-aliases: [dig]
+tags:
+  - networking
+  - dns
+  - diagnostics
+aliases:
+  - dig
 stability: stable
 lastVerified: "2026-07-05"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: bind
+

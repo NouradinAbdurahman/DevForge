@@ -37,7 +37,7 @@ test("buildPrompt() throws for an unknown prompt kind rather than silently falli
 
 test("every prompt kind the CLI actually registers has an instruction template", () => {
     const kinds = knownPromptKinds();
-    for (const expected of ["chat", "doctor", "explain", "review", "generate", "analyze", "summarize", "optimize", "repair", "plan"]) {
+    for (const expected of ["chat", "doctor", "explain", "review", "generate", "analyze", "summarize", "optimize", "repair", "compare", "plan"]) {
         assert.ok(kinds.includes(expected), `expected prompt kind '${expected}'`);
     }
 });
@@ -48,4 +48,24 @@ test("the doctor/generate/plan prompt kinds instruct the model to respond with s
         assert.match(messages[1].content, /JSON object/);
         assert.match(messages[1].content, /no markdown fences/);
     }
+});
+
+// --- TUI system prompt addendum (AI Chat Rendering & Response Experience, v2.1.3.1) ---
+
+test("buildPrompt() with no surface option leaves the plain CLI system prompt unchanged", () => {
+    const messages = buildPrompt("chat", {}, "hello");
+    assert.ok(!messages[0].content.includes("terminal dashboard"));
+});
+
+test("buildPrompt() with { surface: 'tui' } layers in terminal-formatting instructions", () => {
+    const messages = buildPrompt("chat", {}, "hello", { surface: "tui" });
+    assert.match(messages[0].content, /terminal dashboard/);
+    assert.match(messages[0].content, /Markdown tables/);
+    assert.match(messages[0].content, /fenced code block/);
+});
+
+test("the TUI addendum still allows overriding provider/model context and domain snippets to layer in together", () => {
+    const messages = buildPrompt("explain", {}, "why is my flutter build failing", { surface: "tui" });
+    assert.match(messages[0].content, /terminal dashboard/);
+    assert.match(messages[0].content, /Flutter\/Dart focus/);
 });

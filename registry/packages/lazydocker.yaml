@@ -1,0 +1,45 @@
+schemaVersion: 1
+name: lazydocker
+description: A simple terminal UI for Docker and Docker Compose
+category: containers
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: lazydocker
+dependencies:
+  - docker
+validate: lazydocker --version
+versionCommand: lazydocker --version
+repair: brew reinstall lazydocker
+update: brew upgrade lazydocker
+uninstall:
+  method: brew-formula
+  id: lazydocker
+post_install: []
+homepage: https://github.com/jesseduffield/lazydocker
+repository: https://github.com/jesseduffield/lazydocker
+license: MIT
+documentation: https://github.com/jesseduffield/lazydocker#readme
+maintainer: DevForgeKit Registry
+tags:
+  - docker
+  - tui
+  - terminal
+  - containers
+aliases:
+  - ld
+stability: stable
+lastVerified: "2026-07-06"
+recommendedAlternatives:
+  - dive
+platformInstall:
+  macos:
+    method: brew-formula
+    id: lazydocker
+

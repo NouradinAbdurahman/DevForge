@@ -1,0 +1,51 @@
+schemaVersion: 1
+name: lazygit
+description: A simple terminal UI for git commands
+category: utilities
+platforms:
+  - macos
+  - linux
+  - windows
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: lazygit
+dependencies:
+  - git
+validate: lazygit --version
+versionCommand: lazygit --version
+repair: brew reinstall lazygit
+update: brew upgrade lazygit
+uninstall:
+  method: brew-formula
+  id: lazygit
+post_install: []
+homepage: https://github.com/jesseduffield/lazygit
+repository: https://github.com/jesseduffield/lazygit
+license: MIT
+documentation: https://github.com/jesseduffield/lazygit#readme
+maintainer: DevForgeKit Registry
+tags:
+  - git
+  - tui
+  - terminal
+aliases:
+  - lg
+stability: stable
+lastVerified: "2026-07-06"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: lazygit
+  linux:
+    method: apt
+    id: lazygit
+  windows:
+    method: winget
+    id: JesseDuffield.lazygit
+

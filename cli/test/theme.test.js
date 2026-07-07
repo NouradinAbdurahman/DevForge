@@ -10,6 +10,7 @@ import os from "node:os";
 
 import {
     THEME_TOKENS,
+    THEME_NAMES,
     getTheme,
     getThemeNames,
     validateTheme,
@@ -93,6 +94,21 @@ test("dark theme's selection background/text pair passes WCAG AA", () => {
     const dark = getTheme("dark");
     const ratio = contrastRatio(dark.selectionText, dark.selection);
     assert.ok(ratio >= 4.5, `selectionText-on-selection should be >= 4.5:1, got ${ratio}`);
+});
+
+test("every built-in theme passes WCAG AA contrast on every checked token (v2.0.5 audit)", () => {
+    // checkContrast() checks 8 tokens against background plus 3 pairs
+    // that are actually rendered as real Ink backgroundColor+color
+    // combos (selectionText-on-selection, searchHighlight/tableHeader-
+    // on-background) - this audit (arctic, paper, solarized-dark,
+    // github-dark all had real failures here before it) is what should
+    // catch a future theme edit that regresses contrast, not just the
+    // one theme ("dark") the earlier tests happen to name.
+    for (const name of THEME_NAMES) {
+        const theme = getTheme(name);
+        const warnings = checkContrast(theme);
+        assert.deepEqual(warnings, [], `${name} should have no AA contrast warnings, got ${JSON.stringify(warnings)}`);
+    }
 });
 
 test("getTheme falls back to dark for unknown names", () => {

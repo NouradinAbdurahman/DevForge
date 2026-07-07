@@ -2,19 +2,42 @@ schemaVersion: 1
 name: vscode
 description: Visual Studio Code editor
 category: editors
-platforms: [macos]
-install: { method: brew-cask, id: visual-studio-code }
+platforms:
+  - macos
+architectures:
+  - intel
+  - apple-silicon
+install:
+  method: brew-cask
+  id: visual-studio-code
 dependencies: []
-validate: "code --version"
+validate: code --version
+versionCommand: ls /Applications | grep 'Visual Studio'
 repair: brew reinstall --cask visual-studio-code
 update: brew upgrade --cask visual-studio-code
-uninstall: { method: brew-cask, id: visual-studio-code }
+uninstall:
+  method: brew-cask
+  id: visual-studio-code
 post_install: []
-homepage: "https://code.visualstudio.com"
-repository: "https://github.com/microsoft/vscode"
+homepage: https://code.visualstudio.com
+repository: https://github.com/microsoft/vscode
 license: MIT
+documentation: https://code.visualstudio.com/docs
 maintainer: DevForgeKit Registry
-tags: [editor, ide]
-aliases: [code, vs-code]
+tags:
+  - editor
+  - ide
+aliases:
+  - code
+  - vs-code
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - cursor
+  - windsurf
+  - zed
+platformInstall:
+  macos:
+    method: brew-cask
+    id: visual-studio-code
+

@@ -2,19 +2,40 @@ schemaVersion: 1
 name: tlrc
 description: A fast community-maintained tldr client (simplified man pages)
 category: utilities
-platforms: [macos, linux]
-install: { method: brew-formula, id: tlrc }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: tlrc
 dependencies: []
 validate: tldr --version
+versionCommand: tldr --version
 repair: brew reinstall tlrc
 update: brew upgrade tlrc
-uninstall: { method: brew-formula, id: tlrc }
+uninstall:
+  method: brew-formula
+  id: tlrc
 post_install: []
-homepage: "https://github.com/tldr-pages/tlrc"
-repository: "https://github.com/tldr-pages/tlrc"
+homepage: https://github.com/tldr-pages/tlrc
+repository: https://github.com/tldr-pages/tlrc
 license: MIT
+documentation: https://github.com/tldr-pages/tlrc
 maintainer: DevForgeKit Registry
-tags: [utility, documentation, cli]
-aliases: [tldr]
+tags:
+  - utility
+  - documentation
+  - cli
+aliases:
+  - tldr
 stability: stable
 lastVerified: "2026-07-05"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: tlrc
+

@@ -4,6 +4,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { loadConfig, getConfigValue, setConfigValue, listConfig } from "../src/core/config.js";
+import { getPlatform } from "../src/core/platform/index.js";
 
 // config.js resolves the user-level layer from process.env.HOME at call
 // time (see userConfigDir in core/paths.js), so pointing HOME at a
@@ -24,10 +25,11 @@ function withTempHome(fn) {
 
 test("defaults apply when no config files exist", () => {
     withTempHome(() => {
+        const platform = getPlatform();
         const config = loadConfig();
         assert.equal(config.editor, "vscode");
-        assert.equal(config.shell, "zsh");
-        assert.equal(config.packageManager, "brew");
+        assert.equal(config.shell, platform.defaultShell());
+        assert.equal(config.packageManager, platform.packageManagerId() || "unknown");
         assert.equal(config.browser, "chrome");
         assert.equal(config.aiProvider, "none");
         assert.equal(config.defaultProfile, "minimal");

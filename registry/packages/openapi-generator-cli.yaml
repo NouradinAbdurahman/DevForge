@@ -3,9 +3,11 @@ name: openapi-generator-cli
 description: Generates API clients/servers/docs from an OpenAPI spec
 category: api-development
 platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install: { method: npm, id: "@openapitools/openapi-generator-cli" }
 dependencies: [node]
 validate: "openapi-generator-cli version"
+versionCommand: "openapi-generator-cli --version"
 repair: "npm install -g @openapitools/openapi-generator-cli@latest"
 update: "npm install -g @openapitools/openapi-generator-cli@latest"
 uninstall: { method: npm, id: "@openapitools/openapi-generator-cli" }
@@ -13,6 +15,7 @@ post_install: []
 homepage: "https://openapi-generator.tech"
 repository: "https://github.com/OpenAPITools/openapi-generator"
 license: Apache-2.0
+documentation: "https://openapi-generator.tech/docs/usage"
 maintainer: DevForgeKit Registry
 tags: [api-development, openapi]
 aliases: [openapi-generator]

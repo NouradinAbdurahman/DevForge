@@ -37,10 +37,13 @@ test("a package missing install/variants is rejected with a clear error", () => 
     );
 });
 
-test("getPackage returns the docker manifest with both variants", () => {
+test("getPackage returns the docker manifest with all variants", () => {
     const docker = getPackage("docker");
     assert.equal(docker.name, "docker");
-    assert.equal(docker.variants.length, 2);
+    assert.ok(docker.variants.length >= 2, "docker should have at least 2 variants");
+    const variantIds = docker.variants.map(v => v.id);
+    assert.ok(variantIds.includes("docker-desktop"));
+    assert.ok(variantIds.includes("colima"));
 });
 
 test("getPackage throws a DevForgeError for an unknown component", () => {

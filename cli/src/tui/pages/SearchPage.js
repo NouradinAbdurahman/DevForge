@@ -8,6 +8,14 @@ import { h, Panel, SelectList, TextField, KeyHints } from "../components/ui.js";
 import { useStore } from "../store.js";
 import { registrySnapshot, plugins, generators, search } from "../data.js";
 import { searchCommandTree, getCommandTree } from "../../core/commandTree.js";
+import { fuzzyFilter, fuzzyMatch, splitByIndices } from "../fuzzy.js";
+
+// Result types whose entries were fuzzy-matched (name + description
+// combined) rather than the registry's own scored search (components)
+// or the command tree's own search (commands) - these two already have
+// their own matching logic, so their highlighting stays on the plain
+// substring splitMatches() below rather than fuzzy indices.
+const FUZZY_RESULT_TYPES = new Set(["profile", "recipe", "collection", "plugin", "stack"]);
 
 // splitMatches(text, query) -> [{ text, matched }] - breaks `text` into
 // matched/unmatched runs against `query` (case-insensitive), so the
@@ -34,29 +42,34 @@ function splitMatches(text, query) {
 }
 
 async function collectResults(query) {
-    const q = query.trim().toLowerCase();
+    const q = query.trim();
     if (!q) return [];
     const { profiles, recipes, collections } = registrySnapshot();
     const results = [];
 
-    for (const { pkg, matchedOn } of search(q).slice(0, 10)) {
+    for (const { pkg, matchedOn } of search(q.toLowerCase()).slice(0, 10)) {
         results.push({ type: "component", name: pkg.name, detail: `${pkg.category} · matched ${matchedOn}`, page: "components" });
     }
-    const nameMatch = (item) => item.name.toLowerCase().includes(q)
-        || (item.description || "").toLowerCase().includes(q);
-    for (const p of profiles.filter(nameMatch).slice(0, 5)) {
+    // Fuzzy-matched (name + description combined, same fuzzy.js scoring
+    // the Command Palette/Components/AI Models pages use) rather than a
+    // plain substring check - "cpp" now finds "backend-developer" if its
+    // description mentions C++, and results rank by relevance.
+    const searchable = (item) => `${item.name} ${item.description || ""}`;
+    for (const { item: p } of fuzzyFilter(q, profiles, searchable).slice(0, 5)) {
         results.push({ type: "profile", name: p.name, detail: (p.description || "").slice(0, 40), page: "profiles" });
     }
-    for (const r of recipes.filter(nameMatch).slice(0, 5)) {
+    for (const { item: r } of fuzzyFilter(q, recipes, searchable).slice(0, 5)) {
         results.push({ type: "recipe", name: r.name, detail: (r.description || "").slice(0, 40), page: "recipes" });
     }
-    for (const c of collections.filter(nameMatch).slice(0, 5)) {
+    for (const { item: c } of fuzzyFilter(q, collections, searchable).slice(0, 5)) {
         results.push({ type: "collection", name: c.name, detail: `${c.components.length} components`, page: "components" });
     }
-    for (const p of plugins().filter((p) => p.valid && nameMatch({ name: p.name, description: p.manifest.description })).slice(0, 3)) {
+    const pluginSearchable = (p) => `${p.name} ${p.manifest?.description || ""}`;
+    for (const { item: p } of fuzzyFilter(q, plugins().filter((p) => p.valid), pluginSearchable).slice(0, 3)) {
         results.push({ type: "plugin", name: p.name, detail: (p.manifest.description || "").slice(0, 40), page: "plugins" });
     }
-    for (const g of generators().filter((g) => g.id.includes(q) || g.description.toLowerCase().includes(q)).slice(0, 5)) {
+    const stackSearchable = (g) => `${g.id} ${g.description} ${(g.tags || []).join(" ")}`;
+    for (const { item: g } of fuzzyFilter(q, generators(), stackSearchable).slice(0, 5)) {
         results.push({ type: "stack", name: g.id, detail: g.description.slice(0, 40), page: "generator" });
     }
 
@@ -129,15 +142,18 @@ export function SearchPage() {
                 // selection background (the theme redesign's contrast
                 // rule: no cyan-on-blue) - a selected row is pure
                 // selectionText throughout, same as every other list.
+                const query = state.searchQuery.trim();
                 const nameParts = isSelectedRow
                     ? [{ text: paddedName, matched: false }]
-                    : splitMatches(paddedName, state.searchQuery.trim());
+                    : FUZZY_RESULT_TYPES.has(r.type)
+                        ? splitByIndices(paddedName, fuzzyMatch(query, r.name)?.indices)
+                        : splitMatches(paddedName, query);
                 // Nested <Text> spans (not a <Box> of sibling <Text>
                 // elements) - Ink treats nested Text as one reflowable
                 // text run; a Box of siblings instead gives each child
                 // its own flex-shrink share of the width, truncating
                 // mid-word the moment the row doesn't fit.
-                return h(Text, { key: r.type + r.name },
+                return h(Text, { key: r.type + r.name, wrap: "truncate-end" },
                     h(Text, { backgroundColor: isSelectedRow ? theme.selection : undefined, color: isSelectedRow ? theme.selectionText : theme.text }, prefix),
                     ...nameParts.map((p, i) => h(Text, {
                         key: i,

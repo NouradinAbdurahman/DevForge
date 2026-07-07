@@ -2,19 +2,41 @@ schemaVersion: 1
 name: speedtest-cli
 description: A command-line internet speed test utility
 category: networking
-platforms: [macos, linux]
-install: { method: brew-formula, id: speedtest-cli }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: speedtest-cli
 dependencies: []
 validate: speedtest-cli --version
+versionCommand: speedtest-cli --version
 repair: brew reinstall speedtest-cli
 update: brew upgrade speedtest-cli
-uninstall: { method: brew-formula, id: speedtest-cli }
+uninstall:
+  method: brew-formula
+  id: speedtest-cli
 post_install: []
-homepage: "https://github.com/sivel/speedtest-cli"
-repository: "https://github.com/sivel/speedtest-cli"
+homepage: https://github.com/sivel/speedtest-cli
+repository: https://github.com/sivel/speedtest-cli
 license: Apache-2.0
+documentation: https://github.com/sivel/speedtest-cli
 maintainer: DevForgeKit Registry
-tags: [networking, diagnostics]
-aliases: []
+tags:
+  - networking
+  - diagnostics
+aliases:
+  - speedtest
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - iperf3
+platformInstall:
+  macos:
+    method: brew-formula
+    id: speedtest-cli
+

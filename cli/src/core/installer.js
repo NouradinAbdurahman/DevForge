@@ -8,36 +8,36 @@ import { getPackage } from "./registry.js";
 import { DevForgeError } from "./errors.js";
 import { emitInstallEvent } from "./events.js";
 import { diagnoseFailure, logInstallation, updateVerificationStatus, INSTALL_STATUS } from "./installAudit.js";
+import { getPlatform } from "./platform/index.js";
+
+// resolvePlatformInstall(pkg) - if the manifest declares a
+// `platformInstall` map with an entry for the current platform, return
+// that step; otherwise fall back to the top-level `install` field.
+// This lets a single package manifest support macOS (brew), Linux (apt),
+// and Windows (winget) without variants or separate files.
+function resolvePlatformInstall(pkg) {
+    if (pkg.platformInstall) {
+        const platformId = getPlatform().id;
+        if (pkg.platformInstall[platformId]) {
+            return pkg.platformInstall[platformId];
+        }
+    }
+    return pkg.install;
+}
 
 // commandForStep(step, action) - "action" ("install"/"uninstall") picks
 // the right verb per method, since most package managers use a different
 // subcommand to remove something than to add it (`brew install` vs
 // `brew uninstall`, etc.) - reusing the install command for uninstall
-// would silently no-op instead of removing anything. An optional `tap`
-// (Homebrew tap, e.g. "oven-sh/bun" - this repo's own Brewfile already
-// uses `tap "hashicorp/tap"`) is tapped before brew-formula/brew-cask
-// steps; `brew tap` is idempotent so doing this on every call is safe.
+// would silently no-op instead of removing anything. Delegates to the
+// current platform adapter (see core/platform/) rather than hardcoding
+// Homebrew - on macOS this produces the exact same commands it always
+// has (including tapping an optional `step.tap` before brew-formula/
+// brew-cask steps); on Linux/Windows it throws a clear
+// PlatformNotSupportedError for brew-specific methods while npm/pip/
+// cargo/mise/shell steps (already OS-agnostic) work unchanged.
 export function commandForStep(step, action) {
-    const tapPrefix = step.tap ? `brew tap ${step.tap} && ` : "";
-
-    switch (step.method) {
-        case "brew-formula":
-            return tapPrefix + (action === "uninstall" ? `brew uninstall ${step.id}` : `brew install ${step.id}`);
-        case "brew-cask":
-            return tapPrefix + (action === "uninstall" ? `brew uninstall --cask ${step.id}` : `brew install --cask ${step.id}`);
-        case "npm":
-            return action === "uninstall" ? `npm uninstall -g ${step.id}` : `npm install -g ${step.id}`;
-        case "pip":
-            return action === "uninstall" ? `pip uninstall -y ${step.id}` : `pip install ${step.id}`;
-        case "cargo":
-            return action === "uninstall" ? `cargo uninstall ${step.id}` : `cargo install ${step.id}`;
-        case "mise":
-            return action === "uninstall" ? `mise uninstall ${step.id}` : `mise use -g ${step.id}`;
-        case "shell":
-            return step.command;
-        default:
-            throw new DevForgeError(`Unknown install method: ${step.method}`);
-    }
+    return getPlatform().installCommand(step, action);
 }
 
 export function resolveInstallStep(pkg, variantId) {
@@ -49,9 +49,15 @@ export function resolveInstallStep(pkg, variantId) {
             const known = pkg.variants.map((v) => v.id).join(", ");
             throw new DevForgeError(`Unknown variant '${variantId}' for '${pkg.name}'. Available: ${known}`);
         }
+        if (variant.platformInstall) {
+            const platformId = getPlatform().id;
+            if (variant.platformInstall[platformId]) {
+                return variant.platformInstall[platformId];
+            }
+        }
         return variant.install;
     }
-    return pkg.install;
+    return resolvePlatformInstall(pkg);
 }
 
 // The optional `{ onOutput }` on install/repair/update/uninstall is the
@@ -147,10 +153,12 @@ export async function update(pkg, { onOutput } = {}) {
 }
 
 export async function uninstall(pkg, { onOutput } = {}) {
-    if (!pkg.uninstall) {
+    const step = resolvePlatformInstall(pkg);
+    const uninstallStep = pkg.uninstall || step;
+    if (!uninstallStep) {
         throw new DevForgeError(`'${pkg.name}' has no uninstall command defined`);
     }
-    return runShellCommand(commandForStep(pkg.uninstall, "uninstall"), { onOutput });
+    return runShellCommand(commandForStep(uninstallStep, "uninstall"), { onOutput });
 }
 
 // resolveInstallOrder(names) -> [package manifest, ...] in dependency-first

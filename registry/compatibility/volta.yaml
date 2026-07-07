@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: volta
+# Both volta and asdf install shims that shadow `node`/`npm` on PATH; running
+# both to manage Node versions on the same machine is a well-documented
+# source of "wrong version picked" bugs in each project's own issue tracker.
+conflicts: [asdf]

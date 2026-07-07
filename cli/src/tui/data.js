@@ -12,15 +12,21 @@ import {
     loadCategories, loadPackages, loadCollections, loadProfiles, loadRecipes,
     getRegistryStats, searchPackages
 } from "../core/registry.js";
+import { computeRegistryAudit } from "../commands/registry.js";
 import { validate } from "../core/installer.js";
 import { outdatedPackages, osInfo, hardwareInfo, memoryGb, diskUsage, uptimeString, softwareUpdateStatus } from "../commands/stats.js";
 import { scoreResults } from "../core/health.js";
 import { discoverPlugins } from "../core/plugins.js";
 import { listGenerators } from "../generators/index.js";
+import { scoreGenerator } from "../core/generatorQuality.js";
 import { loadConfig } from "../core/config.js";
 import { repoRoot } from "../core/paths.js";
 import { listWorkspaces, getActiveWorkspaceName } from "../core/workspace/store.js";
 import { scanCompatibility } from "../core/compatibility/engine.js";
+import { listAllProviders, storageLocation as aiStorageLoc } from "../core/ai/credentials/manager.js";
+import { getActiveWorkspace } from "../core/workspace/store.js";
+import { getHistory as getAIHistory } from "../core/ai/memory/history.js";
+import { buildGraphCached } from "../core/devGraph.js";
 
 const cache = new Map();
 
@@ -44,6 +50,13 @@ export function registrySnapshot() {
         const stats = getRegistryStats({ categories, packages, collections, profiles, recipes });
         return { categories, packages, collections, profiles, recipes, stats };
     });
+}
+
+// registryAudit() - the same curated health scorecard `devforgekit
+// registry audit` prints (v2.1.1 Registry Excellence), cached like every
+// other registry read here since it re-walks all 261 packages.
+export function registryAudit() {
+    return cached("registryAudit", () => computeRegistryAudit(registrySnapshot()));
 }
 
 export function search(query) {
@@ -133,6 +146,21 @@ export function generators() {
     return listGenerators();
 }
 
+// generatorQualityScores() -> Promise<Map<id, scoreGenerator() result>> -
+// the GeneratorPage's Stack Intelligence panel (v2.1.2 Phase 10) needs
+// every stack's real Generator Quality Score (Phase 11), computed by
+// actually calling each generator's pure generate(), so cached like
+// installedStatuses() above rather than recomputed on every keystroke.
+export function generatorQualityScores() {
+    return cached("generatorQuality", async () => {
+        const map = new Map();
+        for (const g of listGenerators()) {
+            map.set(g.id, await scoreGenerator(g));
+        }
+        return map;
+    });
+}
+
 export function currentConfig() {
     return loadConfig(); // cheap YAML read; not cached so config edits show immediately
 }
@@ -183,6 +211,16 @@ export function compatibilitySnapshot() {
     });
 }
 
+// graphSnapshot() - the Environment Graph (v2.1.4). buildGraphCached()
+// already has its own 30-minute on-disk TTL cache (core/devGraph.js), so
+// wrapping it in this module's in-memory cache() just avoids redundant
+// disk reads within one TUI session - the real ~15-20s cold build only
+// ever happens once per cache window, same as every command-line
+// `graph` subcommand.
+export function graphSnapshot() {
+    return cached("graph", () => buildGraphCached());
+}
+
 // --- Inventory reports (read what scripts/inventory.sh last wrote) ----
 export function inventoryReports() {
     try {
@@ -192,4 +230,29 @@ export function inventoryReports() {
     } catch {
         return [];
     }
+}
+
+// --- AI (cached wrappers around core/ai/ for TUI pages) ---------------
+export function aiProviders() {
+    return cached("aiProviders", () => {
+        return listAllProviders({ workspace: getActiveWorkspace() });
+    });
+}
+
+export function aiConfig() {
+    // Not cached — config edits should show immediately
+    const config = loadConfig();
+    return {
+        provider: config.aiProvider && config.aiProvider !== "none" ? config.aiProvider : null,
+        model: config.aiModel || null,
+        endpoint: config.aiEndpoint || null
+    };
+}
+
+export function aiHistory() {
+    return cached("aiHistory", () => getAIHistory());
+}
+
+export function aiStorageLocation() {
+    return cached("aiStorageLocation", () => aiStorageLoc());
 }

@@ -8,7 +8,8 @@
   "properties": {
     "schemaVersion": {
       "type": "integer",
-      "const": 1
+      "minimum": 1,
+      "maximum": 2
     },
     "name": {
       "type": "string",
@@ -25,6 +26,34 @@
     "author": { "type": "string" },
     "license": { "type": "string" },
     "homepage": { "type": "string" },
+    "repository": { "type": "string" },
+    "keywords": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "icon": { "type": "string" },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "platforms": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["darwin", "linux", "win32"] }
+        },
+        "architectures": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["x64", "arm64", "ia32", "arm"] }
+        }
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["filesystem", "network", "env", "shell", "subprocess"] }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["command", "tui-page", "generator", "benchmark", "repair", "graph", "ai-provider", "compatibility-rule"] }
+    },
     "engine": {
       "type": "string",
       "minLength": 1

@@ -31,6 +31,8 @@ import { listWorkspaces } from "./workspace/store.js";
 import { discoverPlugins } from "./plugins.js";
 import { scoreResults } from "./health.js";
 import { userStateDir } from "./paths.js";
+import { getPlatform } from "./platform/index.js";
+import { PlatformNotSupportedError } from "./platform/errors.js";
 import { getVersion } from "../version.js";
 import { logger } from "./logger.js";
 import { DevForgeError } from "./errors.js";
@@ -84,10 +86,12 @@ export async function buildPackageProfile(pkg, { installedPackages } = {}) {
     // Get install location
     let installLocation = null;
     try {
-        if (pkg.install?.method === "brew" || pkg.install?.method === "brew-cask") {
-            const { stdout } = await captureShellCommand(`brew --prefix ${shellQuote(pkg.install.id || pkg.name)} 2>/dev/null || brew --cask --prefix ${shellQuote(pkg.install.id || pkg.name)} 2>/dev/null`);
-            installLocation = stdout.trim() || null;
-        } else if (pkg.validate) {
+        if (pkg.install?.method === "brew-formula" || pkg.install?.method === "brew-cask") {
+            installLocation = await getPlatform()
+                .packagePrefix(pkg.install.id || pkg.name, { cask: pkg.install.method === "brew-cask" })
+                .catch(() => null);
+        }
+        if (!installLocation && pkg.validate) {
             const cmd = pkg.validate.split(/\s+/)[0];
             const { stdout } = await captureShellCommand(`which ${shellQuote(cmd)} 2>/dev/null`);
             installLocation = stdout.trim() || null;
@@ -492,14 +496,17 @@ export async function detectOutdated(profiles) {
 
         try {
             // Check for updates via brew or mise
-            if (profile.installMethod === "brew" || profile.installMethod === "brew-cask") {
-                const { code, stdout } = await captureShellCommand(`brew outdated --verbose 2>/dev/null`);
+            if (profile.installMethod === "brew-formula" || profile.installMethod === "brew-cask") {
+                const platform = getPlatform();
+                const { code, stdout } = typeof platform.outdatedVerbose === "function"
+                    ? await platform.outdatedVerbose()
+                    : { code: 1, stdout: "" };
                 if (code === 0 && stdout.includes(profile.name)) {
                     outdated.push({
                         name: profile.name,
                         currentVersion: profile.version,
                         reason: "Homebrew reports a newer version available",
-                        updateCommand: `brew upgrade ${profile.name}`
+                        updateCommand: platform.upgradeCommand(profile.name)
                     });
                 }
             } else if (profile.installMethod === "mise") {

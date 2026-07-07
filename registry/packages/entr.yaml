@@ -2,19 +2,42 @@ schemaVersion: 1
 name: entr
 description: Runs arbitrary commands when files change
 category: utilities
-platforms: [macos, linux]
-install: { method: brew-formula, id: entr }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: entr
 dependencies: []
-validate: "entr -v"
+validate: entr -v
+versionCommand: entr --version
 repair: brew reinstall entr
 update: brew upgrade entr
-uninstall: { method: brew-formula, id: entr }
+uninstall:
+  method: brew-formula
+  id: entr
 post_install: []
-homepage: "https://eradman.com/entrproject"
-repository: "https://github.com/eradman/entr"
+homepage: https://eradman.com/entrproject
+repository: https://github.com/eradman/entr
 license: ISC
+documentation: https://eradman.com/entrproject
 maintainer: DevForgeKit Registry
-tags: [utility, file-watching, cli]
-aliases: []
+tags:
+  - utility
+  - file-watching
+  - cli
+aliases:
+  - entr-notify
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - watchexec
+platformInstall:
+  macos:
+    method: brew-formula
+    id: entr
+

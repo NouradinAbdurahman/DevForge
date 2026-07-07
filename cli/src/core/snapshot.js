@@ -41,10 +41,12 @@ import { validate } from "./installer.js";
 import { getVersion } from "../version.js";
 import { logger } from "./logger.js";
 import { DevForgeError } from "./errors.js";
-import { listWorkspaces, workspacesRoot } from "./workspace/store.js";
+import { listWorkspaces, workspacesRoot, getActiveWorkspaceName } from "./workspace/store.js";
 import { exportWorkspaceBundle, importWorkspaceBundle } from "./workspace/bundle.js";
 import { scoreResults } from "./health.js";
 import { currentPlatform, currentArchitecture, scanCompatibility } from "./compatibility/engine.js";
+import { listGenerators } from "../generators/index.js";
+import { envVarForProvider } from "./ai/providers/index.js";
 
 // ─── Constants ────────────────────────────────────────────────────────
 
@@ -114,15 +116,24 @@ export async function gatherMachineInfo() {
 
 // ─── Component gathering ──────────────────────────────────────────────
 
+// Batched with a timer yield between batches, the same pattern
+// tui/data.js's installedStatuses() and devGraph.js's registry scan
+// already use - a plain sequential await-chain over the full ~250
+// -package registry (one `validate` shell probe each) is otherwise
+// the slowest step in `snapshot create`, at tens of seconds.
 export async function installedComponentNames() {
     const names = [];
-    for (const pkg of loadPackages()) {
-        if (!pkg.validate) continue;
-        try {
-            if ((await validate(pkg)) === 0) names.push(pkg.name);
-        } catch {
-            // Not installed
-        }
+    const probeable = loadPackages().filter((pkg) => pkg.validate);
+    const BATCH = 8;
+    for (let i = 0; i < probeable.length; i += BATCH) {
+        await Promise.all(probeable.slice(i, i + BATCH).map(async (pkg) => {
+            try {
+                if ((await validate(pkg)) === 0) names.push(pkg.name);
+            } catch {
+                // Not installed
+            }
+        }));
+        await new Promise((resolve) => setTimeout(resolve, 15));
     }
     return names;
 }
@@ -153,14 +164,7 @@ export function detectMissingSecrets() {
     // AI provider API key references
     const config = loadConfig();
     if (config.aiProvider && config.aiProvider !== "none") {
-        const envVars = {
-            openai: "OPENAI_API_KEY",
-            anthropic: "ANTHROPIC_API_KEY",
-            gemini: "GEMINI_API_KEY",
-            groq: "GROQ_API_KEY",
-            openrouter: "OPENROUTER_API_KEY"
-        };
-        const envVar = envVars[config.aiProvider];
+        const envVar = envVarForProvider(config.aiProvider);
         if (envVar) secrets.add(envVar);
     }
 
@@ -227,6 +231,22 @@ export function sha256Dir(dirPath) {
     return entries.sort().join("\n");
 }
 
+export function dirSizeBytes(dirPath) {
+    let total = 0;
+    function walk(dir) {
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+            const fullPath = path.join(dir, entry.name);
+            if (entry.isDirectory()) {
+                walk(fullPath);
+            } else {
+                total += statSync(fullPath).size;
+            }
+        }
+    }
+    if (existsSync(dirPath)) walk(dirPath);
+    return total;
+}
+
 export function writeChecksums(stagingDir, sections) {
     const checksumsDir = path.join(stagingDir, "checksums");
     mkdirSync(checksumsDir, { recursive: true });
@@ -247,9 +267,10 @@ function makeSnapshotId(isoTimestamp) {
 
 // ─── Create ───────────────────────────────────────────────────────────
 
-export async function createSnapshot({ output, compression = "normal", skipInventory = false } = {}) {
+export async function createSnapshot({ output, compression = "normal", skipInventory = false, name = null, description = null } = {}) {
     logger.section("Environment Snapshot: Create");
 
+    const startedAt = Date.now();
     const createdAt = new Date().toISOString();
     const id = makeSnapshotId(createdAt);
     const staging = tempDir("devforgekit-snapshot-");
@@ -289,9 +310,16 @@ export async function createSnapshot({ output, compression = "normal", skipInven
                 .map((f) => path.basename(f, path.extname(f)));
         }
 
-        // Step 6: Gather workspace list
+        // Step 6: Gather workspace list + which one is active
         const workspaces = listWorkspaces().filter((w) => w.valid).map((w) => w.name);
+        const activeWorkspace = getActiveWorkspaceName();
         logger.success(`Found ${workspaces.length} workspace(s)`);
+
+        // Step 6b: Gather Project Generator stacks - the real, static list
+        // this DevForgeKit version ships (not "which projects were
+        // generated," which isn't tracked anywhere DevForgeKit could
+        // capture safely - see docs/Snapshot.md).
+        const generators = listGenerators().map((g) => g.id);
 
         // Step 7: Health score
         let health = null;
@@ -312,27 +340,45 @@ export async function createSnapshot({ output, compression = "normal", skipInven
             // Non-critical
         }
 
-        // Step 9: Git commit
+        // Step 9: Git commit - the DevForgeKit repo's OWN commit (via
+        // repoRoot(), not process.cwd()). Before this fix, this ran
+        // against whatever the current directory happened to be when
+        // `snapshot create` was invoked - almost always meaningless (not
+        // tied to any workspace, and not necessarily the DevForgeKit repo
+        // at all). Scoped explicitly, this answers a real question:
+        // "which DevForgeKit source commit produced this snapshot,"
+        // useful when debugging a snapshot created from a local
+        // clone/branch rather than a released version.
         let gitCommit = "unknown";
         try {
-            const { stdout } = await captureShellCommand("git rev-parse HEAD 2>/dev/null");
-            gitCommit = stdout.trim();
+            const { stdout } = await captureShellCommand(`git -C ${shellQuote(repoRoot())} rev-parse HEAD 2>/dev/null`);
+            gitCommit = stdout.trim() || "unknown";
         } catch {
-            // Not a git repo
+            // Not a git repo (e.g. installed via a release tarball, not a clone)
         }
+
+        // Step 9b: how many workspaces have a git identity configured -
+        // a real, derivable count (unlike "number of git repos on this
+        // machine," which DevForgeKit has no way to enumerate safely).
+        const gitWorkspaceCount = listWorkspaces().filter((w) => w.valid && w.doc?.git?.name).length;
 
         // Step 10: Build snapshot.json
         const snapshotMeta = {
             snapshotVersion: SNAPSHOT_VERSION,
             id,
+            name,
+            description,
             createdAt,
             creator: userInfo().username || "unknown",
             devforgekitVersion: getVersion(),
             gitCommit,
+            gitWorkspaceCount,
             machine,
             components,
+            generators,
             config: configCopy,
             workspaces,
+            activeWorkspace,
             themes,
             health,
             compatibility,
@@ -426,7 +472,21 @@ export async function createSnapshot({ output, compression = "normal", skipInven
         // Step 18: Generate missing-secrets.md
         writeFileSync(path.join(staging, "missing-secrets.md"), generateMissingSecretsMd(missingSecrets));
 
-        // Step 19: Generate checksums
+        // Step 18b: duration + uncompressed size - computed and folded
+        // into snapshot.json BEFORE checksums (Step 19) so the persisted,
+        // checksummed manifest already reflects them, rather than
+        // rewriting (and re-hashing) it a second time afterward.
+        // `durationMs` covers gathering + staging, not the final tar/gzip
+        // pass below (typically fast relative to the ~15-20s package
+        // scan, and not worth a second full staging pass to include).
+        snapshotMeta.durationMs = Date.now() - startedAt;
+        snapshotMeta.uncompressedSize = dirSizeBytes(staging);
+        writeFileSync(path.join(staging, "snapshot.json"), `${JSON.stringify(snapshotMeta, null, 2)}\n`);
+
+        // Step 19: Generate checksums. `registry` (plugin manifests, Step
+        // 17) is now included - a real gap the v2.1.4 audit found: plugin
+        // manifest content was copied into every archive but silently
+        // excluded from the checksum set entirely.
         const snapshotJson = readFileSync(path.join(staging, "snapshot.json"), "utf8");
         const checksums = writeChecksums(staging, {
             snapshot: snapshotJson,
@@ -435,39 +495,53 @@ export async function createSnapshot({ output, compression = "normal", skipInven
             profiles: sha256Dir(path.join(staging, "profiles")),
             recipes: sha256Dir(path.join(staging, "recipes")),
             themes: sha256Dir(path.join(staging, "themes")),
-            inventory: sha256Dir(path.join(staging, "inventory"))
+            inventory: sha256Dir(path.join(staging, "inventory")),
+            registry: sha256Dir(path.join(staging, "registry"))
         });
 
         // Add checksums to snapshot.json
         snapshotMeta.checksums = checksums;
         writeFileSync(path.join(staging, "snapshot.json"), `${JSON.stringify(snapshotMeta, null, 2)}\n`);
 
-        // Step 20: Create tar.gz archive
-        const tarFlags = compression === "fast" ? "-czf" : compression === "max" ? "-czf --rsyncable" : "-czf";
+        // Step 20: Create tar.gz archive. Real, distinct gzip levels via a
+        // `tar | gzip -N` pipe rather than tar's own `-z` flag (which has
+        // no per-level control) - v2.1.4 audit found the previous version
+        // of this line passed `-czf --rsyncable` to tar's `-f`, which
+        // consumes the NEXT token as the archive filename, so `max`
+        // silently tried to create an archive literally named
+        // `--rsyncable` in the current directory and always failed with a
+        // nonzero exit. `fast`/`normal` were also functionally identical
+        // (both plain `-czf`, no level flag at all). All three are now
+        // real: 1 (fastest/largest) / 6 (gzip's own default) / 9
+        // (slowest/smallest).
+        const gzipLevel = compression === "fast" ? "1" : compression === "max" ? "9" : "6";
         const outDir = output || snapshotsDir();
         mkdirSync(outDir, { recursive: true });
         const archivePath = path.join(outDir, `${id}${SNAPSHOT_EXTENSION}`);
 
         const code = await runShellCommand(
-            `tar ${tarFlags} ${shellQuote(archivePath)} -C ${shellQuote(staging)} .`,
+            `tar -cf - -C ${shellQuote(staging)} . | gzip -${gzipLevel} > ${shellQuote(archivePath)}`,
             { silent: true }
         );
         if (code !== 0) {
-            throw new DevForgeError(`Failed to create archive (tar exit ${code})`);
+            throw new DevForgeError(`Failed to create archive (tar/gzip exit ${code})`);
         }
 
         const archiveSize = statSync(archivePath).size;
+        const uncompressedSize = snapshotMeta.uncompressedSize;
+        const compressionRatio = uncompressedSize > 0 ? Number((1 - archiveSize / uncompressedSize).toFixed(3)) : 0;
         logger.section("Snapshot Created");
         logger.success(`Archive: ${archivePath}`);
         logger.info(`ID: ${id}`);
-        logger.info(`Size: ${formatBytes(archiveSize)}`);
+        logger.info(`Size: ${formatBytes(archiveSize)} (from ${formatBytes(uncompressedSize)} uncompressed, ${Math.round(compressionRatio * 100)}% smaller)`);
+        logger.info(`Duration: ${((Date.now() - startedAt) / 1000).toFixed(1)}s`);
         logger.info(`Components: ${components.packages.length} packages, ${components.profiles.length} profiles, ${components.recipes.length} recipes`);
         logger.info(`Workspaces: ${workspaces.length}`);
         if (missingSecrets.length > 0) {
             logger.warn(`Missing secrets: ${missingSecrets.length} key(s) listed in missing-secrets.md`);
         }
 
-        return { id, archivePath, size: archiveSize, meta: snapshotMeta };
+        return { id, archivePath, size: archiveSize, uncompressedSize, compressionRatio, meta: snapshotMeta };
     } finally {
         rmSync(staging, { recursive: true, force: true });
     }
@@ -526,20 +600,36 @@ export async function verifySnapshot(archivePath) {
             });
         }
 
-        // Verify checksums
+        // Verify checksums. Recomputed against the ACTUAL extracted
+        // directory content, not just cross-checked against the
+        // checksums/*.sha256 files - the v2.1.5 audit found the previous
+        // version of this loop only compared meta.checksums[name]
+        // against checksums/<name>.sha256, and both of those values
+        // originated from the exact same writeChecksums() call at create
+        // time. That never caught anything: it verified the archive
+        // agreed with itself, not that the extracted files still match
+        // what was originally hashed (tar corruption, a bad write, or
+        // tampering that touches config/ but not checksums/ would all
+        // sail through as PASS).
         const checksumsDir = path.join(extractDir, "checksums");
         if (existsSync(checksumsDir)) {
+            const dirSections = { config: 1, workspaces: 1, profiles: 1, recipes: 1, themes: 1, inventory: 1, registry: 1 };
             for (const [name, expectedHash] of Object.entries(meta.checksums || {})) {
-                const checksumFile = path.join(checksumsDir, `${name}.sha256`);
-                if (!existsSync(checksumFile)) {
-                    results.push({ check: `checksum: ${name}`, status: "WARNING", detail: "checksum file missing" });
+                let actualHash;
+                if (name === "snapshot") {
+                    const metaCopy = { ...meta };
+                    delete metaCopy.checksums;
+                    actualHash = crypto.createHash("sha256").update(`${JSON.stringify(metaCopy, null, 2)}\n`).digest("hex");
+                } else if (dirSections[name]) {
+                    actualHash = crypto.createHash("sha256").update(sha256Dir(path.join(extractDir, name))).digest("hex");
+                } else {
+                    results.push({ check: `checksum: ${name}`, status: "WARNING", detail: "unknown checksum section" });
                     continue;
                 }
-                const actualHash = readFileSync(checksumFile, "utf8").trim().split(/\s+/)[0];
                 if (actualHash === expectedHash) {
                     results.push({ check: `checksum: ${name}`, status: "PASS" });
                 } else {
-                    results.push({ check: `checksum: ${name}`, status: "FAIL", detail: "checksum mismatch" });
+                    results.push({ check: `checksum: ${name}`, status: "FAIL", detail: "checksum mismatch - archive content does not match recorded hash" });
                 }
             }
         } else {

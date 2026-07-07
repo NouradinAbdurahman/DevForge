@@ -2,19 +2,43 @@ schemaVersion: 1
 name: openssl
 description: A robust, full-featured toolkit for TLS/SSL and general-purpose cryptography
 category: security
-platforms: [macos, linux]
-install: { method: brew-formula, id: "openssl@3" }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: openssl@3
 dependencies: []
 validate: openssl version
+versionCommand: openssl version
 repair: brew reinstall openssl@3
 update: brew upgrade openssl@3
-uninstall: { method: brew-formula, id: "openssl@3" }
+uninstall:
+  method: brew-formula
+  id: openssl@3
 post_install: []
-homepage: "https://www.openssl.org"
-repository: "https://github.com/openssl/openssl"
+homepage: https://www.openssl.org
+repository: https://github.com/openssl/openssl
 license: Apache-2.0
+documentation: https://www.openssl.org/docs/
 maintainer: DevForgeKit Registry
-tags: [security, cryptography, tls]
-aliases: []
+tags:
+  - security
+  - cryptography
+  - tls
+aliases:
+  - openssl-tls
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - gnupg
+  - mkcert
+platformInstall:
+  macos:
+    method: brew-formula
+    id: openssl@3
+

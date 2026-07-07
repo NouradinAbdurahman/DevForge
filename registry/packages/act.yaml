@@ -2,19 +2,42 @@ schemaVersion: 1
 name: act
 description: Run GitHub Actions workflows locally
 category: ci-cd
-platforms: [macos, linux]
-install: { method: brew-formula, id: act }
-dependencies: [docker]
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: act
+dependencies:
+  - docker
 validate: act --version
+versionCommand: act --version
 repair: brew reinstall act
 update: brew upgrade act
-uninstall: { method: brew-formula, id: act }
+uninstall:
+  method: brew-formula
+  id: act
 post_install: []
-homepage: "https://github.com/nektos/act"
-repository: "https://github.com/nektos/act"
+homepage: https://github.com/nektos/act
+repository: https://github.com/nektos/act
 license: MIT
+documentation: https://github.com/nektos/act#readme
 maintainer: DevForgeKit Registry
-tags: [ci-cd, github-actions]
-aliases: []
+tags:
+  - ci-cd
+  - github-actions
+aliases:
+  - github-act
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - github-cli
+platformInstall:
+  macos:
+    method: brew-formula
+    id: act
+

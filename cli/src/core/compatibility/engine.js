@@ -5,18 +5,23 @@
 import os from "node:os";
 import { loadPackages } from "../registry.js";
 import { captureShellCommand } from "../shell.js";
+import { getPlatform } from "../platform/index.js";
 import { loadCompatibilityRules, getRulesForPackage } from "./rules.js";
 import { detectInstalledVersion } from "./versions.js";
 import { matchesVersion, findVersionRule } from "./versionMatch.js";
 import { buildDependencyGraph, detectCycles } from "./graph.js";
 
 export function currentPlatform() {
-    const p = os.platform();
-    if (p === "darwin") return "macos";
-    if (p === "linux") return "linux";
-    return "windows";
+    return getPlatform().id;
 }
 
+// currentArchitecture() intentionally stays in the registry schema's own
+// "intel"/"apple-silicon" vocabulary (package.schema.json's
+// `architectures` enum only defines intel/apple-silicon/linux) rather
+// than delegating to Platform.architecture()'s generic arm64/x64/arm -
+// this function's contract is "match what a package manifest declares",
+// not "describe the CPU", and scanCompatibility() below already exempts
+// Linux from this check entirely (`platform !== "linux"`).
 export function currentArchitecture() {
     return os.arch() === "arm64" ? "apple-silicon" : "intel";
 }

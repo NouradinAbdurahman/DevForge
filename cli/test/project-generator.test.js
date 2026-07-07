@@ -119,3 +119,47 @@ test("runProjectGenerator throws if the scaffold command exits non-zero", async 
         );
     });
 });
+
+// --- Universal LICENSE (Project Generator Excellence, v2.1.2) ----------
+
+test("runProjectGenerator writes a real MIT LICENSE by default for a generator that provides none", async () => {
+    await withWorkDir(async (workDir) => {
+        const fixtureGenerator = { id: "fixture", label: "Fixture", generate: () => [] };
+        const { dir } = await runProjectGenerator(fixtureGenerator, { name: "no-license-app", parentDir: workDir });
+        const license = readFileSync(path.join(dir, "LICENSE"), "utf8");
+        assert.match(license, /MIT License/);
+    });
+});
+
+test("runProjectGenerator honors an explicit license choice", async () => {
+    await withWorkDir(async (workDir) => {
+        const fixtureGenerator = { id: "fixture", label: "Fixture", generate: () => [] };
+        const { dir } = await runProjectGenerator(fixtureGenerator, {
+            name: "apache-app", parentDir: workDir, options: { license: "apache-2.0" }
+        });
+        const license = readFileSync(path.join(dir, "LICENSE"), "utf8");
+        assert.match(license, /Apache License/);
+        assert.match(license, /Version 2\.0/);
+    });
+});
+
+test("runProjectGenerator writes no LICENSE at all when license is 'none'", async () => {
+    await withWorkDir(async (workDir) => {
+        const fixtureGenerator = { id: "fixture", label: "Fixture", generate: () => [] };
+        const { dir } = await runProjectGenerator(fixtureGenerator, {
+            name: "no-license-chosen", parentDir: workDir, options: { license: "none" }
+        });
+        assert.ok(!existsSync(path.join(dir, "LICENSE")));
+    });
+});
+
+test("runProjectGenerator never overwrites a LICENSE a generator already wrote itself", async () => {
+    await withWorkDir(async (workDir) => {
+        const fixtureGenerator = {
+            id: "fixture", label: "Fixture",
+            generate: () => [{ path: "LICENSE", content: "CUSTOM LICENSE TEXT\n" }]
+        };
+        const { dir } = await runProjectGenerator(fixtureGenerator, { name: "custom-license-app", parentDir: workDir });
+        assert.equal(readFileSync(path.join(dir, "LICENSE"), "utf8"), "CUSTOM LICENSE TEXT\n");
+    });
+});

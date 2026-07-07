@@ -2,19 +2,44 @@ schemaVersion: 1
 name: clojure
 description: The Clojure programming language (runs on the JVM)
 category: languages
-platforms: [macos, linux]
-install: { method: brew-formula, id: clojure }
-dependencies: [java]
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: clojure
+dependencies:
+  - java
 validate: clojure --version
+versionCommand: clojure --version
 repair: brew reinstall clojure
 update: brew upgrade clojure
-uninstall: { method: brew-formula, id: clojure }
+uninstall:
+  method: brew-formula
+  id: clojure
 post_install: []
-homepage: "https://clojure.org"
-repository: "https://github.com/clojure/clojure"
+homepage: https://clojure.org
+repository: https://github.com/clojure/clojure
 license: EPL-1.0
+documentation: https://clojure.org/guides/getting_started
 maintainer: DevForgeKit Registry
-tags: [language, functional, jvm]
-aliases: []
+tags:
+  - language
+  - functional
+  - jvm
+aliases:
+  - clj
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - scala
+  - kotlin
+platformInstall:
+  macos:
+    method: brew-formula
+    id: clojure
+

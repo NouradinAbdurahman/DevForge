@@ -2,19 +2,50 @@ schemaVersion: 1
 name: helm
 description: The package manager for Kubernetes
 category: kubernetes
-platforms: [macos, linux]
-install: { method: brew-formula, id: helm }
-dependencies: [kubectl]
+platforms:
+  - macos
+  - linux
+  - windows
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+  - x64
+  - arm64
+install:
+  method: brew-formula
+  id: helm
+dependencies:
+  - kubectl
 validate: helm version
+versionCommand: helm version
 repair: brew reinstall helm
 update: brew upgrade helm
-uninstall: { method: brew-formula, id: helm }
+uninstall:
+  method: brew-formula
+  id: helm
 post_install: []
-homepage: "https://helm.sh"
-repository: "https://github.com/helm/helm"
+homepage: https://helm.sh
+repository: https://github.com/helm/helm
 license: Apache-2.0
+documentation: https://helm.sh/docs/
 maintainer: DevForgeKit Registry
-tags: [kubernetes, package-manager]
-aliases: []
+tags:
+  - kubernetes
+  - package-manager
+aliases:
+  - helm3
+  - kubernetes-helm
 stability: stable
 lastVerified: "2026-07-05"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: helm
+  linux:
+    method: apt
+    id: helm
+  windows:
+    method: winget
+    id: Helm.Helm
+

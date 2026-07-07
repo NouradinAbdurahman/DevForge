@@ -45,14 +45,3 @@ export async function applyWorkspaceDocker(workspace, { onOutput } = {}) {
     const code = await runShellCommand(`docker context use ${shellQuote(docker.context)}`, { onOutput, silent: !onOutput });
     return { applied: code === 0, reason: code === 0 ? null : `'docker context use' exited ${code}` };
 }
-
-// describeDockerReferences(workspace) -> the reference-only fields, for
-// health.js/display - never used to drive any subprocess call itself.
-export function describeDockerReferences(workspace) {
-    const docker = workspace.docker || {};
-    return {
-        composeFiles: docker.composeFiles || [],
-        networks: docker.networks || [],
-        volumes: docker.volumes || []
-    };
-}

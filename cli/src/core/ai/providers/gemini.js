@@ -143,5 +143,5 @@ export function createGeminiProvider({ apiKey, model, embeddingsModel = "text-em
         }
     }
 
-    return { id, chat, stream, embeddings, listModels, checkHealth };
+    return { id, chat, stream, embeddings, listModels, checkHealth, supportsStreaming: true };
 }

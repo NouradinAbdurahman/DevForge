@@ -2,19 +2,40 @@ schemaVersion: 1
 name: postman
 description: A collaborative API development and testing platform
 category: testing
-platforms: [macos]
-install: { method: brew-cask, id: postman }
+platforms:
+  - macos
+architectures:
+  - intel
+  - apple-silicon
+install:
+  method: brew-cask
+  id: postman
 dependencies: []
-validate: "test -d '/Applications/Postman.app'"
+validate: test -d '/Applications/Postman.app'
+versionCommand: ls /Applications | grep Postman
 repair: brew reinstall --cask postman
 update: brew upgrade --cask postman
-uninstall: { method: brew-cask, id: postman }
+uninstall:
+  method: brew-cask
+  id: postman
 post_install: []
-homepage: "https://www.postman.com"
-repository: ""
+homepage: https://www.postman.com
+repository: https://www.postman.com
 license: proprietary
+documentation: https://learning.postman.com/docs/getting-started/overview/
 maintainer: DevForgeKit Registry
-tags: [testing, api]
-aliases: []
+tags:
+  - testing
+  - api
+aliases:
+  - postman-api
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - insomnia
+  - newman
+platformInstall:
+  macos:
+    method: brew-cask
+    id: postman
+

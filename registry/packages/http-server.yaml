@@ -3,9 +3,11 @@ name: http-server
 description: A simple zero-configuration command-line static HTTP server
 category: web
 platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install: { method: npm, id: http-server }
 dependencies: [node]
 validate: "http-server --version"
+versionCommand: "http-server --version"
 repair: "npm install -g http-server@latest"
 update: "npm install -g http-server@latest"
 uninstall: { method: npm, id: http-server }
@@ -13,8 +15,9 @@ post_install: []
 homepage: "https://github.com/http-party/http-server"
 repository: "https://github.com/http-party/http-server"
 license: MIT
+documentation: "https://github.com/http-party/http-server"
 maintainer: DevForgeKit Registry
 tags: [web, server]
-aliases: []
+aliases: [http-server-cli]
 stability: stable
 lastVerified: "2026-07-05"

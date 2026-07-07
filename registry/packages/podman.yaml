@@ -2,19 +2,41 @@ schemaVersion: 1
 name: podman
 description: A daemonless container engine, a Docker alternative
 category: containers
-platforms: [macos, linux]
-install: { method: brew-formula, id: podman }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: podman
 dependencies: []
 validate: podman --version
+versionCommand: podman --version
 repair: brew reinstall podman
 update: brew upgrade podman
-uninstall: { method: brew-formula, id: podman }
+uninstall:
+  method: brew-formula
+  id: podman
 post_install: []
-homepage: "https://podman.io"
-repository: "https://github.com/containers/podman"
+homepage: https://podman.io
+repository: https://github.com/containers/podman
 license: Apache-2.0
+documentation: https://docs.podman.io
 maintainer: DevForgeKit Registry
-tags: [containers, devops]
-aliases: []
+tags:
+  - containers
+  - devops
+aliases:
+  - podman-container
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - docker
+platformInstall:
+  macos:
+    method: brew-formula
+    id: podman
+

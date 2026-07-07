@@ -15,7 +15,15 @@ import {
     deleteResult,
     compareResults,
     exportResult,
-    benchmarkSummary
+    benchmarkSummary,
+    getTrend,
+    getTrendSummary,
+    renderSparkline,
+    explainBenchmark,
+    explainBenchmarkResult,
+    computeBenchmarkQuality,
+    generateRichReport,
+    BENCHMARK_METADATA
 } from "../src/core/benchmark.js";
 
 // Point HOME at a scratch directory to isolate from the developer's real
@@ -34,8 +42,8 @@ function withTempHome(fn) {
 
 // ─── Constants ────────────────────────────────────────────────────────
 
-test("BENCHMARK_VERSION is 1", () => {
-    assert.equal(BENCHMARK_VERSION, 1);
+test("BENCHMARK_VERSION is 2", () => {
+    assert.equal(BENCHMARK_VERSION, 2);
 });
 
 test("BENCHMARK_DIR is 'benchmarks'", () => {
@@ -498,5 +506,378 @@ test("runBenchmark calls onProgress callback", async () => {
     } finally {
         process.env.HOME = originalHome;
         rmSync(tempHome, { recursive: true, force: true });
+    }
+});
+
+// ─── Phase 2: Rich metadata in runBenchmark ───────────────────────────
+
+test("runBenchmark includes rich metadata (environment, categoryLabels, qualityScore)", async () => {
+    const originalHome = process.env.HOME;
+    const tempHome = mkdtempSync(path.join(tmpdir(), "devforgekit-bench-meta-"));
+    process.env.HOME = tempHome;
+
+    try {
+        const result = await runBenchmark({ profile: "quick" });
+        assert.ok(result.environment, "should have environment object");
+        assert.ok(result.environment.nodeVersion, "should have nodeVersion");
+        assert.ok(result.environment.shellType, "should have shellType");
+        assert.ok(result.categoryLabels, "should have categoryLabels");
+        assert.ok(result.affectedPackages, "should have affectedPackages");
+        assert.ok(result.confidence, "should have confidence data");
+        assert.ok(result.qualityScore, "should have qualityScore");
+        assert.ok(typeof result.qualityScore.score === "number");
+        assert.ok(result.qualityScore.coverage != null);
+        assert.ok(result.qualityScore.confidence != null);
+    } finally {
+        process.env.HOME = originalHome;
+        rmSync(tempHome, { recursive: true, force: true });
+    }
+});
+
+// ─── Phase 4: Enhanced comparison ─────────────────────────────────────
+
+test("compareResults includes summary, significance, likelyCause, measurementDeltas", () => {
+    const oldResult = {
+        id: "old",
+        createdAt: "2025-01-01T00:00:00.000Z",
+        overallScore: 70,
+        overallGrade: "C",
+        machine: { hostname: "mac1", freeMemoryGb: 16, os: "macOS 14" },
+        categoryScores: { cpu: 60, disk: 80 },
+        categoryResults: { cpu: { compression: 800 }, disk: { sequentialWrite: 600 } }
+    };
+    const newResult = {
+        id: "new",
+        createdAt: "2025-06-01T00:00:00.000Z",
+        overallScore: 50,
+        overallGrade: "F",
+        machine: { hostname: "mac1", freeMemoryGb: 8, os: "macOS 14" },
+        categoryScores: { cpu: 30, disk: 70 },
+        categoryResults: { cpu: { compression: 1600 }, disk: { sequentialWrite: 800 } }
+    };
+
+    const comparison = compareResults(oldResult, newResult);
+
+    assert.ok(comparison.summary, "should have summary");
+    assert.equal(comparison.summary.improved, 0);
+    assert.equal(comparison.summary.regressed, 2);
+
+    const cpu = comparison.categories.find((c) => c.category === "cpu");
+    assert.ok(cpu.significant, "cpu regression should be significant");
+    assert.ok(cpu.likelyCause, "should have likelyCause for significant regression");
+    assert.ok(cpu.recommendation, "should have recommendation");
+    assert.ok(cpu.measurementDeltas, "should have measurementDeltas");
+    assert.ok(cpu.measurementDeltas.length > 0, "should have at least one measurement delta");
+    assert.ok(cpu.measurementDeltas.some((m) => m.measurement === "compression"));
+});
+
+test("compareResults detects machine change as likely cause", () => {
+    const oldResult = {
+        id: "old",
+        createdAt: "2025-01-01T00:00:00.000Z",
+        overallScore: 80,
+        overallGrade: "B",
+        machine: { hostname: "mac1" },
+        categoryScores: { cpu: 80 }
+    };
+    const newResult = {
+        id: "new",
+        createdAt: "2025-06-01T00:00:00.000Z",
+        overallScore: 60,
+        overallGrade: "D",
+        machine: { hostname: "mac2" },
+        categoryScores: { cpu: 60 }
+    };
+
+    const comparison = compareResults(oldResult, newResult);
+    const cpu = comparison.categories.find((c) => c.category === "cpu");
+    assert.ok(cpu.likelyCause.includes("Different machine"));
+});
+
+// ─── Phase 5: Trend analysis ──────────────────────────────────────────
+
+test("getTrend returns points from history for overall", () => {
+    withTempHome(() => {
+        saveResult({ id: "t1", createdAt: "2025-01-01T00:00:00.000Z", profile: "quick", overallScore: 70, overallGrade: "C", durationMs: 1000, machine: {}, categoryScores: {}, categoryResults: {} });
+        saveResult({ id: "t2", createdAt: "2025-02-01T00:00:00.000Z", profile: "quick", overallScore: 75, overallGrade: "C", durationMs: 1000, machine: {}, categoryScores: {}, categoryResults: {} });
+        saveResult({ id: "t3", createdAt: "2025-03-01T00:00:00.000Z", profile: "quick", overallScore: 85, overallGrade: "B", durationMs: 1000, machine: {}, categoryScores: {}, categoryResults: {} });
+
+        const trend = getTrend("overall", { limit: 10 });
+        assert.equal(trend.count, 3);
+        assert.equal(trend.points[0].score, 70);
+        assert.equal(trend.points[2].score, 85);
+    });
+});
+
+test("getTrend returns points for a specific category", () => {
+    withTempHome(() => {
+        saveResult({ id: "c1", createdAt: "2025-01-01T00:00:00.000Z", profile: "quick", overallScore: 70, overallGrade: "C", durationMs: 1000, machine: {}, categoryScores: { cpu: 60 }, categoryResults: {} });
+        saveResult({ id: "c2", createdAt: "2025-02-01T00:00:00.000Z", profile: "quick", overallScore: 80, overallGrade: "B", durationMs: 1000, machine: {}, categoryScores: { cpu: 75 }, categoryResults: {} });
+
+        const trend = getTrend("cpu", { limit: 10 });
+        assert.equal(trend.count, 2);
+        assert.equal(trend.points[0].score, 60);
+        assert.equal(trend.points[1].score, 75);
+    });
+});
+
+test("renderSparkline produces non-empty string for valid values", () => {
+    const sparkline = renderSparkline([50, 60, 70, 80, 90]);
+    assert.ok(sparkline.length > 0);
+    assert.ok(typeof sparkline === "string");
+});
+
+test("renderSparkline returns empty string for empty values", () => {
+    assert.equal(renderSparkline([]), "");
+});
+
+test("getTrendSummary identifies improving trend", () => {
+    withTempHome(() => {
+        saveResult({ id: "i1", createdAt: "2025-01-01T00:00:00.000Z", profile: "quick", overallScore: 70, overallGrade: "C", durationMs: 1000, machine: {}, categoryScores: {}, categoryResults: {} });
+        saveResult({ id: "i2", createdAt: "2025-02-01T00:00:00.000Z", profile: "quick", overallScore: 85, overallGrade: "B", durationMs: 1000, machine: {}, categoryScores: {}, categoryResults: {} });
+
+        const summary = getTrendSummary("overall", { limit: 10 });
+        assert.equal(summary.direction, "improving");
+        assert.ok(summary.delta > 0);
+        assert.ok(summary.sparkline.length > 0);
+    });
+});
+
+test("getTrendSummary identifies declining trend", () => {
+    withTempHome(() => {
+        saveResult({ id: "d1", createdAt: "2025-01-01T00:00:00.000Z", profile: "quick", overallScore: 85, overallGrade: "B", durationMs: 1000, machine: {}, categoryScores: {}, categoryResults: {} });
+        saveResult({ id: "d2", createdAt: "2025-02-01T00:00:00.000Z", profile: "quick", overallScore: 70, overallGrade: "C", durationMs: 1000, machine: {}, categoryScores: {}, categoryResults: {} });
+
+        const summary = getTrendSummary("overall", { limit: 10 });
+        assert.equal(summary.direction, "declining");
+        assert.ok(summary.delta < 0);
+    });
+});
+
+test("getTrendSummary returns insufficient data for single point", () => {
+    withTempHome(() => {
+        saveResult({ id: "s1", createdAt: "2025-01-01T00:00:00.000Z", profile: "quick", overallScore: 70, overallGrade: "C", durationMs: 1000, machine: {}, categoryScores: {}, categoryResults: {} });
+
+        const summary = getTrendSummary("overall", { limit: 10 });
+        assert.equal(summary.trend, "insufficient data");
+    });
+});
+
+// ─── Phase 6: Benchmark Intelligence ──────────────────────────────────
+
+test("explainBenchmark produces structured Why/Matters/Affects output", () => {
+    const result = {
+        categoryScores: { cpu: 65 },
+        categoryResults: { cpu: { compression: 700, jsonParse: 80 } },
+        confidence: { cpu: { avgConfidence: 0.85, runs: 3 } }
+    };
+    const text = explainBenchmark("cpu", result);
+    assert.ok(text.includes("CPU"));
+    assert.ok(text.includes("Description"));
+    assert.ok(text.includes("Why it matters"));
+    assert.ok(text.includes("Score: 65/100"));
+    assert.ok(text.includes("Confidence: 85%"));
+    assert.ok(text.includes("What affects it"));
+    assert.ok(text.includes("Build speed"));
+    assert.ok(text.includes("Recommendation"));
+});
+
+test("explainBenchmark shows excellent status for high score", () => {
+    const text = explainBenchmark("cpu", { categoryScores: { cpu: 95 }, categoryResults: {} });
+    assert.ok(text.includes("Excellent"));
+});
+
+test("explainBenchmark returns error for unknown category", () => {
+    const text = explainBenchmark("nonexistent", {});
+    assert.ok(text.includes("Unknown category"));
+});
+
+test("explainBenchmarkResult produces full report with all categories", () => {
+    const result = {
+        overallScore: 75,
+        overallGrade: "C",
+        profile: "quick",
+        durationMs: 15000,
+        machine: { hostname: "test", os: "macOS 15", cpuModel: "M1", cpuCount: 8, totalMemoryGb: 16, freeMemoryGb: 8 },
+        environment: { nodeVersion: "v20.0.0", shellType: "zsh" },
+        categoryScores: { cpu: 70, disk: 80 },
+        categoryResults: { cpu: { compression: 700 }, disk: { sequentialWrite: 500 } },
+        slowest: { category: "cpu", score: 70 },
+        fastest: { category: "disk", score: 80 },
+        skipped: [{ category: "docker", reason: "docker not installed" }],
+        qualityScore: { score: 85, grade: "B", coverage: 100, confidence: 90 }
+    };
+    const text = explainBenchmarkResult(result);
+    assert.ok(text.includes("Benchmark Intelligence Report"));
+    assert.ok(text.includes("Overall Score: 75/100"));
+    assert.ok(text.includes("Machine: test"));
+    assert.ok(text.includes("Slowest: CPU"));
+    assert.ok(text.includes("Fastest: Disk"));
+    assert.ok(text.includes("Skipped Categories"));
+    assert.ok(text.includes("docker"));
+    assert.ok(text.includes("Benchmark Quality: 85/100"));
+});
+
+// ─── Phase 8: Benchmark Quality Score ─────────────────────────────────
+
+test("computeBenchmarkQuality returns high score for full coverage", () => {
+    const q = computeBenchmarkQuality({
+        totalCategories: 6,
+        runCategories: 6,
+        skipped: 0,
+        confidenceData: {}
+    });
+    assert.ok(q.score >= 90);
+    assert.equal(q.coverage, 100);
+    assert.equal(q.stability, 100);
+});
+
+test("computeBenchmarkQuality penalizes skipped categories", () => {
+    const q = computeBenchmarkQuality({
+        totalCategories: 6,
+        runCategories: 3,
+        skipped: 3,
+        confidenceData: {}
+    });
+    assert.ok(q.score < 90);
+    assert.equal(q.coverage, 50);
+    assert.ok(q.stability < 100);
+});
+
+test("computeBenchmarkQuality factors in confidence data", () => {
+    const q = computeBenchmarkQuality({
+        totalCategories: 6,
+        runCategories: 6,
+        skipped: 0,
+        confidenceData: {
+            cpu: { avgConfidence: 0.5, runs: 3 },
+            disk: { avgConfidence: 0.6, runs: 3 }
+        }
+    });
+    assert.ok(q.confidence < 100);
+    assert.ok(q.confidence > 0);
+});
+
+// ─── Phase 3: Rich Report ─────────────────────────────────────────────
+
+test("generateRichReport produces per-category report with scores", () => {
+    const result = {
+        overallScore: 80,
+        overallGrade: "B",
+        categoryScores: { cpu: 75, disk: 85 },
+        categoryResults: { cpu: { compression: 600 }, disk: { sequentialWrite: 400 } }
+    };
+    const report = generateRichReport(result);
+    assert.ok(report.includes("B 80/100"));
+    assert.ok(report.includes("CPU"));
+    assert.ok(report.includes("75/100"));
+    assert.ok(report.includes("compression: 600ms"));
+    assert.ok(report.includes("Disk"));
+    assert.ok(report.includes("85/100"));
+});
+
+test("generateRichReport includes previous comparison when provided", () => {
+    const result = {
+        overallScore: 85,
+        overallGrade: "B",
+        categoryScores: { cpu: 80 },
+        categoryResults: { cpu: { compression: 500 } }
+    };
+    const previous = {
+        categoryScores: { cpu: 70 }
+    };
+    const report = generateRichReport(result, { previousResult: previous });
+    assert.ok(report.includes("Previous: 70/100"));
+    assert.ok(report.includes("Difference: +10"));
+    assert.ok(report.includes("improved"));
+});
+
+test("generateRichReport includes recommendation for slow categories", () => {
+    const result = {
+        overallScore: 50,
+        overallGrade: "F",
+        categoryScores: { cpu: 40 },
+        categoryResults: { cpu: { compression: 2000 } }
+    };
+    const report = generateRichReport(result);
+    assert.ok(report.includes("Recommendation"));
+    assert.ok(report.includes("background"));
+});
+
+// ─── Phase 9: History filtering and searching ─────────────────────────
+
+test("listHistory filters by profile", () => {
+    withTempHome(() => {
+        saveResult({ id: "p1", createdAt: "2025-01-01T00:00:00.000Z", profile: "quick", overallScore: 80, overallGrade: "B", durationMs: 1000, machine: {}, categoryScores: {} });
+        saveResult({ id: "p2", createdAt: "2025-02-01T00:00:00.000Z", profile: "full", overallScore: 70, overallGrade: "C", durationMs: 5000, machine: {}, categoryScores: {} });
+        const quickOnly = listHistory({ filter: { profile: "quick" } });
+        assert.equal(quickOnly.length, 1);
+        assert.equal(quickOnly[0].id, "p1");
+    });
+});
+
+test("listHistory filters by grade", () => {
+    withTempHome(() => {
+        saveResult({ id: "g1", createdAt: "2025-01-01T00:00:00.000Z", profile: "quick", overallScore: 90, overallGrade: "A", durationMs: 1000, machine: {}, categoryScores: {} });
+        saveResult({ id: "g2", createdAt: "2025-02-01T00:00:00.000Z", profile: "quick", overallScore: 50, overallGrade: "F", durationMs: 1000, machine: {}, categoryScores: {} });
+        const aOnly = listHistory({ filter: { grade: "A" } });
+        assert.equal(aOnly.length, 1);
+        assert.equal(aOnly[0].id, "g1");
+    });
+});
+
+test("listHistory filters by score range", () => {
+    withTempHome(() => {
+        saveResult({ id: "r1", createdAt: "2025-01-01T00:00:00.000Z", profile: "quick", overallScore: 60, overallGrade: "D", durationMs: 1000, machine: {}, categoryScores: {} });
+        saveResult({ id: "r2", createdAt: "2025-02-01T00:00:00.000Z", profile: "quick", overallScore: 90, overallGrade: "A", durationMs: 1000, machine: {}, categoryScores: {} });
+        const highOnly = listHistory({ filter: { minScore: 80 } });
+        assert.equal(highOnly.length, 1);
+        assert.equal(highOnly[0].id, "r2");
+    });
+});
+
+test("listHistory searches across id and machine", () => {
+    withTempHome(() => {
+        saveResult({ id: "search-1", createdAt: "2025-01-01T00:00:00.000Z", profile: "quick", overallScore: 80, overallGrade: "B", durationMs: 1000, machine: { hostname: "macbook-pro" }, categoryScores: {} });
+        saveResult({ id: "search-2", createdAt: "2025-02-01T00:00:00.000Z", profile: "quick", overallScore: 70, overallGrade: "C", durationMs: 1000, machine: { hostname: "linux-box" }, categoryScores: {} });
+        const results = listHistory({ search: "macbook" });
+        assert.equal(results.length, 1);
+        assert.equal(results[0].id, "search-1");
+    });
+});
+
+test("listHistory supports sorting by score", () => {
+    withTempHome(() => {
+        saveResult({ id: "so1", createdAt: "2025-01-01T00:00:00.000Z", profile: "quick", overallScore: 60, overallGrade: "D", durationMs: 1000, machine: {}, categoryScores: {} });
+        saveResult({ id: "so2", createdAt: "2025-02-01T00:00:00.000Z", profile: "quick", overallScore: 90, overallGrade: "A", durationMs: 1000, machine: {}, categoryScores: {} });
+        const sorted = listHistory({ sortBy: "score", sortOrder: "desc" });
+        assert.equal(sorted[0].id, "so2");
+        assert.equal(sorted[1].id, "so1");
+    });
+});
+
+test("listHistory supports limit", () => {
+    withTempHome(() => {
+        for (let i = 0; i < 5; i++) {
+            saveResult({ id: `lim-${i}`, createdAt: new Date(Date.now() + i).toISOString(), profile: "quick", overallScore: 70, overallGrade: "C", durationMs: 1000, machine: {}, categoryScores: {} });
+        }
+        const limited = listHistory({ limit: 2 });
+        assert.equal(limited.length, 2);
+    });
+});
+
+// ─── BENCHMARK_METADATA ───────────────────────────────────────────────
+
+test("BENCHMARK_METADATA has entries for all 12 categories", () => {
+    const keys = Object.keys(BENCHMARK_METADATA);
+    assert.equal(keys.length, 12);
+    for (const key of keys) {
+        const meta = BENCHMARK_METADATA[key];
+        assert.ok(meta.label, `${key} should have label`);
+        assert.ok(meta.description, `${key} should have description`);
+        assert.ok(meta.why, `${key} should have why`);
+        assert.ok(meta.affects, `${key} should have affects`);
+        assert.ok(meta.expectedRange, `${key} should have expectedRange`);
+        assert.ok(meta.recommendation, `${key} should have recommendation`);
     }
 });

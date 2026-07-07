@@ -126,5 +126,5 @@ export function createAnthropicProvider({ apiKey, model, baseUrl = "https://api.
         }
     }
 
-    return { id, chat, stream, embeddings, listModels, checkHealth };
+    return { id, chat, stream, embeddings, listModels, checkHealth, supportsStreaming: true };
 }

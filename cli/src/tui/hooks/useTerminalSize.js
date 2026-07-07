@@ -59,13 +59,27 @@ export const PAGE_MIN_SIZE = {
     dashboard:     { columns: 80, rows: 24 },
     workspaces:    { columns: 100, rows: 28 },
     components:    { columns: 100, rows: 28 },
+    registry:      { columns: 80, rows: 24 },
     profiles:      { columns: 90, rows: 26 },
     recipes:       { columns: 90, rows: 26 },
     generator:     { columns: 90, rows: 26 },
     plugins:       { columns: 90, rows: 26 },
     doctor:        { columns: 90, rows: 26 },
     compatibility: { columns: 90, rows: 26 },
-    ai:            { columns: 80, rows: 24 },
+    graph:         { columns: 90, rows: 26 },
+    // rows bumped 24 -> 34 (v2.1.3.2): the Context panel's permanent
+    // Quick Actions list (7 rows + label, added so the shortcuts don't
+    // visually disappear after the first message) pushed real content
+    // past the old floor - verified empirically corrupt at 30 rows,
+    // clean from 32 up (see docs/TUI.md's v2.1.1 row-budget note for why
+    // this is checked by rendering, not estimated).
+    ai:            { columns: 80, rows: 34 },
+    "ai-overview":   { columns: 90, rows: 26 },
+    "ai-providers":  { columns: 90, rows: 26 },
+    "ai-models":     { columns: 90, rows: 26 },
+    "ai-credentials":{ columns: 90, rows: 26 },
+    "ai-diagnostics":{ columns: 90, rows: 26 },
+    "ai-history":    { columns: 80, rows: 24 },
     updates:       { columns: 90, rows: 26 },
     inventory:     { columns: 90, rows: 26 },
     config:        { columns: 90, rows: 26 },

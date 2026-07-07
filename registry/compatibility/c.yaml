@@ -1,0 +1,3 @@
+schemaVersion: 1
+name: c
+recommends: [cmake, ninja, meson]

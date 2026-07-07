@@ -2,19 +2,43 @@ schemaVersion: 1
 name: gcloud
 description: The official Google Cloud command-line interface
 category: cloud
-platforms: [macos, linux]
-install: { method: brew-cask, id: google-cloud-sdk }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-cask
+  id: google-cloud-sdk
 dependencies: []
 validate: gcloud --version
+versionCommand: gcloud --version
 repair: brew reinstall --cask google-cloud-sdk
 update: brew upgrade --cask google-cloud-sdk
-uninstall: { method: brew-cask, id: google-cloud-sdk }
+uninstall:
+  method: brew-cask
+  id: google-cloud-sdk
 post_install: []
-homepage: "https://cloud.google.com/sdk"
-repository: "https://github.com/GoogleCloudPlatform/cloud-sdk-docker"
+homepage: https://cloud.google.com/sdk
+repository: https://github.com/GoogleCloudPlatform/cloud-sdk-docker
 license: Apache-2.0
+documentation: https://cloud.google.com/sdk/docs
 maintainer: DevForgeKit Registry
-tags: [cloud, gcp]
-aliases: [google-cloud, gcp]
+tags:
+  - cloud
+  - gcp
+aliases:
+  - google-cloud
+  - gcp
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - aws-cli
+  - azure-cli
+platformInstall:
+  macos:
+    method: brew-cask
+    id: google-cloud-sdk
+

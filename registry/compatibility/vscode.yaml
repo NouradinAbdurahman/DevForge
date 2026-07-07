@@ -1,0 +1,3 @@
+schemaVersion: 1
+name: vscode
+recommends: [eslint, prettier, git, node]

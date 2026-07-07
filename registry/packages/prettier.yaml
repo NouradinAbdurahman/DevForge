@@ -3,9 +3,11 @@ name: prettier
 description: An opinionated code formatter
 category: code-quality
 platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install: { method: npm, id: prettier }
 dependencies: [node]
 validate: "prettier --version"
+versionCommand: "prettier --version"
 repair: "npm install -g prettier@latest"
 update: "npm install -g prettier@latest"
 uninstall: { method: npm, id: prettier }
@@ -13,8 +15,9 @@ post_install: []
 homepage: "https://prettier.io"
 repository: "https://github.com/prettier/prettier"
 license: MIT
+documentation: "https://prettier.io/docs/en/"
 maintainer: DevForgeKit Registry
 tags: [code-quality, formatter]
-aliases: []
+aliases: [prettier-cli]
 stability: stable
 lastVerified: "2026-07-05"

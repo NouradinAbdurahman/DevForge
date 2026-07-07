@@ -2,19 +2,43 @@ schemaVersion: 1
 name: ninja
 description: A small, fast build system focused on speed
 category: build-systems
-platforms: [macos, linux]
-install: { method: brew-formula, id: ninja }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: ninja
 dependencies: []
 validate: ninja --version
+versionCommand: ninja --version
 repair: brew reinstall ninja
 update: brew upgrade ninja
-uninstall: { method: brew-formula, id: ninja }
+uninstall:
+  method: brew-formula
+  id: ninja
 post_install: []
-homepage: "https://ninja-build.org"
-repository: "https://github.com/ninja-build/ninja"
+homepage: https://ninja-build.org
+repository: https://github.com/ninja-build/ninja
 license: Apache-2.0
+documentation: https://ninja-build.org/manual.html
 maintainer: DevForgeKit Registry
-tags: [build-tool]
-aliases: []
+tags:
+  - build-tool
+  - build
+  - cpp
+aliases:
+  - ninja-build
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - cmake
+  - meson
+platformInstall:
+  macos:
+    method: brew-formula
+    id: ninja
+

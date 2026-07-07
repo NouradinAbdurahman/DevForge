@@ -6,6 +6,26 @@ import { runShellCommand } from "../core/shell.js";
 import { confirm } from "../lib/prompts.js";
 import { EDITORCONFIG, vscodeSettings, vscodeExtensions } from "./shared.js";
 
+// gitignorePython() - `django-admin startproject` writes no .gitignore
+// at all (unlike e.g. Laravel/Spring Boot's scaffolders), and this
+// generator didn't add one either - a real gap found auditing every
+// generator for v2.1.2.
+function gitignorePython() {
+    return `__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+db.sqlite3
+staticfiles/
+media/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.DS_Store
+`;
+}
+
 async function promptOptions(flags) {
     const docker = flags.docker ?? await confirm("Include Docker + docker-compose (app + Postgres)?", true);
     return { docker };
@@ -87,6 +107,8 @@ export const djangoGenerator = {
     id: "django",
     label: "Django",
     description: "Scaffolded via django-admin, plus requirements.txt, Docker, CI",
+    tags: ["backend", "python", "web", "api"],
+    recommends: ["postgres", "poetry", "docker"],
     requiresTool: { command: "django-admin", hint: "Install it with: pip install django" },
     promptOptions,
 
@@ -100,6 +122,7 @@ export const djangoGenerator = {
             { path: "requirements-dev.txt", content: requirementsDevTxt() },
             { path: ".env.example", content: "DEBUG=true\nSECRET_KEY=change-me\n" },
             { path: ".editorconfig", content: EDITORCONFIG },
+            { path: ".gitignore", content: gitignorePython() },
             { path: ".vscode/settings.json", content: vscodeSettings({ "python.analysis.typeCheckingMode": "basic" }) },
             { path: ".vscode/extensions.json", content: vscodeExtensions(["ms-python.python", "charliermarsh.ruff"]) },
             { path: ".github/workflows/ci.yml", content: ciWorkflow() },

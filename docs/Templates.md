@@ -8,7 +8,7 @@ Want something more complete and configurable instead of a minimal
 "Hello, X!" copy? [`devforgekit new <stack>`](ProjectGenerator.md)
 (v1.2.2) generates a full project per stack - auth, ORM, state
 management, Docker, CI, tests - scaffolded through the stack's own
-official CLI where one exists, for 16 stacks. The two are independent:
+official CLI where one exists, for 17 stacks. The two are independent:
 this page's templates stay exactly as minimal and static as they've
 always been.
 

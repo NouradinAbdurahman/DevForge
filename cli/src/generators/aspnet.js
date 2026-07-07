@@ -2,7 +2,21 @@
 // `dotnet new webapi`, then layers Docker and CI.
 import { runShellCommand } from "../core/shell.js";
 import { confirm } from "../lib/prompts.js";
-import { vscodeSettings, vscodeExtensions } from "./shared.js";
+import { EDITORCONFIG, vscodeSettings, vscodeExtensions } from "./shared.js";
+
+// gitignoreDotnet() - `dotnet new webapi` writes no .gitignore at all,
+// and this generator didn't add one either - a real gap found auditing
+// every generator for v2.1.2 (the VS Code settings below already turn on
+// `omnisharp.enableEditorConfigSupport`, which was previously pointless
+// since no .editorconfig existed to support either).
+function gitignoreDotnet() {
+    return `bin/
+obj/
+.vs/
+*.user
+appsettings.Development.json
+`;
+}
 
 async function promptOptions(flags) {
     const docker = flags.docker ?? await confirm("Include a Dockerfile?", true);
@@ -50,6 +64,8 @@ export const aspnetGenerator = {
     id: "aspnet",
     label: "ASP.NET",
     description: "Web API scaffolded via the official dotnet CLI, Docker, CI",
+    tags: ["backend", "api", "csharp", "dotnet", "web"],
+    recommends: ["docker", "postgres"],
     requiresTool: { command: "dotnet", hint: "Install the .NET SDK - see https://dotnet.microsoft.com/download" },
     promptOptions,
 
@@ -59,6 +75,8 @@ export const aspnetGenerator = {
 
     generate({ name, options }) {
         const files = [
+            { path: ".editorconfig", content: EDITORCONFIG },
+            { path: ".gitignore", content: gitignoreDotnet() },
             { path: ".vscode/settings.json", content: vscodeSettings({ "omnisharp.enableEditorConfigSupport": true }) },
             { path: ".vscode/extensions.json", content: vscodeExtensions(["ms-dotnettools.csdevkit"]) },
             { path: ".github/workflows/ci.yml", content: ciWorkflow() },

@@ -12,6 +12,7 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, readdirSync, rmSync, renameSync, cpSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import crypto from "node:crypto";
 import { runShellCommand, shellQuote } from "../shell.js";
 import { loadProfiles, loadCollections, loadRecipes, loadPackages } from "../registry.js";
 import { discoverPlugins } from "../plugins.js";
@@ -90,6 +91,12 @@ export async function exportWorkspaceBundle(name, outDir) {
     };
     writeFileSync(path.join(stagedDir, "bundle.json"), `${JSON.stringify(meta, null, 2)}\n`);
 
+    const manifestPath = path.join(stagedDir, "workspace.json");
+    const hash = crypto.createHash("sha256");
+    hash.update(readFileSync(manifestPath));
+    meta.checksum = hash.digest("hex");
+    writeFileSync(path.join(stagedDir, "bundle.json"), `${JSON.stringify(meta, null, 2)}\n`);
+
     const archivePath = path.join(outDir, `${name}-workspace.tar.gz`);
     const code = await runShellCommand(`tar -czf ${shellQuote(archivePath)} -C ${shellQuote(staging)} ${shellQuote(name)}`, { silent: true });
     rmSync(staging, { recursive: true, force: true });
@@ -135,6 +142,16 @@ export async function importWorkspaceBundle(archivePath, { newName, overwrite = 
     if (!existsSync(manifestPath)) {
         rmSync(extractDir, { recursive: true, force: true });
         throw new DevForgeError(`Bundle has no workspace.json at ${manifestPath}`);
+    }
+
+    if (bundleMeta && bundleMeta.checksum) {
+        const hash = crypto.createHash("sha256");
+        hash.update(readFileSync(manifestPath));
+        const actual = hash.digest("hex");
+        if (actual !== bundleMeta.checksum) {
+            rmSync(extractDir, { recursive: true, force: true });
+            throw new DevForgeError(`Bundle integrity check failed: workspace.json checksum mismatch (expected ${bundleMeta.checksum.slice(0, 12)}..., got ${actual.slice(0, 12)}...). The archive may be corrupted or tampered with.`);
+        }
     }
 
     let doc;

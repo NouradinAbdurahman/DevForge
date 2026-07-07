@@ -3,9 +3,11 @@ name: continue
 description: An open-source AI code assistant, installed as a VS Code extension
 category: ai
 platforms: [macos]
+architectures: [intel, apple-silicon, linux]
 install: { method: shell, command: "code --install-extension continue.continue" }
 dependencies: [vscode]
 validate: "code --list-extensions | grep -q continue.continue"
+versionCommand: "continue --version"
 repair: "code --install-extension continue.continue --force"
 update: "code --install-extension continue.continue --force"
 uninstall: { method: shell, command: "code --uninstall-extension continue.continue" }
@@ -13,8 +15,10 @@ post_install: []
 homepage: "https://continue.dev"
 repository: "https://github.com/continuedev/continue"
 license: Apache-2.0
+documentation: "https://docs.continue.dev"
 maintainer: DevForgeKit Registry
 tags: [ai, editor-extension]
-aliases: []
+aliases: [continue-dev]
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives: [aider, cursor]

@@ -10,6 +10,7 @@ import { loadPackages } from "../core/registry.js";
 import { validate } from "../core/installer.js";
 import { captureShellCommand } from "../core/shell.js";
 import { scoreResults } from "../core/health.js";
+import { getPlatform } from "../core/platform/index.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling } from "../core/errors.js";
 
@@ -33,15 +34,30 @@ export async function diskFreeGb() {
     return Math.round(freeKb / 1024 / 1024);
 }
 
+// outdatedPackages() -> delegates to the current platform adapter (see
+// core/platform/) instead of calling `brew` directly - on macOS this is
+// still exactly `brew outdated`; on Linux/Windows (no package manager
+// wired up yet) it degrades to an empty list rather than throwing, since
+// "nothing outdated" is the honest answer when there's no package
+// manager this CLI drives.
 export async function outdatedPackages() {
-    const { stdout } = await captureShellCommand("brew outdated 2>/dev/null");
-    return stdout.split("\n").map((l) => l.trim()).filter(Boolean);
+    const platform = getPlatform();
+    if (typeof platform.outdatedPackages !== "function") return [];
+    try {
+        return await platform.outdatedPackages();
+    } catch {
+        return [];
+    }
 }
 
 // osInfo() -> { name, version, build } straight from `sw_vers` (one call,
 // parses its "Label:\tValue" lines) - the same source
 // scripts/inventory.sh's system.md report uses, so the dashboard and the
-// Layer 1 report never disagree about what macOS this is.
+// Layer 1 report never disagree about what macOS this is. This (and
+// hardwareInfo() below) are genuinely macOS-only probes - `sw_vers`/
+// `system_profiler` have no Linux/Windows equivalent - so they stay
+// direct shell calls rather than routing through core/platform/; both
+// degrade to "unknown" fields rather than throwing when run elsewhere.
 export async function osInfo() {
     const { stdout } = await captureShellCommand("sw_vers 2>/dev/null");
     const fields = {};

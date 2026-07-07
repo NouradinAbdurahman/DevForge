@@ -1,4 +1,4 @@
-// Benchmark Engine command (v1.3.3). Measures development environment
+// Benchmark Engine command (v2.1.7). Measures development environment
 // performance with real developer workloads. See core/benchmark.js.
 import path from "node:path";
 import { writeFileSync } from "node:fs";
@@ -12,7 +12,14 @@ import {
     exportResult,
     explainResult,
     gradeForScore,
-    benchmarkSummary
+    benchmarkSummary,
+    getTrend,
+    getTrendSummary,
+    renderSparkline,
+    explainBenchmark,
+    explainBenchmarkResult,
+    generateRichReport,
+    BENCHMARK_METADATA
 } from "../core/benchmark.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling, usageError } from "../core/errors.js";
@@ -73,6 +80,7 @@ export function registerBenchmarkCommand(program) {
     benchmark
         .command("compare [old] [new]")
         .description("Compare two benchmark results (by ID, or latest two if omitted)")
+        .option("--json", "output as JSON")
         .action(withErrorHandling(async (oldId, newId) => {
             let oldResult, newResult;
 
@@ -92,6 +100,11 @@ export function registerBenchmarkCommand(program) {
 
             const comparison = compareResults(oldResult, newResult);
 
+            if (this.opts().json) {
+                console.log(JSON.stringify(comparison, null, 2));
+                return;
+            }
+
             logger.section("Benchmark Comparison");
             console.log(`\n  Old: ${comparison.old.createdAt} - ${comparison.old.overallScore}/100 (${comparison.old.overallGrade}) on ${comparison.old.machine}`);
             console.log(`  New: ${comparison.new.createdAt} - ${comparison.new.overallScore}/100 (${comparison.new.overallGrade}) on ${comparison.new.machine}`);
@@ -102,25 +115,72 @@ export function registerBenchmarkCommand(program) {
                 console.log(`\n  Overall: ${comparison.old.overallScore} → ${comparison.new.overallScore} (${sign}${comparison.overallDelta}, ${status})`);
             }
 
+            // Phase 4: Summary
+            if (comparison.summary) {
+                console.log(`\n  Summary: ${comparison.summary.improved} improved, ${comparison.summary.regressed} regressed, ${comparison.summary.unchanged} unchanged, ${comparison.summary.significant} significant`);
+            }
+
             console.log("\n  Category Breakdown:");
-            console.log("  " + "-".repeat(60));
+            console.log("  " + "-".repeat(70));
             for (const cat of comparison.categories) {
                 const oldStr = cat.oldScore != null ? String(cat.oldScore) : "N/A";
                 const newStr = cat.newScore != null ? String(cat.newScore) : "N/A";
                 const deltaStr = cat.delta != null ? (cat.delta > 0 ? `+${cat.delta}` : String(cat.delta)) : "N/A";
                 const symbol = cat.status === "improved" ? "↑" : cat.status === "regressed" ? "↓" : cat.status === "unchanged" ? "=" : "?";
-                console.log(`  ${symbol} ${cat.category.padEnd(20)}  ${oldStr.padStart(5)} → ${newStr.padStart(5)}  (${deltaStr})`);
+                const sigStr = cat.significant ? " *" : "";
+                console.log(`  ${symbol} ${(cat.label || cat.category).padEnd(20)}  ${oldStr.padStart(5)} → ${newStr.padStart(5)}  (${deltaStr})${sigStr}`);
+                if (cat.significant && cat.likelyCause) {
+                    console.log(`    Likely cause: ${cat.likelyCause}`);
+                }
+                if (cat.significant && cat.recommendation) {
+                    console.log(`    Recommendation: ${cat.recommendation}`);
+                }
+                // Measurement-level deltas
+                if (cat.measurementDeltas && cat.measurementDeltas.length > 0) {
+                    for (const m of cat.measurementDeltas) {
+                        const mSym = m.faster ? "↑" : "↓";
+                        const mPctStr = m.pct > 0 ? `+${m.pct}%` : `${m.pct}%`;
+                        console.log(`    ${mSym} ${m.measurement}: ${m.oldMs}ms → ${m.newMs}ms (${mPctStr})`);
+                    }
+                }
             }
+            console.log(`\n  * = significant change (≥${10}% threshold)`);
         }));
 
     // ─── history ─────────────────────────────────────────────────────
     benchmark
         .command("history")
         .description("List past benchmark results")
-        .action(withErrorHandling(() => {
-            const history = listHistory();
+        .option("--filter-profile <profile>", "filter by profile (quick, standard, full)")
+        .option("--filter-grade <grade>", "filter by grade (A+, A, B, C, D, F)")
+        .option("--min-score <score>", "filter by minimum score", parseInt)
+        .option("--max-score <score>", "filter by maximum score", parseInt)
+        .option("--search <query>", "search across id, machine, profile, os")
+        .option("--sort <field>", "sort by: date, score, duration", "date")
+        .option("--limit <n>", "limit number of results", parseInt)
+        .option("--json", "output as JSON")
+        .action(withErrorHandling(function () {
+            const opts = this.opts();
+            const filter = {};
+            if (opts.filterProfile) filter.profile = opts.filterProfile;
+            if (opts.filterGrade) filter.grade = opts.filterGrade;
+            if (opts.minScore != null) filter.minScore = opts.minScore;
+            if (opts.maxScore != null) filter.maxScore = opts.maxScore;
+
+            const history = listHistory({
+                filter: Object.keys(filter).length > 0 ? filter : undefined,
+                search: opts.search,
+                sortBy: opts.sort === "score" ? "score" : opts.sort === "duration" ? "duration" : "date",
+                limit: opts.limit
+            });
+
             if (history.length === 0) {
                 logger.info("No benchmark results found. Run 'devforgekit benchmark' to create one.");
+                return;
+            }
+
+            if (opts.json) {
+                console.log(JSON.stringify(history, null, 2));
                 return;
             }
 
@@ -199,5 +259,96 @@ export function registerBenchmarkCommand(program) {
                 return;
             }
             console.log(explanation.explanation);
+        }));
+
+    // ─── trend ──────────────────────────────────────────────────────
+    benchmark
+        .command("trend [category]")
+        .description("Show trend analysis for a category (or overall) across history")
+        .option("-n, --limit <n>", "number of history points", parseInt, 10)
+        .option("--json", "output as JSON")
+        .action(withErrorHandling(function (category) {
+            const opts = this.opts();
+            const cat = category || "overall";
+            const summary = getTrendSummary(cat, { limit: opts.limit || 10 });
+
+            if (opts.json) {
+                console.log(JSON.stringify(summary, null, 2));
+                return;
+            }
+
+            const label = BENCHMARK_METADATA?.[cat]?.label || cat;
+            logger.section(`Trend: ${label}`);
+
+            if (summary.trend === "insufficient data") {
+                logger.info("Not enough data points for trend analysis. Run more benchmarks.");
+                return;
+            }
+
+            console.log(`\n  Direction: ${summary.direction}`);
+            console.log(`  Change: ${summary.first} → ${summary.last} (${summary.delta > 0 ? "+" : ""}${summary.delta})`);
+            console.log(`  Average: ${summary.avg}`);
+            console.log(`  Volatility: ±${summary.volatility}`);
+            console.log(`\n  Sparkline:  ${summary.sparkline}`);
+            console.log(`\n  History:`);
+            for (const p of summary.points) {
+                const date = p.createdAt?.slice(0, 10) || "?";
+                console.log(`    ${date}  ${String(p.score).padStart(3)}/100  (${p.grade})`);
+            }
+        }));
+
+    // ─── intelligence ────────────────────────────────────────────────
+    benchmark
+        .command("intelligence [id]")
+        .description("Self-explaining benchmark report (no AI needed)")
+        .option("--category <cat>", "explain a specific category only")
+        .action(withErrorHandling(function (id) {
+            let result;
+            if (id) {
+                result = getResult(id);
+            } else {
+                const history = listHistory();
+                if (history.length === 0) {
+                    logger.error("No benchmark results found. Run 'devforgekit benchmark' first.");
+                    process.exitCode = 1;
+                    return;
+                }
+                result = getResult(history[0].id);
+            }
+
+            const opts = this.opts();
+            if (opts.category) {
+                console.log(explainBenchmark(opts.category, result));
+            } else {
+                console.log(explainBenchmarkResult(result));
+            }
+        }));
+
+    // ─── report ──────────────────────────────────────────────────────
+    benchmark
+        .command("report [id]")
+        .description("Rich benchmark report with previous comparison")
+        .action(withErrorHandling(function (id) {
+            let result;
+            if (id) {
+                result = getResult(id);
+            } else {
+                const history = listHistory();
+                if (history.length === 0) {
+                    logger.error("No benchmark results found. Run 'devforgekit benchmark' first.");
+                    process.exitCode = 1;
+                    return;
+                }
+                result = getResult(history[0].id);
+            }
+
+            // Get previous result for comparison
+            const history = listHistory({ limit: 10 });
+            const currentIdx = history.findIndex((h) => h.id === result.id);
+            const previousResult = currentIdx >= 0 && currentIdx + 1 < history.length
+                ? getResult(history[currentIdx + 1].id)
+                : null;
+
+            console.log(generateRichReport(result, { previousResult }));
         }));
 }

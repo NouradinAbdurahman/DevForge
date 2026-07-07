@@ -47,12 +47,25 @@ function formatAjvErrors(errors) {
         .join("\n");
 }
 
+// Module-level caches: each loader reads + parses YAML from disk on every
+// call, which is the #1 performance bottleneck (261 packages = 261 file reads
+// + YAML parses per call). The cache is keyed by directory path so tests with
+// custom fixture dirs still work correctly. Use `clearRegistryCache()` to
+// invalidate (e.g. after `registry generate` writes new files).
+const _cache = new Map();
+
+export function clearRegistryCache() {
+    _cache.clear();
+}
+
 // loadCategories([dir]) -> [{ id, label, description }], throws a
 // DevForgeError listing every invalid file at once (not just the first)
 // so a bad manifest is fast to fix. `dir` defaults to this repo's
 // registry/categories - overridable so tests can point at fixtures
 // without touching the real registry.
 export function loadCategories(dir = path.join(repoRoot(), "registry", "categories")) {
+    const cacheKey = `cat:${dir}`;
+    if (_cache.has(cacheKey)) return _cache.get(cacheKey);
     const files = readYamlFiles(dir);
     const problems = [];
     const categories = [];
@@ -69,12 +82,15 @@ export function loadCategories(dir = path.join(repoRoot(), "registry", "categori
         throw new DevForgeError(`Invalid category manifest(s):\n${problems.join("\n")}`);
     }
 
+    _cache.set(cacheKey, categories);
     return categories;
 }
 
 // loadPackages([dir]) -> [package manifest, ...], same all-errors-at-once
 // and overridable-dir behavior as loadCategories().
 export function loadPackages(dir = path.join(repoRoot(), "registry", "packages")) {
+    const cacheKey = `pkg:${dir}`;
+    if (_cache.has(cacheKey)) return _cache.get(cacheKey);
     const files = readYamlFiles(dir);
     const problems = [];
     const packages = [];
@@ -91,11 +107,20 @@ export function loadPackages(dir = path.join(repoRoot(), "registry", "packages")
         throw new DevForgeError(`Invalid package manifest(s):\n${problems.join("\n")}`);
     }
 
+    _cache.set(cacheKey, packages);
     return packages;
 }
 
 export function getPackage(name) {
-    const pkg = loadPackages().find((p) => p.name === name);
+    const packages = loadPackages();
+    // Use a cached name→pkg map for O(1) lookup instead of linear find()
+    const cacheKey = "pkgMap";
+    let map = _cache.get(cacheKey);
+    if (!map) {
+        map = new Map(packages.map(p => [p.name, p]));
+        _cache.set(cacheKey, map);
+    }
+    const pkg = map.get(name);
     if (!pkg) {
         throw new DevForgeError(`Unknown component '${name}'. Run 'devforgekit component list' to see available components.`);
     }
@@ -105,6 +130,8 @@ export function getPackage(name) {
 // loadCollections([dir]) -> [{ schemaVersion, name, description, components }],
 // same all-errors-at-once and overridable-dir behavior as loadCategories().
 export function loadCollections(dir = path.join(repoRoot(), "registry", "collections")) {
+    const cacheKey = `col:${dir}`;
+    if (_cache.has(cacheKey)) return _cache.get(cacheKey);
     const files = readYamlFiles(dir);
     const problems = [];
     const collections = [];
@@ -121,6 +148,7 @@ export function loadCollections(dir = path.join(repoRoot(), "registry", "collect
         throw new DevForgeError(`Invalid collection manifest(s):\n${problems.join("\n")}`);
     }
 
+    _cache.set(cacheKey, collections);
     return collections;
 }
 
@@ -154,6 +182,8 @@ function profileDiscoveryRoots() {
 // default; pass an explicit array (as tests do) to isolate from the
 // user's real ~/.config/devforgekit/profiles.
 export function loadProfiles(roots = profileDiscoveryRoots()) {
+    const cacheKey = `prof:${roots.join("|")}`;
+    if (_cache.has(cacheKey)) return _cache.get(cacheKey);
     const problems = [];
     const profiles = [];
 
@@ -175,6 +205,7 @@ export function loadProfiles(roots = profileDiscoveryRoots()) {
         throw new DevForgeError(`Invalid profile manifest(s):\n${problems.join("\n")}`);
     }
 
+    _cache.set(cacheKey, profiles);
     return profiles;
 }
 
@@ -252,6 +283,8 @@ function recipeDiscoveryRoots() {
 // roots by default; pass an explicit array (as tests do) to isolate from
 // the user's real ~/.config/devforgekit/recipes.
 export function loadRecipes(roots = recipeDiscoveryRoots()) {
+    const cacheKey = `rec:${roots.join("|")}`;
+    if (_cache.has(cacheKey)) return _cache.get(cacheKey);
     const problems = [];
     const recipes = [];
 
@@ -273,6 +306,7 @@ export function loadRecipes(roots = recipeDiscoveryRoots()) {
         throw new DevForgeError(`Invalid recipe manifest(s):\n${problems.join("\n")}`);
     }
 
+    _cache.set(cacheKey, recipes);
     return recipes;
 }
 
@@ -451,19 +485,26 @@ export function getRegistryStats({ categories, packages, collections, profiles, 
     const metadataCompletenessScore = packages.length === 0 ? 100 : Math.round((completePackages / packages.length) * 100);
 
     // Package Quality System: qualityScore is the average per-package
-    // Manifest Quality Score (scoreManifest() in core/quality.js - the
-    // ten-check "Schema valid / Homepage present / ... / Documentation
-    // exists" breakdown), not a redefinition of metadataCompletenessScore
-    // above (that one stays focused on homepage/license/tags, the
-    // original searchability fields). Only the structural (non-live)
-    // checks feed this average, so it stays synchronous and
-    // network-free - the same reasoning `registry-smoke.yml` stays a
-    // narrow, deliberately-scoped live check rather than testing all 250
-    // packages on every push. ciVerifiedCount is a plain count, not a
-    // percentage - CI-verifying every component live is neither feasible
-    // nor the goal; it's reported so the real, current coverage is visible.
+    // Manifest Quality Score (scoreManifest() in core/quality.js - a
+    // categorized "Metadata / Documentation / Reliability /
+    // Discoverability / Compatibility / Platform Support" breakdown, see
+    // that file), not a redefinition of metadataCompletenessScore above
+    // (that one stays focused on homepage/license/tags, the original
+    // searchability fields). Only the structural (non-live) checks feed
+    // this average, so it stays synchronous and network-free - the same
+    // reasoning `registry-smoke.yml` stays a narrow, deliberately-scoped
+    // live check rather than testing all 261 packages on every push.
+    // ciVerifiedCount is a plain count, not a percentage - CI-verifying
+    // every component live is neither feasible nor the goal; it's
+    // reported so the real, current coverage is visible.
     const qualityScore = packages.length === 0 ? 100 : Math.round(
-        packages.reduce((sum, p) => sum + scoreManifest(p).score, 0) / packages.length
+        packages.reduce((sum, p) => {
+            // Use cached quality score if available
+            if (p._qualityScore !== undefined) return sum + p._qualityScore;
+            const s = scoreManifest(p).score;
+            p._qualityScore = s;
+            return sum + s;
+        }, 0) / packages.length
     );
     const ciVerifiedCount = packages.filter((p) => p.ciVerified).length;
 
@@ -493,16 +534,26 @@ export function searchPackages(query, { category: categoryFilter, tag: tagFilter
     const q = query.trim().toLowerCase();
     if (!q && !categoryFilter && !tagFilter) return [];
 
+    // Build a search index once per registry load — avoids re-lowercasing
+    // 261 packages' fields on every search call.
+    let index = _cache.get("searchIndex");
+    if (!index) {
+        index = loadPackages().map((pkg) => ({
+            pkg,
+            name: pkg.name.toLowerCase(),
+            tags: (pkg.tags || []).map((t) => t.toLowerCase()),
+            aliases: (pkg.aliases || []).map((a) => a.toLowerCase()),
+            description: pkg.description.toLowerCase(),
+            category: pkg.category.toLowerCase(),
+        }));
+        _cache.set("searchIndex", index);
+    }
+
     const scored = [];
-    for (const pkg of loadPackages()) {
+    for (const entry of index) {
+        const { pkg, name, tags, aliases, description, category } = entry;
         if (categoryFilter && pkg.category !== categoryFilter) continue;
         if (tagFilter && !(pkg.tags || []).includes(tagFilter)) continue;
-
-        const name = pkg.name.toLowerCase();
-        const tags = (pkg.tags || []).map((t) => t.toLowerCase());
-        const aliases = (pkg.aliases || []).map((a) => a.toLowerCase());
-        const description = pkg.description.toLowerCase();
-        const category = pkg.category.toLowerCase();
 
         let score = 0;
         let matchedOn = null;
@@ -512,10 +563,16 @@ export function searchPackages(query, { category: categoryFilter, tag: tagFilter
         } else if (name.includes(q)) {
             score = 80;
             matchedOn = "name";
-        } else if (aliases.includes(q) || aliases.some((a) => a.includes(q))) {
+        } else if (aliases.includes(q)) {
+            score = 70;
+            matchedOn = "alias";
+        } else if (aliases.some((a) => a.includes(q))) {
             score = 60;
             matchedOn = "alias";
-        } else if (tags.includes(q) || tags.some((t) => t.includes(q))) {
+        } else if (tags.includes(q)) {
+            score = 55;
+            matchedOn = "tag";
+        } else if (tags.some((t) => t.includes(q))) {
             score = 50;
             matchedOn = "tag";
         } else if (category.includes(q)) {
@@ -531,6 +588,13 @@ export function searchPackages(query, { category: categoryFilter, tag: tagFilter
         }
     }
 
-    scored.sort((a, b) => b.score - a.score || a.pkg.name.localeCompare(b.pkg.name));
+    // Sort by match score, then by quality score (higher quality first), then alphabetically
+    scored.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        const qa = a.pkg._qualityScore || 0;
+        const qb = b.pkg._qualityScore || 0;
+        if (qb !== qa) return qb - qa;
+        return a.pkg.name.localeCompare(b.pkg.name);
+    });
     return scored;
 }

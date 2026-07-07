@@ -2,19 +2,42 @@ schemaVersion: 1
 name: aws-cli
 description: The official Amazon Web Services command-line interface
 category: cloud
-platforms: [macos, linux]
-install: { method: brew-formula, id: awscli }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: awscli
 dependencies: []
 validate: aws --version
+versionCommand: aws --version
 repair: brew reinstall awscli
 update: brew upgrade awscli
-uninstall: { method: brew-formula, id: awscli }
+uninstall:
+  method: brew-formula
+  id: awscli
 post_install: []
-homepage: "https://aws.amazon.com/cli"
-repository: "https://github.com/aws/aws-cli"
+homepage: https://aws.amazon.com/cli
+repository: https://github.com/aws/aws-cli
 license: Apache-2.0
+documentation: https://docs.aws.amazon.com/cli/
 maintainer: DevForgeKit Registry
-tags: [cloud, aws]
-aliases: [aws]
+tags:
+  - cloud
+  - aws
+aliases:
+  - aws
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - gcloud
+  - azure-cli
+platformInstall:
+  macos:
+    method: brew-formula
+    id: awscli
+

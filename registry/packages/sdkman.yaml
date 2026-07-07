@@ -3,9 +3,11 @@ name: sdkman
 description: A version manager for JVM-based SDKs (Java, Kotlin, Scala, Gradle, Maven, ...)
 category: package-managers
 platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install: { method: shell, command: "curl -s \"https://get.sdkman.io\" | bash" }
 dependencies: []
 validate: "bash -lc 'source \"$HOME/.sdkman/bin/sdkman-init.sh\" && sdk version'"
+versionCommand: "sdkman --version"
 repair: "bash -lc 'source \"$HOME/.sdkman/bin/sdkman-init.sh\" && sdk selfupdate force'"
 update: "bash -lc 'source \"$HOME/.sdkman/bin/sdkman-init.sh\" && sdk update'"
 uninstall: { method: shell, command: "rm -rf \"$HOME/.sdkman\"" }
@@ -13,8 +15,10 @@ post_install: []
 homepage: "https://sdkman.io"
 repository: "https://github.com/sdkman/sdkman-cli"
 license: Apache-2.0
+documentation: "https://sdkman.io/usage"
 maintainer: DevForgeKit Registry
 tags: [package-manager, jvm]
 aliases: [sdk]
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives: [asdf]

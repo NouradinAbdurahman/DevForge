@@ -3,9 +3,11 @@ name: openai-cli
 description: OpenAI's official Python client and command-line tool
 category: ai
 platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install: { method: pip, id: openai }
 dependencies: [python]
 validate: openai --version
+versionCommand: "openai --version"
 repair: "pip install --upgrade openai"
 update: "pip install --upgrade openai"
 uninstall: { method: pip, id: openai }
@@ -13,8 +15,10 @@ post_install: []
 homepage: "https://platform.openai.com/docs/libraries"
 repository: "https://github.com/openai/openai-python"
 license: MIT
+documentation: "https://platform.openai.com/docs/api-reference"
 maintainer: DevForgeKit Registry
 tags: [ai, cli]
 aliases: [openai]
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives: [gemini-cli, llm]

@@ -2,19 +2,41 @@ schemaVersion: 1
 name: wireshark
 description: A network protocol analyzer, for traffic inspection and troubleshooting
 category: security
-platforms: [macos]
-install: { method: brew-cask, id: wireshark }
+platforms:
+  - macos
+architectures:
+  - intel
+  - apple-silicon
+install:
+  method: brew-cask
+  id: wireshark
 dependencies: []
-validate: "test -d '/Applications/Wireshark.app'"
+validate: test -d '/Applications/Wireshark.app'
+versionCommand: ls /Applications | grep Wireshark
 repair: brew reinstall --cask wireshark
 update: brew upgrade --cask wireshark
-uninstall: { method: brew-cask, id: wireshark }
+uninstall:
+  method: brew-cask
+  id: wireshark
 post_install: []
-homepage: "https://www.wireshark.org"
-repository: "https://gitlab.com/wireshark/wireshark"
+homepage: https://www.wireshark.org
+repository: https://gitlab.com/wireshark/wireshark
 license: GPL-2.0
+documentation: https://www.wireshark.org/docs/
 maintainer: DevForgeKit Registry
-tags: [security, networking, analysis]
-aliases: []
+tags:
+  - security
+  - networking
+  - analysis
+aliases:
+  - wireshark-network
+  - tshark
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - tcpdump
+platformInstall:
+  macos:
+    method: brew-cask
+    id: wireshark
+

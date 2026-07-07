@@ -2,19 +2,42 @@ schemaVersion: 1
 name: buildkite-agent
 description: The Buildkite CI/CD build agent
 category: ci-cd
-platforms: [macos, linux]
-install: { method: brew-formula, id: buildkite-agent }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: buildkite-agent
 dependencies: []
-validate: "buildkite-agent --version"
+validate: buildkite-agent --version
+versionCommand: buildkite-agent --version
 repair: brew reinstall buildkite-agent
 update: brew upgrade buildkite-agent
-uninstall: { method: brew-formula, id: buildkite-agent }
+uninstall:
+  method: brew-formula
+  id: buildkite-agent
 post_install: []
-homepage: "https://buildkite.com/docs/agent"
-repository: "https://github.com/buildkite/agent"
+homepage: https://buildkite.com/docs/agent
+repository: https://github.com/buildkite/agent
 license: MIT
+documentation: https://buildkite.com/docs/agent
 maintainer: DevForgeKit Registry
-tags: [ci-cd, buildkite]
-aliases: []
+tags:
+  - ci-cd
+  - buildkite
+aliases:
+  - buildkite
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives:
+  - github-cli
+  - gitlab-runner
+platformInstall:
+  macos:
+    method: brew-formula
+    id: buildkite-agent
+

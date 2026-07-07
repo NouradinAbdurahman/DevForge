@@ -7,7 +7,16 @@ import path from "node:path";
 import {
     REPAIR_VERSION,
     REPAIR_DIR,
+    REPAIR_CATEGORIES,
+    CATEGORY_LABELS,
+    RISK_LEVELS,
+    RISK_LABELS,
+    ACTION_TYPES,
     planRepairs,
+    dryRunPlan,
+    computeQualityScore,
+    validatePrerequisites,
+    rollbackRepairResult,
     saveRepairRecord,
     listHistory,
     getRepairRecord,
@@ -16,7 +25,11 @@ import {
     exportRecord,
     scanIssues,
     verifyRepairs,
-    createRollbackPoint
+    createRollbackPoint,
+    explainRepair,
+    explainPlan,
+    listRollbackPoints,
+    previewRollback
 } from "../src/core/repair.js";
 
 // Point HOME at a scratch directory to isolate from the developer's real
@@ -35,8 +48,8 @@ function withTempHome(fn) {
 
 // ─── Constants ────────────────────────────────────────────────────────
 
-test("REPAIR_VERSION is 1", () => {
-    assert.equal(REPAIR_VERSION, 1);
+test("REPAIR_VERSION is 2", () => {
+    assert.equal(REPAIR_VERSION, 2);
 });
 
 test("REPAIR_DIR is 'repairs'", () => {
@@ -461,5 +474,414 @@ test("saveRepairRecord + listHistory + deleteRepairRecord full cycle", () => {
         deleteRepairRecord("cycle-test");
         const afterDelete = listHistory();
         assert.equal(afterDelete.length, 0);
+    });
+});
+
+// ─── Phase 2: Repair Categories ───────────────────────────────────────
+
+test("REPAIR_CATEGORIES defines all expected categories", () => {
+    assert.ok(REPAIR_CATEGORIES.COMPATIBILITY);
+    assert.ok(REPAIR_CATEGORIES.PATH);
+    assert.ok(REPAIR_CATEGORIES.GIT);
+    assert.ok(REPAIR_CATEGORIES.DOCKER);
+    assert.ok(REPAIR_CATEGORIES.SSH);
+    assert.ok(REPAIR_CATEGORIES.CACHE);
+    assert.ok(REPAIR_CATEGORIES.HOMEBREW);
+    assert.ok(REPAIR_CATEGORIES.WORKSPACE);
+    assert.ok(REPAIR_CATEGORIES.PLUGINS);
+});
+
+test("CATEGORY_LABELS provides display names for all categories", () => {
+    for (const [, value] of Object.entries(REPAIR_CATEGORIES)) {
+        assert.ok(CATEGORY_LABELS[value], `Label missing for category: ${value}`);
+    }
+});
+
+// ─── Phase 3: Risk Levels & Action Types ──────────────────────────────
+
+test("RISK_LEVELS defines none, low, medium, high", () => {
+    assert.equal(RISK_LEVELS.NONE, "none");
+    assert.equal(RISK_LEVELS.LOW, "low");
+    assert.equal(RISK_LEVELS.MEDIUM, "medium");
+    assert.equal(RISK_LEVELS.HIGH, "high");
+});
+
+test("RISK_LABELS provides display names for all risk levels", () => {
+    for (const [, value] of Object.entries(RISK_LEVELS)) {
+        assert.ok(RISK_LABELS[value], `Label missing for risk: ${value}`);
+    }
+});
+
+test("ACTION_TYPES defines all action types", () => {
+    assert.ok(ACTION_TYPES.SHELL);
+    assert.ok(ACTION_TYPES.INSTALL);
+    assert.ok(ACTION_TYPES.UNINSTALL);
+    assert.ok(ACTION_TYPES.COMPATIBILITY);
+    assert.ok(ACTION_TYPES.COMPONENT_REPAIR);
+    assert.ok(ACTION_TYPES.MANUAL);
+});
+
+// ─── Phase 3: Issue metadata ──────────────────────────────────────────
+
+test("planRepairs includes risk level in plan output", () => {
+    const issues = [
+        { id: "1", severity: "WARNING", category: "test", subsystem: "test", description: "a", fix: "fix", estimatedTime: "1 min", dependencies: [], risk: "low", action: { type: "manual" } },
+        { id: "2", severity: "CRITICAL", category: "test", subsystem: "test", description: "b", fix: "fix", estimatedTime: "1 min", dependencies: [], risk: "high", action: { type: "manual" } }
+    ];
+    const plan = planRepairs(issues);
+    assert.equal(plan.riskLevel, "high");
+    assert.equal(plan.riskLabel, "High");
+});
+
+test("planRepairs includes categoriesAffected in plan output", () => {
+    const issues = [
+        { id: "1", severity: "WARNING", category: "git", categoryLabel: "Git", subsystem: "git", description: "a", fix: "fix", estimatedTime: "1 min", dependencies: [], action: { type: "manual" } },
+        { id: "2", severity: "WARNING", category: "docker", categoryLabel: "Docker", subsystem: "docker", description: "b", fix: "fix", estimatedTime: "1 min", dependencies: [], action: { type: "manual" } }
+    ];
+    const plan = planRepairs(issues);
+    assert.ok(plan.categoriesAffected.includes("Git"));
+    assert.ok(plan.categoriesAffected.includes("Docker"));
+});
+
+test("planRepairs includes packagesAffected when install actions present", () => {
+    const issues = [
+        { id: "1", severity: "WARNING", category: "test", subsystem: "test", description: "a", fix: "fix", estimatedTime: "1 min", dependencies: [], action: { type: "install", package: "node" } },
+        { id: "2", severity: "WARNING", category: "test", subsystem: "test", description: "b", fix: "fix", estimatedTime: "1 min", dependencies: [], action: { type: "install", package: "python" } }
+    ];
+    const plan = planRepairs(issues);
+    assert.ok(plan.packagesAffected.includes("node"));
+    assert.ok(plan.packagesAffected.includes("python"));
+});
+
+// ─── Phase 5: Dry Run ─────────────────────────────────────────────────
+
+test("dryRunPlan returns structured preview without executing", () => {
+    const plan = planRepairs([
+        { id: "1", severity: "WARNING", category: "git", categoryLabel: "Git", subsystem: "git", description: "git name not set", fix: "git config --global user.name 'Test'", estimatedTime: "30 sec", dependencies: [], risk: "low", riskLabel: "Low", title: "Git: name not set", action: { type: "shell", command: "git config --global user.name 'Test'", filesAffected: ["~/.gitconfig"] } }
+    ]);
+    const preview = dryRunPlan(plan);
+    assert.equal(preview.dryRun, true);
+    assert.equal(preview.totalRepairs, 1);
+    assert.equal(preview.preview[0].actionType, "shell");
+    assert.ok(preview.preview[0].description.includes("git config"));
+    assert.equal(preview.preview[0].risk, "Low");
+});
+
+test("dryRunPlan handles manual actions", () => {
+    const plan = planRepairs([
+        { id: "1", severity: "WARNING", category: "ssh", categoryLabel: "SSH", subsystem: "ssh", description: "no keys", fix: "ssh-keygen", estimatedTime: "2 min", dependencies: [], risk: "low", riskLabel: "Low", title: "SSH: no keys", action: { type: "manual", suggestion: "ssh-keygen" } }
+    ]);
+    const preview = dryRunPlan(plan);
+    assert.equal(preview.preview[0].actionType, "manual");
+    assert.ok(preview.preview[0].description.includes("ssh-keygen"));
+});
+
+test("dryRunPlan includes filesAffected and packagesAffected", () => {
+    const plan = {
+        totalRepairs: 1, totalInfo: 0, estimatedTime: "1 min", requiresRestart: false,
+        riskLabel: "Low", categoriesAffected: ["Git"], filesAffected: ["~/.gitconfig"], packagesAffected: [],
+        issues: [
+            { id: "1", title: "Git name", severity: "WARNING", categoryLabel: "Git", riskLabel: "Low", estimatedTime: "30 sec", requiresRestart: false, rollbackAvailable: true, action: { type: "shell", command: "git config --global user.name 'Test'", filesAffected: ["~/.gitconfig"] } }
+        ],
+        informational: []
+    };
+    const preview = dryRunPlan(plan);
+    assert.ok(preview.filesAffected.includes("~/.gitconfig"));
+    assert.equal(preview.packagesAffected.length, 0);
+});
+
+// ─── Phase 12: Repair Quality Score ───────────────────────────────────
+
+test("computeQualityScore returns 100 when no repairs needed", () => {
+    const execution = { results: [], fixed: 0, failed: 0, skipped: 0, rollbackSnapshot: null };
+    const score = computeQualityScore(execution, null);
+    assert.equal(score.score, 100);
+    assert.equal(score.grade, "A");
+});
+
+test("computeQualityScore rewards success and safety", () => {
+    const execution = {
+        results: [{ ok: true }, { ok: true }, { ok: true }],
+        fixed: 3, failed: 0, skipped: 0, rollbackSnapshot: "snap-123"
+    };
+    const verification = { health: { score: 95 } };
+    const score = computeQualityScore(execution, verification);
+    assert.ok(score.score >= 90);
+    assert.equal(score.successRate, 100);
+});
+
+test("computeQualityScore penalizes skipped repairs", () => {
+    const execution = {
+        results: [{ ok: true }, { ok: false, skipped: true }, { ok: true }],
+        fixed: 2, failed: 0, skipped: 1, rollbackSnapshot: null
+    };
+    const verification = { health: { score: 50 } };
+    const score = computeQualityScore(execution, verification);
+    assert.ok(score.score < 100);
+    assert.ok(score.skipped === 1);
+});
+
+// ─── Phase 4: Safety Layer ────────────────────────────────────────────
+
+test("validatePrerequisites returns ok for manual actions", async () => {
+    const result = await validatePrerequisites({ type: ACTION_TYPES.MANUAL });
+    assert.ok(result.ok);
+    assert.equal(result.checks.length, 0);
+});
+
+test("validatePrerequisites detects unknown package for install", async () => {
+    const result = await validatePrerequisites({ type: ACTION_TYPES.INSTALL, package: "nonexistent-pkg-xyz" });
+    assert.ok(!result.ok);
+    assert.ok(result.checks.some((c) => c.check === "registry"));
+});
+
+// ─── Phase 8: Per-repair rollback ─────────────────────────────────────
+
+test("rollbackRepairResult returns failure when no file backups exist", () => {
+    const result = rollbackRepairResult({ ok: true });
+    assert.ok(!result.ok);
+    assert.ok(result.error);
+});
+
+test("rollbackRepairResult returns failure for null result", () => {
+    const result = rollbackRepairResult(null);
+    assert.ok(!result.ok);
+});
+
+// ─── Phase 9: Enhanced history metadata ───────────────────────────────
+
+test("listHistory includes enhanced metadata (platform, risk, quality)", () => {
+    withTempHome(() => {
+        saveRepairRecord({
+            id: "meta-test",
+            createdAt: new Date().toISOString(),
+            issues: [],
+            fixed: 0, failed: 0, skipped: 0,
+            durationMs: 1000,
+            machine: { hostname: "test", platform: "macos", user: "tester" },
+            plan: { riskLevel: "low", categoriesAffected: ["Git"] },
+            qualityScore: { score: 85, grade: "B", verdict: "Good" }
+        });
+        const history = listHistory();
+        assert.equal(history.length, 1);
+        assert.equal(history[0].platform, "macos");
+        assert.equal(history[0].user, "tester");
+        assert.equal(history[0].riskLevel, "low");
+        assert.ok(history[0].categoriesAffected.includes("Git"));
+        assert.equal(history[0].qualityScore.score, 85);
+    });
+});
+
+// ─── Phase 3 fix: estimatedTime parsing ───────────────────────────────
+
+test("planRepairs parses 'N sec' and 'N min' time formats correctly", () => {
+    const plan = planRepairs([
+        { id: "1", severity: "WARNING", category: "git", categoryLabel: "Git", subsystem: "git", description: "a", fix: "git config", estimatedTime: "30 sec", risk: "low", riskLabel: "Low", dependencies: [], action: { type: "shell", command: "git config" } },
+        { id: "2", severity: "WARNING", category: "git", categoryLabel: "Git", subsystem: "git", description: "b", fix: "git config", estimatedTime: "2 min", risk: "low", riskLabel: "Low", dependencies: [], action: { type: "shell", command: "git config" } }
+    ]);
+    // 30 sec + 120 sec = 150 sec → ceil(150/60) = 3 min
+    assert.equal(plan.estimatedTime, "3 min");
+    assert.equal(plan.estimatedTimeSeconds, 150);
+});
+
+test("planRepairs handles sub-minute total time", () => {
+    const plan = planRepairs([
+        { id: "1", severity: "WARNING", category: "git", categoryLabel: "Git", subsystem: "git", description: "a", fix: "git config", estimatedTime: "15 sec", risk: "low", riskLabel: "Low", dependencies: [], action: { type: "shell", command: "git config" } }
+    ]);
+    assert.equal(plan.estimatedTime, "15 sec");
+    assert.equal(plan.estimatedTimeSeconds, 15);
+});
+
+// ─── Phase 4 fix: rollback validation ─────────────────────────────────
+
+test("planRepairs tracks rollbackUnavailableCount and rollbackUnavailableIssues", () => {
+    const plan = planRepairs([
+        { id: "1", severity: "WARNING", category: "git", categoryLabel: "Git", subsystem: "git", description: "a", fix: "git config", estimatedTime: "30 sec", risk: "low", riskLabel: "Low", dependencies: [], rollbackAvailable: true, action: { type: "shell", command: "git config" } },
+        { id: "2", severity: "WARNING", category: "git", categoryLabel: "Git", subsystem: "git", description: "b", fix: "manual", estimatedTime: "5 min", risk: "medium", riskLabel: "Medium", dependencies: [], rollbackAvailable: false, action: { type: "manual", suggestion: "manual" } }
+    ]);
+    assert.equal(plan.rollbackAvailable, false);
+    assert.equal(plan.rollbackUnavailableCount, 1);
+    assert.deepEqual(plan.rollbackUnavailableIssues, ["2"]);
+});
+
+// ─── Phase 10: Repair Intelligence ─────────────────────────────────────
+
+test("explainRepair produces structured Problem/Impact/Fix/Risk/Time output", () => {
+    const issue = {
+        description: "Git user.name is not set",
+        impact: "Commits will fail",
+        fix: "git config --global user.name 'Name'",
+        riskLabel: "Low",
+        estimatedTime: "30 sec",
+        rollbackAvailable: true,
+        requiresRestart: false,
+        action: { type: "shell", command: "git config --global user.name 'Name'", filesAffected: ["~/.gitconfig"] }
+    };
+    const text = explainRepair(issue);
+    assert.ok(text.includes("Problem"));
+    assert.ok(text.includes("Git user.name is not set"));
+    assert.ok(text.includes("Impact"));
+    assert.ok(text.includes("Commits will fail"));
+    assert.ok(text.includes("Fix"));
+    assert.ok(text.includes("git config"));
+    assert.ok(text.includes("Risk"));
+    assert.ok(text.includes("Low"));
+    assert.ok(text.includes("Estimated time"));
+    assert.ok(text.includes("30 sec"));
+    assert.ok(text.includes("Rollback"));
+    assert.ok(text.includes("Available"));
+    assert.ok(text.includes("Command"));
+    assert.ok(text.includes("Files affected"));
+    assert.ok(text.includes("~/.gitconfig"));
+});
+
+test("explainRepair shows 'Not available' when rollback not supported", () => {
+    const text = explainRepair({
+        description: "test", impact: "test", fix: "manual",
+        riskLabel: "Medium", estimatedTime: "5 min",
+        rollbackAvailable: false, action: { type: "manual" }
+    });
+    assert.ok(text.includes("Not available"));
+});
+
+test("explainPlan produces full plan explanation with all repairs", () => {
+    const plan = planRepairs([
+        { id: "1", severity: "WARNING", category: "git", categoryLabel: "Git", subsystem: "git", description: "Git name not set", impact: "Commits fail", fix: "git config", estimatedTime: "30 sec", risk: "low", riskLabel: "Low", dependencies: [], rollbackAvailable: true, action: { type: "shell", command: "git config" } },
+        { id: "2", severity: "WARNING", category: "docker", categoryLabel: "Docker", subsystem: "docker", description: "Docker not running", impact: "Can't build", fix: "open -a Docker", estimatedTime: "30 sec", risk: "none", riskLabel: "None", dependencies: [], rollbackAvailable: true, action: { type: "shell", command: "open -a Docker" } }
+    ]);
+    const text = explainPlan(plan);
+    assert.ok(text.includes("Repair Plan Explanation"));
+    assert.ok(text.includes("Total repairs: 2"));
+    assert.ok(text.includes("Repair 1 of 2"));
+    assert.ok(text.includes("Repair 2 of 2"));
+    assert.ok(text.includes("Git name not set"));
+    assert.ok(text.includes("Docker not running"));
+    assert.ok(text.includes("Risk level:"));
+});
+
+// ─── Phase 8: Full rollback system ────────────────────────────────────
+
+test("listRollbackPoints returns records with rollback potential", () => {
+    withTempHome(() => {
+        saveRepairRecord({
+            id: "rb-1",
+            createdAt: new Date().toISOString(),
+            issues: [],
+            fixed: 3, failed: 0, skipped: 0,
+            durationMs: 5000,
+            machine: { hostname: "test", platform: "macos", user: "tester" },
+            plan: { riskLevel: "low", categoriesAffected: ["Git"] },
+            rollbackSnapshotId: "snap-123",
+            qualityScore: { score: 90, grade: "A", verdict: "Excellent" }
+        });
+        saveRepairRecord({
+            id: "rb-2",
+            createdAt: new Date().toISOString(),
+            issues: [],
+            fixed: 0, failed: 0, skipped: 0,
+            durationMs: 100,
+            machine: { hostname: "test", platform: "macos", user: "tester" },
+            plan: { riskLevel: "none", categoriesAffected: [] }
+        });
+        const points = listRollbackPoints();
+        // rb-1 has rollbackSnapshotId and fixed > 0, rb-2 has fixed=0 and no snapshot
+        assert.ok(points.some((p) => p.id === "rb-1"));
+    });
+});
+
+test("previewRollback returns structured preview without executing", () => {
+    withTempHome(() => {
+        saveRepairRecord({
+            id: "prev-test",
+            createdAt: new Date().toISOString(),
+            issues: [],
+            fixed: 1, failed: 0, skipped: 0,
+            durationMs: 1000,
+            machine: { hostname: "test", platform: "macos", user: "tester" },
+            plan: { riskLevel: "low", categoriesAffected: [] },
+            rollbackSnapshotId: "snap-456",
+            repairResults: [
+                { ok: true, issue: { title: "Git config" }, fileBackups: { "/fake/path": "/fake/backup" } }
+            ]
+        });
+        const preview = previewRollback("prev-test");
+        assert.equal(preview.repairId, "prev-test");
+        assert.equal(preview.hasSnapshot, true);
+        assert.equal(preview.rollbackSnapshotId, "snap-456");
+        assert.equal(preview.repairsReversible, 1);
+        assert.equal(preview.fileBackups.length, 1);
+        assert.equal(preview.fileBackups[0].originalPath, "/fake/path");
+        assert.equal(preview.fileBackups[0].backupExists, false);
+    });
+});
+
+// ─── Phase 9: History filtering and searching ─────────────────────────
+
+test("listHistory filters by risk level", () => {
+    withTempHome(() => {
+        saveRepairRecord({ id: "r1", createdAt: new Date().toISOString(), issues: [], fixed: 1, failed: 0, skipped: 0, durationMs: 100, machine: {}, plan: { riskLevel: "low", categoriesAffected: [] } });
+        saveRepairRecord({ id: "r2", createdAt: new Date().toISOString(), issues: [], fixed: 1, failed: 0, skipped: 0, durationMs: 100, machine: {}, plan: { riskLevel: "high", categoriesAffected: [] } });
+        const lowOnly = listHistory({ filter: { risk: "low" } });
+        assert.equal(lowOnly.length, 1);
+        assert.equal(lowOnly[0].id, "r1");
+    });
+});
+
+test("listHistory filters by category", () => {
+    withTempHome(() => {
+        saveRepairRecord({ id: "c1", createdAt: new Date().toISOString(), issues: [], fixed: 1, failed: 0, skipped: 0, durationMs: 100, machine: {}, plan: { riskLevel: "low", categoriesAffected: ["Git", "Docker"] } });
+        saveRepairRecord({ id: "c2", createdAt: new Date().toISOString(), issues: [], fixed: 1, failed: 0, skipped: 0, durationMs: 100, machine: {}, plan: { riskLevel: "low", categoriesAffected: ["SSH"] } });
+        const gitOnly = listHistory({ filter: { category: "Git" } });
+        assert.equal(gitOnly.length, 1);
+        assert.equal(gitOnly[0].id, "c1");
+    });
+});
+
+test("listHistory filters by status", () => {
+    withTempHome(() => {
+        saveRepairRecord({ id: "s1", createdAt: new Date().toISOString(), issues: [], fixed: 5, failed: 0, skipped: 0, durationMs: 100, machine: {}, plan: { riskLevel: "low", categoriesAffected: [] } });
+        saveRepairRecord({ id: "s2", createdAt: new Date().toISOString(), issues: [], fixed: 0, failed: 3, skipped: 0, durationMs: 100, machine: {}, plan: { riskLevel: "low", categoriesAffected: [] } });
+        saveRepairRecord({ id: "s3", createdAt: new Date().toISOString(), issues: [], fixed: 2, failed: 1, skipped: 0, durationMs: 100, machine: {}, plan: { riskLevel: "low", categoriesAffected: [] } });
+        const success = listHistory({ filter: { status: "success" } });
+        assert.equal(success.length, 1);
+        assert.equal(success[0].id, "s1");
+        const failed = listHistory({ filter: { status: "failed" } });
+        assert.equal(failed.length, 2); // s2 and s3 both have failures
+        const partial = listHistory({ filter: { status: "partial" } });
+        assert.equal(partial.length, 1);
+        assert.equal(partial[0].id, "s3");
+    });
+});
+
+test("listHistory searches across id, machine, and categories", () => {
+    withTempHome(() => {
+        saveRepairRecord({ id: "search-1", createdAt: new Date().toISOString(), issues: [], fixed: 1, failed: 0, skipped: 0, durationMs: 100, machine: { hostname: "macbook-pro" }, plan: { riskLevel: "low", categoriesAffected: ["Git"] } });
+        saveRepairRecord({ id: "search-2", createdAt: new Date().toISOString(), issues: [], fixed: 1, failed: 0, skipped: 0, durationMs: 100, machine: { hostname: "linux-box" }, plan: { riskLevel: "low", categoriesAffected: ["Docker"] } });
+        const results = listHistory({ search: "macbook" });
+        assert.equal(results.length, 1);
+        assert.equal(results[0].id, "search-1");
+        const gitResults = listHistory({ search: "git" });
+        assert.equal(gitResults.length, 1);
+        assert.equal(gitResults[0].id, "search-1");
+    });
+});
+
+test("listHistory supports limit", () => {
+    withTempHome(() => {
+        for (let i = 0; i < 5; i++) {
+            saveRepairRecord({ id: `lim-${i}`, createdAt: new Date(Date.now() + i).toISOString(), issues: [], fixed: 1, failed: 0, skipped: 0, durationMs: 100, machine: {}, plan: { riskLevel: "low", categoriesAffected: [] } });
+        }
+        const limited = listHistory({ limit: 2 });
+        assert.equal(limited.length, 2);
+    });
+});
+
+test("listHistory supports sorting by fixed count", () => {
+    withTempHome(() => {
+        saveRepairRecord({ id: "sort-1", createdAt: new Date().toISOString(), issues: [], fixed: 1, failed: 0, skipped: 0, durationMs: 100, machine: {}, plan: { riskLevel: "low", categoriesAffected: [] } });
+        saveRepairRecord({ id: "sort-2", createdAt: new Date().toISOString(), issues: [], fixed: 5, failed: 0, skipped: 0, durationMs: 100, machine: {}, plan: { riskLevel: "low", categoriesAffected: [] } });
+        const sorted = listHistory({ sortBy: "fixed", sortOrder: "desc" });
+        assert.equal(sorted[0].id, "sort-2");
+        assert.equal(sorted[1].id, "sort-1");
     });
 });

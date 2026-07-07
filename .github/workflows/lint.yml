@@ -41,4 +41,4 @@ jobs:
 
       - name: Markdown lint
         run: |
-          npx --yes markdownlint-cli "**/*.md" --ignore node_modules
+          npx --yes markdownlint-cli "**/*.md" --ignore node_modules --ignore cli/node_modules

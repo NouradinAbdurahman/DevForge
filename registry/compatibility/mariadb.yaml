@@ -1,0 +1,6 @@
+schemaVersion: 1
+name: mariadb
+# Both default to port 3306 and the same on-disk data directory layout
+# MariaDB forked from - running both as system services simultaneously is a
+# well-known real conflict, not a hypothetical one.
+conflicts: [mysql]

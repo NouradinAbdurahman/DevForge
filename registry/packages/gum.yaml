@@ -2,19 +2,40 @@ schemaVersion: 1
 name: gum
 description: A tool for glamorous shell script interfaces
 category: utilities
-platforms: [macos, linux]
-install: { method: brew-formula, id: gum }
+platforms:
+  - macos
+  - linux
+architectures:
+  - intel
+  - apple-silicon
+  - linux
+install:
+  method: brew-formula
+  id: gum
 dependencies: []
 validate: gum --version
+versionCommand: gum --version
 repair: brew reinstall gum
 update: brew upgrade gum
-uninstall: { method: brew-formula, id: gum }
+uninstall:
+  method: brew-formula
+  id: gum
 post_install: []
-homepage: "https://github.com/charmbracelet/gum"
-repository: "https://github.com/charmbracelet/gum"
+homepage: https://github.com/charmbracelet/gum
+repository: https://github.com/charmbracelet/gum
 license: MIT
+documentation: https://github.com/charmbracelet/gum
 maintainer: DevForgeKit Registry
-tags: [utility, cli, shell]
-aliases: []
+tags:
+  - utility
+  - cli
+  - shell
+aliases:
+  - gum-cli
 stability: stable
 lastVerified: "2026-07-05"
+platformInstall:
+  macos:
+    method: brew-formula
+    id: gum
+

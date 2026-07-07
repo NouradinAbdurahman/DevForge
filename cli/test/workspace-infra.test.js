@@ -4,8 +4,8 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { commandExists } from "../src/core/shell.js";
-import { listDockerContexts, captureDockerContext, applyWorkspaceDocker, describeDockerReferences } from "../src/core/workspace/docker.js";
-import { listKubeContexts, captureKubeContext, applyWorkspaceKubernetes, describeKubernetesReferences } from "../src/core/workspace/kubernetes.js";
+import { listDockerContexts, captureDockerContext, applyWorkspaceDocker } from "../src/core/workspace/docker.js";
+import { listKubeContexts, captureKubeContext, applyWorkspaceKubernetes } from "../src/core/workspace/kubernetes.js";
 import { applyWorkspaceCloud, cloudEnvVars, REAL_SWITCH_PROVIDERS, SUPPLEMENTARY_ENV_VARS } from "../src/core/workspace/cloud.js";
 
 // docker/kubectl may genuinely be installed on the machine running these
@@ -46,11 +46,6 @@ test("applyWorkspaceDocker never mutates anything for a context that doesn't exi
     });
 });
 
-test("describeDockerReferences returns compose/network/volume references verbatim (never invoked as commands)", () => {
-    const refs = describeDockerReferences({ docker: { composeFiles: ["docker-compose.yml"], networks: ["acme-net"] } });
-    assert.deepEqual(refs, { composeFiles: ["docker-compose.yml"], networks: ["acme-net"], volumes: [] });
-});
-
 test("listDockerContexts/listKubeContexts degrade to [] rather than throwing when unavailable/unconfigured", async () => {
     await withTempHome(async () => {
         assert.ok(Array.isArray(await listDockerContexts()));
@@ -74,10 +69,6 @@ test("applyWorkspaceKubernetes never mutates anything for a context that doesn't
         assert.match(result.reason, /does not exist locally/);
         assert.equal(await captureKubeContext(), before);
     });
-});
-
-test("describeKubernetesReferences returns cluster references verbatim", () => {
-    assert.deepEqual(describeKubernetesReferences({ kubernetes: { clusters: ["acme-prod"] } }), { clusters: ["acme-prod"] });
 });
 
 test("cloudEnvVars only exports the documented, real env vars (AWS_PROFILE, GOOGLE_CLOUD_PROJECT)", () => {

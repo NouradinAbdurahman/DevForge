@@ -50,7 +50,7 @@ export function createProgram() {
 
     program
         .name("devforgekit")
-        .description("DevForgeKit - a production-grade macOS development workstation lifecycle manager")
+        .description("DevForgeKit - a production-grade cross-platform development workstation lifecycle manager")
         .version(getVersion(), "-V, --version")
         .option("--verbose", "print extra diagnostic detail")
         .option("--debug", "print full stack traces on error")

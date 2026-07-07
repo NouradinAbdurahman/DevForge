@@ -34,8 +34,14 @@ import { scoreResults } from "./health.js";
 
 // ─── Constants ────────────────────────────────────────────────────────
 
-export const BENCHMARK_VERSION = 1;
+export const BENCHMARK_VERSION = 2;
 export const BENCHMARK_DIR = "benchmarks";
+
+// Default number of runs per measurement for variance calculation
+const DEFAULT_RUNS = 3;
+
+// Significance threshold for comparison (percentage change)
+const SIGNIFICANCE_THRESHOLD = 0.10; // 10% change is significant
 
 const PROFILES = {
     quick: ["cpu", "memory", "disk", "git", "node", "shell"],
@@ -68,6 +74,17 @@ function benchmarksDir() {
 
 function tempDir(prefix) {
     return mkdtempSync(path.join(tmpdir(), prefix));
+}
+
+// withTempDir — helper to eliminate repeated try/finally rmSync pattern.
+// Creates a temp dir, passes it to fn, and always cleans up.
+async function withTempDir(prefix, fn) {
+    const dir = tempDir(prefix);
+    try {
+        return await fn(dir);
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
 }
 
 function makeBenchmarkId(isoTimestamp) {
@@ -117,11 +134,45 @@ async function timeOperation(fn) {
     return Math.round(performance.now() - start);
 }
 
+// timeOperationMulti — runs fn `runs` times, returns { median, min, max, variance, confidence, runs }
+// confidence is 0-1 based on variance relative to median
+async function timeOperationMulti(fn, runs = DEFAULT_RUNS) {
+    const times = [];
+    for (let i = 0; i < runs; i++) {
+        const start = performance.now();
+        try {
+            await fn();
+            times.push(Math.round(performance.now() - start));
+        } catch {
+            return null;
+        }
+    }
+    times.sort((a, b) => a - b);
+    const median = times[Math.floor(times.length / 2)];
+    const min = times[0];
+    const max = times[times.length - 1];
+    const mean = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
+    const variance = Math.round(
+        times.reduce((acc, t) => acc + Math.pow(t - mean, 2), 0) / times.length
+    );
+    // Confidence: 1.0 when variance is 0, decreases as variance grows
+    const confidence = median > 0 ? Math.max(0, Math.min(1, 1 - (Math.sqrt(variance) / median))) : 0;
+    return { median, min, max, mean, variance, confidence, runs };
+}
+
 async function timeShell(cmd, opts = {}) {
     return timeOperation(async () => {
         const code = await runShellCommand(cmd, { silent: true, ...opts });
         if (code !== 0) throw new Error(`Command failed: ${cmd}`);
     });
+}
+
+// timeShellMulti — runs a shell command multiple times for variance data
+async function timeShellMulti(cmd, opts = {}, runs = DEFAULT_RUNS) {
+    return timeOperationMulti(async () => {
+        const code = await runShellCommand(cmd, { silent: true, ...opts });
+        if (code !== 0) throw new Error(`Command failed: ${cmd}`);
+    }, runs);
 }
 
 async function toolAvailable(name) {
@@ -536,19 +587,120 @@ async function benchmarkProjectGeneration() {
 
 // ─── Benchmark Registry ───────────────────────────────────────────────
 
+// BENCHMARK_METADATA — rich metadata for each benchmark category.
+// Used by benchmark intelligence (Phase 6) and reports (Phase 3).
+export const BENCHMARK_METADATA = {
+    cpu: {
+        label: "CPU",
+        description: "Processor speed for compression, decompression, JSON parsing, and object creation.",
+        why: "CPU performance affects build times, compilation, and any compute-heavy toolchain.",
+        affects: ["Build speed", "Compilation", "Data processing"],
+        expectedRange: "50-500ms per operation",
+        recommendation: "Close background processes, ensure adequate cooling, or upgrade hardware."
+    },
+    memory: {
+        label: "Memory",
+        description: "RAM allocation, large array handling, and garbage collection speed.",
+        why: "Memory performance affects multi-tasking, large project builds, and running multiple tools.",
+        affects: ["Multi-tasking", "Large builds", "Container overhead"],
+        expectedRange: "50-300ms per operation",
+        recommendation: "Ensure adequate free RAM, close memory-hungry apps, or add more RAM."
+    },
+    disk: {
+        label: "Disk",
+        description: "Sequential read/write, random access, and small file creation speed.",
+        why: "Disk I/O is often the biggest bottleneck for development workflows.",
+        affects: ["File operations", "Build speed", "Package installs", "Git operations"],
+        expectedRange: "100-2000ms per operation",
+        recommendation: "Use an SSD if not already, ensure adequate free space (20%+), or check disk health."
+    },
+    git: {
+        label: "Git",
+        description: "Git operations: init, add, commit, status, branch, diff.",
+        why: "Git performance directly impacts developer workflow responsiveness.",
+        affects: ["Version control", "CI/CD", "Repository operations"],
+        expectedRange: "50-500ms per operation",
+        recommendation: "Run 'git gc' on large repos, ensure adequate disk speed, or check for large files."
+    },
+    node: {
+        label: "Node.js",
+        description: "Node.js startup time and module loading speed.",
+        why: "Node.js startup affects every npm script, build tool, and CLI tool invocation.",
+        affects: ["Build tools", "CLI tools", "npm scripts", "Dev servers"],
+        expectedRange: "50-200ms",
+        recommendation: "Update Node.js to latest LTS, use 'node --no-warnings' for scripts, or check for heavy startup hooks."
+    },
+    shell: {
+        label: "Terminal",
+        description: "Shell startup and profile sourcing speed.",
+        why: "Shell performance affects every terminal command and script execution.",
+        affects: ["Terminal responsiveness", "Script execution", "Build pipelines"],
+        expectedRange: "100-300ms",
+        recommendation: "Simplify shell profile (.zshrc/.bashrc), remove slow plugins, or use a faster shell."
+    },
+    docker: {
+        label: "Docker",
+        description: "Docker daemon responsiveness, image inspection, and container startup.",
+        why: "Docker performance impacts containerized development and CI/CD pipelines.",
+        affects: ["Containerized dev", "CI/CD", "Local services"],
+        expectedRange: "500-5000ms",
+        recommendation: "Allocate more resources to Docker, use lighter base images, or clean up unused images."
+    },
+    flutter: {
+        label: "Flutter",
+        description: "Flutter doctor and pub get performance.",
+        why: "Flutter performance affects mobile and cross-platform development workflows.",
+        affects: ["Mobile development", "Cross-platform builds"],
+        expectedRange: "2000-10000ms",
+        recommendation: "Run 'flutter clean', update Flutter SDK, or check for network issues with pub."
+    },
+    python: {
+        label: "Python",
+        description: "Python startup, venv creation, and pip install speed.",
+        why: "Python performance affects scripting, ML workflows, and backend development.",
+        affects: ["Scripting", "ML/AI", "Backend dev", "Virtual environments"],
+        expectedRange: "50-10000ms",
+        recommendation: "Use pyenv for faster startup, cache pip packages, or use uv for faster installs."
+    },
+    databases: {
+        label: "Databases",
+        description: "Database connection and query responsiveness for PostgreSQL, MySQL, Redis.",
+        why: "Database performance affects backend development and testing.",
+        affects: ["Backend dev", "Database testing", "Local services"],
+        expectedRange: "100-500ms",
+        recommendation: "Ensure database services are running, check connection pooling, or use lighter alternatives for local dev."
+    },
+    packageManagers: {
+        label: "Package Managers",
+        description: "Package manager responsiveness for brew, npm, pnpm, bun.",
+        why: "Package manager speed affects install times and development iteration speed.",
+        affects: ["Package installs", "Dependency updates", "CI/CD"],
+        expectedRange: "200-2000ms",
+        recommendation: "Use faster package managers (pnpm/bun for Node, uv for Python), enable caching, or clean up old packages."
+    },
+    projectGeneration: {
+        label: "Project Generation",
+        description: "Time to scaffold new projects using DevForgeKit generators.",
+        why: "Project generation speed affects developer onboarding and prototyping.",
+        affects: ["Project scaffolding", "Prototyping", "Onboarding"],
+        expectedRange: "5000-30000ms",
+        recommendation: "Use faster generators, skip optional dependencies, or pre-cache template files."
+    }
+};
+
 const BENCHMARKS = {
-    cpu: { run: benchmarkCPU, label: "CPU" },
-    memory: { run: benchmarkMemory, label: "Memory" },
-    disk: { run: benchmarkDisk, label: "Disk" },
-    git: { run: benchmarkGit, label: "Git" },
-    node: { run: benchmarkNode, label: "Node.js" },
-    shell: { run: benchmarkShell, label: "Terminal" },
-    docker: { run: benchmarkDocker, label: "Docker" },
-    flutter: { run: benchmarkFlutter, label: "Flutter" },
-    python: { run: benchmarkPython, label: "Python" },
-    databases: { run: benchmarkDatabases, label: "Databases" },
-    packageManagers: { run: benchmarkPackageManagers, label: "Package Managers" },
-    projectGeneration: { run: benchmarkProjectGeneration, label: "Project Generation" }
+    cpu: { run: benchmarkCPU, label: "CPU", metadata: BENCHMARK_METADATA.cpu },
+    memory: { run: benchmarkMemory, label: "Memory", metadata: BENCHMARK_METADATA.memory },
+    disk: { run: benchmarkDisk, label: "Disk", metadata: BENCHMARK_METADATA.disk },
+    git: { run: benchmarkGit, label: "Git", metadata: BENCHMARK_METADATA.git },
+    node: { run: benchmarkNode, label: "Node.js", metadata: BENCHMARK_METADATA.node },
+    shell: { run: benchmarkShell, label: "Terminal", metadata: BENCHMARK_METADATA.shell },
+    docker: { run: benchmarkDocker, label: "Docker", metadata: BENCHMARK_METADATA.docker },
+    flutter: { run: benchmarkFlutter, label: "Flutter", metadata: BENCHMARK_METADATA.flutter },
+    python: { run: benchmarkPython, label: "Python", metadata: BENCHMARK_METADATA.python },
+    databases: { run: benchmarkDatabases, label: "Databases", metadata: BENCHMARK_METADATA.databases },
+    packageManagers: { run: benchmarkPackageManagers, label: "Package Managers", metadata: BENCHMARK_METADATA.packageManagers },
+    projectGeneration: { run: benchmarkProjectGeneration, label: "Project Generation", metadata: BENCHMARK_METADATA.projectGeneration }
 };
 
 // ─── Machine Info ─────────────────────────────────────────────────────
@@ -696,6 +848,47 @@ export async function runBenchmark({ profile = "quick", onProgress, signal } = {
         // Non-critical
     }
 
+    // Phase 2: Rich metadata — category labels, affected packages, environment
+    const categoryLabels = {};
+    const affectedPackages = {};
+    const confidenceData = {};
+    for (const catKey of Object.keys(categoryResults)) {
+        const bench = BENCHMARKS[catKey];
+        categoryLabels[catKey] = bench?.label || catKey;
+        // Collect affected packages from metadata
+        if (bench?.metadata?.affects) {
+            affectedPackages[catKey] = bench.metadata.affects;
+        }
+        // Collect confidence/variance from multi-run results
+        const measurements = categoryResults[catKey];
+        const confidences = [];
+        for (const [, val] of Object.entries(measurements)) {
+            if (typeof val === "object" && val?.confidence != null) {
+                confidences.push(val.confidence);
+            }
+        }
+        if (confidences.length > 0) {
+            confidenceData[catKey] = {
+                avgConfidence: Math.round(confidences.reduce((a, b) => a + b, 0) / confidences.length * 100) / 100,
+                runs: confidences.length
+            };
+        }
+    }
+
+    // Phase 2: Environment details
+    let nodeVersion = "unknown";
+    let shellType = "unknown";
+    try { nodeVersion = process.version; } catch { /* ignore */ }
+    try { shellType = process.env.SHELL?.split("/").pop() || "unknown"; } catch { /* ignore */ }
+
+    // Phase 8: Benchmark quality score
+    const qualityScore = computeBenchmarkQuality({
+        totalCategories: categories.length,
+        runCategories: Object.keys(categoryScores).length,
+        skipped: skipped.length,
+        confidenceData
+    });
+
     const result = {
         benchmarkVersion: BENCHMARK_VERSION,
         id,
@@ -704,14 +897,19 @@ export async function runBenchmark({ profile = "quick", onProgress, signal } = {
         durationMs,
         devforgekitVersion: getVersion(),
         machine,
+        environment: { nodeVersion, shellType, platform: currentPlatform()?.id || "unknown", arch: currentArchitecture() || arch() },
         categoryResults,
         categoryScores,
+        categoryLabels,
+        affectedPackages,
+        confidence: confidenceData,
         overallScore,
         overallGrade,
         slowest,
         fastest,
         skipped,
-        compatibilityIssues
+        compatibilityIssues,
+        qualityScore
     };
 
     return result;
@@ -729,7 +927,7 @@ export function saveResult(result) {
 
 // ─── List History ─────────────────────────────────────────────────────
 
-export function listHistory() {
+export function listHistory({ filter, search, limit, sortBy = "date", sortOrder = "desc" } = {}) {
     const dir = benchmarksDir();
     if (!existsSync(dir)) return [];
 
@@ -747,6 +945,9 @@ export function listHistory() {
                 overallGrade: data.overallGrade,
                 durationMs: data.durationMs,
                 machine: data.machine?.hostname || "unknown",
+                os: data.machine?.os || "unknown",
+                qualityScore: data.qualityScore || null,
+                categoryScores: data.categoryScores || {},
                 path: filePath
             });
         } catch {
@@ -754,11 +955,44 @@ export function listHistory() {
         }
     }
 
-    return results.sort((a, b) => {
-        const aKey = a.createdAt || "";
-        const bKey = b.createdAt || "";
-        return aKey < bKey ? 1 : aKey > bKey ? -1 : 0;
+    // Phase 9: Filter by profile, grade, or score range
+    let filtered = results;
+    if (filter) {
+        if (filter.profile) filtered = filtered.filter((r) => r.profile === filter.profile);
+        if (filter.grade) filtered = filtered.filter((r) => r.overallGrade === filter.grade);
+        if (filter.minScore != null) filtered = filtered.filter((r) => r.overallScore >= filter.minScore);
+        if (filter.maxScore != null) filtered = filtered.filter((r) => r.overallScore <= filter.maxScore);
+    }
+
+    // Phase 9: Search across id, machine, profile
+    if (search) {
+        const q = search.toLowerCase();
+        filtered = filtered.filter((r) =>
+            r.id.toLowerCase().includes(q) ||
+            r.machine.toLowerCase().includes(q) ||
+            r.profile.toLowerCase().includes(q) ||
+            r.os.toLowerCase().includes(q)
+        );
+    }
+
+    // Sort
+    const sortKey = sortBy === "score" ? "overallScore" : sortBy === "duration" ? "durationMs" : "createdAt";
+    filtered.sort((a, b) => {
+        const aVal = a[sortKey] || 0;
+        const bVal = b[sortKey] || 0;
+        if (sortKey === "createdAt") {
+            return sortOrder === "desc" ? (aVal < bVal ? 1 : aVal > bVal ? -1 : 0)
+                : (aVal > bVal ? 1 : aVal < bVal ? -1 : 0);
+        }
+        return sortOrder === "desc" ? bVal - aVal : aVal - bVal;
     });
+
+    // Limit
+    if (limit && limit > 0) {
+        filtered = filtered.slice(0, limit);
+    }
+
+    return filtered;
 }
 
 // ─── Get Result ───────────────────────────────────────────────────────
@@ -796,12 +1030,56 @@ export function compareResults(oldResult, newResult) {
         const newScore = newResult.categoryScores?.[cat] ?? null;
         const delta = (oldScore != null && newScore != null) ? newScore - oldScore : null;
         const status = delta == null ? "N/A" : delta > 0 ? "improved" : delta < 0 ? "regressed" : "unchanged";
-        categories.push({ category: cat, oldScore, newScore, delta, status });
+
+        // Phase 4: Significance and likely cause
+        let significant = false;
+        if (oldScore != null && newScore != null && oldScore > 0) {
+            significant = Math.abs(delta) / oldScore >= SIGNIFICANCE_THRESHOLD;
+        }
+
+        const label = BENCHMARKS[cat]?.label || cat;
+        const metadata = BENCHMARKS[cat]?.metadata;
+        let likelyCause = null;
+        let recommendation = null;
+        if (significant && status === "regressed" && metadata) {
+            likelyCause = inferCause(cat, oldResult, newResult);
+            recommendation = metadata.recommendation;
+        }
+        if (significant && status === "improved" && metadata) {
+            recommendation = `Improvement in ${label}. Keep up whatever changed.`;
+        }
+
+        // Phase 4: Measurement-level comparison
+        const oldMeasurements = oldResult.categoryResults?.[cat] || {};
+        const newMeasurements = newResult.categoryResults?.[cat] || {};
+        const measurementDeltas = [];
+        for (const mKey of new Set([...Object.keys(oldMeasurements), ...Object.keys(newMeasurements)])) {
+            const oldMs = oldMeasurements[mKey];
+            const newMs = newMeasurements[mKey];
+            if (typeof oldMs === "number" && typeof newMs === "number") {
+                const mDelta = newMs - oldMs;
+                const mPct = oldMs > 0 ? Math.round((mDelta / oldMs) * 100) : 0;
+                measurementDeltas.push({ measurement: mKey, oldMs, newMs, delta: mDelta, pct: mPct, faster: mDelta < 0 });
+            }
+        }
+
+        categories.push({
+            category: cat, label,
+            oldScore, newScore, delta, status, significant,
+            likelyCause, recommendation,
+            measurementDeltas
+        });
     }
 
     const overallDelta = (oldResult.overallScore != null && newResult.overallScore != null)
         ? newResult.overallScore - oldResult.overallScore
         : null;
+
+    // Phase 4: Summary counts
+    const improved = categories.filter((c) => c.status === "improved");
+    const regressed = categories.filter((c) => c.status === "regressed");
+    const unchanged = categories.filter((c) => c.status === "unchanged");
+    const significantChanges = categories.filter((c) => c.significant);
 
     return {
         old: {
@@ -819,6 +1097,12 @@ export function compareResults(oldResult, newResult) {
             machine: newResult.machine?.hostname
         },
         overallDelta,
+        summary: {
+            improved: improved.length,
+            regressed: regressed.length,
+            unchanged: unchanged.length,
+            significant: significantChanges.length
+        },
         categories: categories.sort((a, b) => {
             if (a.delta == null && b.delta == null) return 0;
             if (a.delta == null) return 1;
@@ -826,6 +1110,47 @@ export function compareResults(oldResult, newResult) {
             return b.delta - a.delta;
         })
     };
+}
+
+// inferCause — attempts to identify the likely cause of a regression
+function inferCause(category, oldResult, newResult) {
+    const oldMachine = oldResult.machine || {};
+    const newMachine = newResult.machine || {};
+
+    // Machine changed
+    if (oldMachine.hostname !== newMachine.hostname) {
+        return `Different machine (${oldMachine.hostname} → ${newMachine.hostname})`;
+    }
+
+    // Free memory dropped significantly
+    if (oldMachine.freeMemoryGb != null && newMachine.freeMemoryGb != null) {
+        const memDiff = newMachine.freeMemoryGb - oldMachine.freeMemoryGb;
+        if (memDiff < -4) {
+            return `Free RAM decreased by ${Math.abs(memDiff)}GB — background processes may be consuming memory`;
+        }
+    }
+
+    // OS version changed
+    if (oldMachine.os !== newMachine.os) {
+        return `OS updated (${oldMachine.os} → ${newMachine.os})`;
+    }
+
+    // Category-specific causes
+    const causes = {
+        cpu: "Background processes or thermal throttling",
+        memory: "Memory pressure from other applications",
+        disk: "Disk nearly full, background I/O, or disk health degradation",
+        git: "Repository grew or disk I/O degraded",
+        node: "Node.js version changed or startup hooks added",
+        shell: "Shell profile modified or plugins added",
+        docker: "Docker resource allocation changed or images accumulated",
+        flutter: "Flutter SDK updated or network latency with pub",
+        python: "Python version changed or pip cache cleared",
+        databases: "Database load increased or connection pool exhausted",
+        packageManagers: "Package manager cache cleared or registry latency",
+        projectGeneration: "Generator templates changed or network latency"
+    };
+    return causes[category] || "Unknown cause — check for system changes";
 }
 
 // ─── Export Result ────────────────────────────────────────────────────
@@ -1049,4 +1374,305 @@ export function benchmarkSummary(result) {
         slowest: result.slowest,
         fastest: result.fastest
     };
+}
+
+// ─── Phase 5: Trend Analysis ──────────────────────────────────────────
+// Returns a trend series for a specific category (or overall) across
+// benchmark history. Useful for sparklines and degradation detection.
+
+export function getTrend(category, { limit = 20 } = {}) {
+    const history = listHistory({ limit, sortBy: "date", sortOrder: "asc" });
+    const points = [];
+    for (const h of history) {
+        if (category === "overall") {
+            points.push({
+                id: h.id,
+                createdAt: h.createdAt,
+                score: h.overallScore,
+                grade: h.overallGrade
+            });
+        } else {
+            const score = h.categoryScores?.[category];
+            if (score != null) {
+                points.push({
+                    id: h.id,
+                    createdAt: h.createdAt,
+                    score,
+                    grade: gradeForScore(score)
+                });
+            }
+        }
+    }
+    return { category, points, count: points.length };
+}
+
+// renderSparkline — produces an ASCII sparkline from an array of scores.
+// Returns a string like "▁▂▃▄▅▆▇█" scaled to the data range.
+export function renderSparkline(values, { width = 20 } = {}) {
+    if (!values || values.length === 0) return "";
+    const bars = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min || 1;
+
+    // Downsample or upsample to target width
+    const result = [];
+    const step = values.length / width;
+    for (let i = 0; i < width; i++) {
+        const idx = Math.floor(i * step);
+        const v = values[Math.min(idx, values.length - 1)];
+        const normalized = (v - min) / range;
+        const barIdx = Math.min(bars.length - 1, Math.floor(normalized * bars.length));
+        result.push(bars[barIdx]);
+    }
+    return result.join("");
+}
+
+// getTrendSummary — returns a human-readable trend summary for a category
+export function getTrendSummary(category, { limit = 10 } = {}) {
+    const trend = getTrend(category, { limit });
+    if (trend.count < 2) {
+        return { category, trend: "insufficient data", points: trend.points };
+    }
+    const scores = trend.points.map((p) => p.score);
+    const first = scores[0];
+    const last = scores[scores.length - 1];
+    const delta = last - first;
+    const sparkline = renderSparkline(scores);
+
+    let direction;
+    if (delta > 5) direction = "improving";
+    else if (delta < -5) direction = "declining";
+    else direction = "stable";
+
+    // Check for volatility
+    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+    const volatility = Math.round(
+        Math.sqrt(scores.reduce((acc, s) => acc + Math.pow(s - avg, 2), 0) / scores.length)
+    );
+
+    return {
+        category,
+        direction,
+        delta,
+        sparkline,
+        first,
+        last,
+        avg: Math.round(avg),
+        volatility,
+        points: trend.points
+    };
+}
+
+// ─── Phase 6: Benchmark Intelligence ──────────────────────────────────
+// Self-explaining benchmarks — Why/Matters/Expected/Affects/Action
+
+export function explainBenchmark(category, result) {
+    const metadata = BENCHMARK_METADATA[category];
+    if (!metadata) {
+        return `Unknown category: ${category}`;
+    }
+
+    const score = result?.categoryScores?.[category];
+    const grade = score != null ? gradeForScore(score) : "N/A";
+    const measurements = result?.categoryResults?.[category] || {};
+    const confidence = result?.confidence?.[category];
+
+    const lines = [];
+    lines.push(`${metadata.label}`);
+    lines.push("=".repeat(metadata.label.length));
+    lines.push("");
+    lines.push(`Description`);
+    lines.push(`  ${metadata.description}`);
+    lines.push("");
+    lines.push(`Why it matters`);
+    lines.push(`  ${metadata.why}`);
+    lines.push("");
+    lines.push(`Score: ${score != null ? score + "/100" : "N/A"} (${grade})`);
+    if (confidence) {
+        lines.push(`Confidence: ${Math.round(confidence.avgConfidence * 100)}% (${confidence.runs} runs)`);
+    }
+    lines.push(`Expected range: ${metadata.expectedRange}`);
+    lines.push("");
+
+    // Measurement details
+    const measurementEntries = Object.entries(measurements).filter(([, v]) => typeof v === "number" || (typeof v === "object" && v?.median != null));
+    if (measurementEntries.length > 0) {
+        lines.push(`Measurements:`);
+        for (const [name, val] of measurementEntries) {
+            if (typeof val === "number") {
+                lines.push(`  ${name}: ${val}ms`);
+            } else if (typeof val === "object" && val.median != null) {
+                lines.push(`  ${name}: ${val.median}ms (±${val.variance}ms, confidence: ${Math.round(val.confidence * 100)}%)`);
+            }
+        }
+        lines.push("");
+    }
+
+    lines.push(`What affects it`);
+    for (const a of metadata.affects) {
+        lines.push(`  • ${a}`);
+    }
+    lines.push("");
+
+    if (score != null && score < 70) {
+        lines.push(`Recommendation`);
+        lines.push(`  ${metadata.recommendation}`);
+    } else if (score != null && score >= 90) {
+        lines.push(`Status: Excellent — no action needed.`);
+    } else if (score != null) {
+        lines.push(`Status: Acceptable — monitor for changes.`);
+    }
+
+    return lines.join("\n");
+}
+
+export function explainBenchmarkResult(result) {
+    const lines = [];
+    lines.push("Benchmark Intelligence Report");
+    lines.push("=".repeat(35));
+    lines.push("");
+    lines.push(`Overall Score: ${result.overallScore}/100 (${result.overallGrade})`);
+    lines.push(`Profile: ${result.profile}`);
+    lines.push(`Duration: ${(result.durationMs / 1000).toFixed(1)}s`);
+    if (result.machine) {
+        lines.push(`Machine: ${result.machine.hostname} — ${result.machine.os}`);
+        lines.push(`CPU: ${result.machine.cpuModel} (${result.machine.cpuCount} cores)`);
+        lines.push(`RAM: ${result.machine.totalMemoryGb}GB total, ${result.machine.freeMemoryGb}GB free`);
+    }
+    if (result.environment) {
+        lines.push(`Node: ${result.environment.nodeVersion}, Shell: ${result.environment.shellType}`);
+    }
+    lines.push("");
+
+    if (result.slowest) {
+        const slowMeta = BENCHMARK_METADATA[result.slowest.category];
+        lines.push(`Slowest: ${slowMeta?.label || result.slowest.category} (${result.slowest.score}/100)`);
+    }
+    if (result.fastest) {
+        const fastMeta = BENCHMARK_METADATA[result.fastest.category];
+        lines.push(`Fastest: ${fastMeta?.label || result.fastest.category} (${result.fastest.score}/100)`);
+    }
+    lines.push("");
+
+    // Per-category intelligence
+    const categories = Object.keys(result.categoryScores || {});
+    for (const cat of categories) {
+        lines.push(explainBenchmark(cat, result));
+        lines.push("");
+        lines.push("-".repeat(40));
+        lines.push("");
+    }
+
+    // Skipped
+    if (result.skipped && result.skipped.length > 0) {
+        lines.push("Skipped Categories:");
+        for (const s of result.skipped) {
+            lines.push(`  • ${BENCHMARK_METADATA[s.category]?.label || s.category}: ${s.reason}`);
+        }
+        lines.push("");
+    }
+
+    // Quality score
+    if (result.qualityScore) {
+        lines.push(`Benchmark Quality: ${result.qualityScore.score}/100 (${result.qualityScore.grade})`);
+        lines.push(`  Coverage: ${result.qualityScore.coverage}%, Confidence: ${result.qualityScore.confidence}%`);
+    }
+
+    return lines.join("\n");
+}
+
+// ─── Phase 8: Benchmark Quality Score ─────────────────────────────────
+// Scores the benchmark run itself on coverage, confidence, stability.
+
+export function computeBenchmarkQuality({ totalCategories, runCategories, skipped, confidenceData }) {
+    // Coverage: percentage of categories that produced scores
+    const coverage = totalCategories > 0 ? Math.round((runCategories / totalCategories) * 100) : 0;
+
+    // Confidence: average confidence across all categories with data
+    let confidence = 100; // Default when no multi-run data (single run = assume good)
+    const confValues = Object.values(confidenceData || {});
+    if (confValues.length > 0) {
+        confidence = Math.round(
+            (confValues.reduce((acc, c) => acc + c.avgConfidence, 0) / confValues.length) * 100
+        );
+    }
+
+    // Stability: penalty for skipped categories
+    const skipPenalty = skipped * 5;
+    const stability = Math.max(0, 100 - skipPenalty);
+
+    // Repeatability: based on confidence (higher confidence = more repeatable)
+    const repeatability = confidence;
+
+    // Overall quality score
+    const score = Math.round(
+        coverage * 0.3 +
+        confidence * 0.25 +
+        stability * 0.25 +
+        repeatability * 0.2
+    );
+
+    const grade = gradeForScore(score);
+
+    return {
+        score,
+        grade,
+        coverage,
+        confidence,
+        stability,
+        repeatability,
+        skippedCount: skipped
+    };
+}
+
+// ─── Phase 3: Rich Report ─────────────────────────────────────────────
+// Produces a rich per-measurement report with previous comparison.
+
+export function generateRichReport(result, { previousResult } = {}) {
+    const lines = [];
+    lines.push(`${result.overallGrade} ${result.overallScore}/100`);
+    lines.push("");
+
+    for (const [catKey, score] of Object.entries(result.categoryScores || {})) {
+        const meta = BENCHMARK_METADATA[catKey];
+        const label = meta?.label || catKey;
+        const grade = gradeForScore(score);
+        const measurements = result.categoryResults?.[catKey] || {};
+
+        lines.push(`${label}`);
+        lines.push(`  Score: ${score}/100 (${grade})`);
+
+        // Previous comparison
+        if (previousResult) {
+            const prevScore = previousResult.categoryScores?.[catKey];
+            if (prevScore != null) {
+                const delta = score - prevScore;
+                const sign = delta > 0 ? "+" : "";
+                const status = delta > 0 ? "improved" : delta < 0 ? "regressed" : "unchanged";
+                lines.push(`  Previous: ${prevScore}/100`);
+                lines.push(`  Difference: ${sign}${delta} (${status})`);
+            }
+        }
+
+        // Measurement details
+        for (const [mName, mVal] of Object.entries(measurements)) {
+            if (typeof mVal === "number") {
+                const expected = EXPECTED_TIMES[catKey]?.[mName];
+                const status = expected ? (mVal <= expected ? "normal" : "slow") : "N/A";
+                lines.push(`  ${mName}: ${mVal}ms (${status})`);
+            } else if (typeof mVal === "object" && mVal?.median != null) {
+                lines.push(`  ${mName}: ${mVal.median}ms ±${mVal.variance}ms (confidence: ${Math.round(mVal.confidence * 100)}%)`);
+            }
+        }
+
+        // Recommendation
+        if (score < 70 && meta) {
+            lines.push(`  Recommendation: ${meta.recommendation}`);
+        }
+
+        lines.push("");
+    }
+
+    return lines.join("\n");
 }

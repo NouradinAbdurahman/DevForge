@@ -3,9 +3,11 @@ name: llm
 description: A CLI utility and Python library for interacting with large language models
 category: ai
 platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install: { method: pip, id: llm }
 dependencies: [python]
 validate: llm --version
+versionCommand: "llm --version"
 repair: "pip install --upgrade llm"
 update: "pip install --upgrade llm"
 uninstall: { method: pip, id: llm }
@@ -13,8 +15,10 @@ post_install: []
 homepage: "https://llm.datasette.io"
 repository: "https://github.com/simonw/llm"
 license: Apache-2.0
+documentation: "https://llm.datasette.io"
 maintainer: DevForgeKit Registry
 tags: [ai, cli, llm]
-aliases: []
+aliases: [llm-cli]
 stability: stable
 lastVerified: "2026-07-05"
+recommendedAlternatives: [openai-cli, gemini-cli]

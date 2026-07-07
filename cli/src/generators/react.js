@@ -9,7 +9,9 @@ export const reactGenerator = {
     id: "react",
     label: "React",
     description: "React + TypeScript via Vite, ESLint, GitHub Actions CI",
-    requiresTool: { command: "npx", hint: "Install Node.js (e.g. `devforgekit component install node`), which ships npx." },
+    tags: ["frontend", "javascript", "js", "typescript", "web", "ui"],
+    recommends: ["eslint", "prettier", "vercel"],
+    requiresTool: { command: "npm", hint: "Install Node.js (e.g. `devforgekit component install node`), which ships npm." },
 
     async scaffold({ name, parentDir }) {
         return runShellCommand(`npm create vite@latest "${name}" -- --template react-ts`, { cwd: parentDir });

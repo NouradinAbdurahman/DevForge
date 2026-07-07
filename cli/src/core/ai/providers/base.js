@@ -11,6 +11,7 @@
 //   embeddings(input, opts) -> Promise<{ vectors: number[][], model }>   - throws AIProviderError({ code: "unsupported" }) if the provider has no embeddings endpoint
 //   listModels(opts) -> Promise<string[]>
 //   checkHealth(opts) -> Promise<{ ok: boolean, reason? }>            - never throws; a failed health check is a normal { ok: false, reason } result
+//   supportsStreaming: boolean                    - true for all four factories here (each implements a real stream()); a future provider without one should set this false rather than omit it (a real bug found in v2.1.3: `ai benchmark` read this field for years before any factory actually set it, so it always printed "No")
 //
 // `messages` is always [{ role: "system"|"user"|"assistant", content: string }, ...].
 // Every network call accepts an optional `fetchImpl` (defaults to the

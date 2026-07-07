@@ -13,6 +13,7 @@ import path from "node:path";
 import { userConfigDir } from "../paths.js";
 import { DevForgeError, usageError } from "../errors.js";
 import { createWorkspaceDoc, migrateWorkspace, validateWorkspaceDoc } from "./schema.js";
+import { removeWorkspaceSsh } from "./ssh.js";
 
 const NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
 
@@ -135,6 +136,7 @@ export function deleteWorkspace(name, { force = false } = {}) {
         throw new DevForgeError(`'${name}' is the active workspace - switch to another workspace first, or pass --force.`);
     }
     rmSync(workspaceDir(name), { recursive: true, force: true });
+    try { removeWorkspaceSsh(name); } catch { /* ~/.ssh may not exist */ }
     if (getActiveWorkspaceName() === name) {
         setActiveWorkspaceName(null);
     }

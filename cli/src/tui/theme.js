@@ -117,15 +117,25 @@ export function checkContrast(themeColors) {
         ["success", bg],
         ["warning", bg],
         ["error", bg],
-        ["info", bg]
+        ["info", bg],
+        // Pairs actually rendered as real Ink backgroundColor+color (not
+        // just checked against the page background) - every selected
+        // list row across the whole dashboard (SelectList, Nav, Command
+        // Palette...) renders selectionText-on-selection, and matched
+        // search/filter text renders in searchHighlight - both were
+        // previously unchecked, so a theme could ship an unreadable
+        // selected row and this function would report it as clean.
+        ["selectionText", themeColors.selection || bg, "selectionText-on-selection"],
+        ["searchHighlight", bg, "searchHighlight-on-background"],
+        ["tableHeader", bg, "tableHeader-on-background"]
     ];
-    for (const [token, bgColor] of pairs) {
+    for (const [token, bgColor, label] of pairs) {
         const fg = themeColors[token];
         if (!fg) continue;
         const ratio = contrastRatio(fg, bgColor);
         if (ratio !== null && ratio < 4.5) {
             warnings.push({
-                token,
+                token: label || token,
                 ratio: Math.round(ratio * 100) / 100,
                 level: ratio < 3 ? "AA-fail" : "AA-large-only"
             });

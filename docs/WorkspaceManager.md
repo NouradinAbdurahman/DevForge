@@ -1,6 +1,6 @@
 # Workspace Manager
 
-The Workspace Manager (v1.2.4) is `devforgekit workspace` - it makes an
+The Workspace Manager (v2.1.8) is `devforgekit workspace` - it makes an
 isolated per-project development environment a single, switchable unit:
 
 ```bash
@@ -45,7 +45,7 @@ create, `Enter` to switch, `v` to verify, `x` to snapshot.
 Each workspace is one JSON file:
 `~/.config/devforgekit/workspaces/<name>/workspace.json`, validated
 against `cli/src/schemas/workspace.schema.json`
-(`schemaVersion: 2`, the same ajv-validated approach
+(`schemaVersion: 3`, the same ajv-validated approach
 [PlatformArchitecture.md](PlatformArchitecture.md) section 7's config
 system and section 3's registry schemas use). Nothing here is
 proprietary or hidden - it is a plain, readable, hand-editable JSON file
@@ -55,7 +55,8 @@ rejected with a clear error rather than silently corrupting the file).
 | Field | Purpose |
 | --- | --- |
 | `name`, `description`, `owner`, `tags`, `status` | identity (`status`: `active` or `archived` - archived workspaces are hidden from `workspace list` by default) |
-| `createdAt`, `modifiedAt` | ISO-8601 timestamps, stamped automatically |
+| `createdAt`, `modifiedAt`, `lastUsedAt` | ISO-8601 timestamps, stamped automatically (`lastUsedAt` updated on every `switch`) |
+| `healthScore` | cached health score (0-100), updated by `workspace health` |
 | `profile`, `collections`, `recipes`, `components`, `plugins` | optional references into the existing registry - resolved through the exact same `core/registry.js` functions `profile install`/`recipe install` use, never reimplemented |
 | `git` | name/email/signingKey/defaultBranch/hooksPath/aliases/credentialHelper/lfs |
 | `ssh` | `identities: [{ provider, host, hostAlias, user, identityFile, port }]` |
@@ -79,12 +80,11 @@ document forward through a `migrations[fromVersion]` table one version
 at a time, and **refuses** (throws, does not guess) if a document's
 `schemaVersion` is *newer* than the running CLI understands - silently
 dropping unrecognized fields on the next save would be real,
-unrecoverable data loss. The Compatibility Engine (v1.2.5) added the
-first real entry to that table: `migrations[1]` upgrades a v1 document
-(everything created before this release) to v2 by adding the
-`compatibility` field with its documented default shape
-(`{ scanHistory: [], repairHistory: [] }`) - proof the migration
-machinery works on a real field addition, not just a placeholder.
+unrecoverable data loss. The v2.1.8 release added `migrations[2]` which
+upgrades v2 documents to v3 by stripping the dead `variables` field and
+adding `lastUsedAt` and `healthScore`. The Compatibility Engine (v1.2.5)
+added `migrations[1]` which upgrades v1 to v2 by adding the
+`compatibility` field.
 
 ## Subsystems: what's real, what's reference-only
 
@@ -117,10 +117,43 @@ PASS/WARNING/FAIL weighting `check.sh`/`doctor` already standardize on -
 so a score means the same thing everywhere in the platform. The
 dashboard's Workspaces page (`v`) renders the identical result shape.
 
+### Structured verification (v2.1.8)
+
+`workspace verify [name] --structured` groups the flat check results
+into per-subsystem sections (Git, SSH, Secrets, Docker, Kubernetes,
+Cloud, AI, Editor, Package Managers, Packages, Other) with
+field/value/status triples for each check - easier to scan than the
+flat list when diagnosing what's wrong. `--json` outputs the same
+structured result as machine-readable JSON.
+
+### Health score (v2.1.8)
+
+`workspace health [name]` shows a quick 0-100 health score with a
+per-subsystem breakdown. Unlike `verify` (which shells out to check if
+tools are installed), `health` is a fast, synchronous check of the
+workspace document's structural completeness - are subsystems
+configured, are references populated. Useful for the TUI overview and
+quick `workspace list`-style summaries.
+
 `workspace repair <name>` (also run automatically during
 `workspace import`) drops and reports any dangling
 profile/recipe/component/plugin/collection reference rather than
 leaving a workspace that will keep failing verification.
+
+## Switch preview (v2.1.8)
+
+`workspace switch <name> --preview` shows what would change across each
+subsystem if you switched to the target workspace, without actually
+switching. It compares the target workspace's declared config against
+the live machine state (current git identity, docker context, kubernetes
+context, etc.) and reports per-subsystem changes and warnings.
+
+## Workspace diff (v2.1.8)
+
+`workspace diff <nameA> <nameB>` compares two workspaces across every
+subsystem and reports per-field differences. Pure data comparison - no
+I/O, no shell commands. `--json` outputs the diff as machine-readable
+JSON.
 
 ## Snapshots and rollback
 
@@ -157,7 +190,8 @@ but distinct operations exist on purpose:
 
 `export` writes a `.tar.gz` containing the workspace document and a
 small `bundle.json` manifest (source `schemaVersion`, DevForgeKit
-version, export timestamp). Two things are deliberately **excluded**:
+version, export timestamp, and a SHA-256 checksum of `workspace.json`
+for integrity verification). Two things are deliberately **excluded**:
 
 - **Secret values** - only the encrypted `secrets.enc.json` file and the
   machine-local key would be needed to decrypt them, and the key never
@@ -166,25 +200,41 @@ version, export timestamp). Two things are deliberately **excluded**:
 - **Snapshot history** - a bundle is a snapshot of the *current*
   configuration to move somewhere else, not a full history transplant.
 
-`import` re-validates the document against the current schema and then
-runs it through the same repair pass `workspace repair` uses standalone -
-any profile/recipe/component/plugin/collection reference that doesn't
-exist in the *destination* machine's registry is dropped and reported,
-rather than importing a document that would fail every subsequent
+`import` re-validates the document against the current schema, verifies
+the SHA-256 checksum (if present in `bundle.json`), and then runs it
+through the same repair pass `workspace repair` uses standalone - any
+profile/recipe/component/plugin/collection reference that doesn't exist
+in the *destination* machine's registry is dropped and reported, rather
+than importing a document that would fail every subsequent
 `workspace verify`/`getWorkspace()` call. Refuses to overwrite an
 existing workspace of the same name unless `--overwrite` is passed.
+
+### Bundle import preview (v2.1.8)
+
+`workspace import <archive> --preview` extracts the bundle to a temp
+directory and shows what would be imported - the workspace name,
+description, schema version, compatibility check, checksum verification,
+conflict detection (does a workspace with that name already exist?),
+and a list of auto-repairs that would be applied - without actually
+importing anything.
 
 ## Dashboard integration
 
 The Workspaces page (`w`, see [TUI.md](TUI.md)) is a thin frontend over
-the exact same `core/workspace/*.js` functions the CLI uses - browse,
-create (`n`), switch (`Enter`), verify (`v`), snapshot (`x`), deactivate
-(`z`), and delete (`D`, pressed twice to confirm). Consistent with the
-scoping precedent the Recipes/Doctor/Plugins pages already set,
-lower-frequency operations (rename, clone, export/import, env/SSH
-management, rollback) stay CLI-only rather than cramming all 30
-subcommands into a terminal UI - the panel links back to the CLI for
-those.
+the exact same `core/workspace/*.js` functions the CLI uses. The v2.1.8
+redesign introduced a tabbed interface with four tabs:
+
+- **Overview** (press `1`) - active workspace metadata, health score,
+  and per-subsystem summary at a glance.
+- **Workspaces** (press `2`) - browse, create (`n`), switch (`Enter`),
+  verify (`v`), snapshot (`x`), deactivate (`z`), delete (`D` x2).
+- **Snapshots** (press `3`) - browse and restore point-in-time snapshots
+  for the active workspace.
+- **Health** (press `4`) - per-subsystem health breakdown with the
+  option to run a full verify (`v`).
+
+Lower-frequency operations (rename, clone, export/import, diff, health,
+metadata, env/SSH management, rollback, benchmark) stay CLI-only.
 
 ## Security notes
 
@@ -240,16 +290,17 @@ intent for that future phase:
 | `workspace create [name]` | `--description`, `--owner`, `--from-current` (seed git/docker/kubernetes from the live machine), `--switch` |
 | `workspace list` | `--all` to include archived workspaces |
 | `workspace show [name]` | defaults to the active workspace |
-| `workspace switch <name>` | applies every declared subsystem live |
+| `workspace switch <name>` | applies every declared subsystem live; `--preview` shows what would change without switching |
 | `workspace deactivate` | clears the active pointer (live state is left as-is) |
 | `workspace delete <name>` | `-f/--force` to delete the active workspace or skip confirmation |
 | `workspace rename <old> <new>` | |
 | `workspace clone <source> <new>` | never copies secrets or snapshot history |
 | `workspace search <query>` | matches name/tag/owner/profile/recipe/collection/component/git identity/cloud reference |
-| `workspace verify [name]` | defaults to the active workspace |
+| `workspace verify [name]` | defaults to the active workspace; `--structured` groups by subsystem; `--json` outputs JSON |
 | `workspace repair <name>` | drops dangling registry references |
-| `workspace export <name> [outDir]` | |
-| `workspace import <archive>` | `--name`, `--overwrite` |
+| `workspace export <name> [outDir]` | includes SHA-256 checksum in bundle.json |
+| `workspace import <archive>` | `--name`, `--overwrite`, `--preview` (dry-run) |
+| `workspace diff <nameA> <nameB>` | compares all subsystems; `--json` |
 | `workspace rollback <name> <snapshotId>` | safety snapshot first, then restores (+ re-applies if active) |
 | `workspace snapshot create <name>` | `-m/--message` |
 | `workspace snapshot list <name>` | |
@@ -269,12 +320,16 @@ intent for that future phase:
 | `workspace shell-init [shell]` | `--uninstall`, `--print` |
 | `workspace compatibility scan [name]` | records the result in `compatibility.scanHistory` |
 | `workspace compatibility repair [name]` | `--dry-run`, `-y/--yes`; records the result in `compatibility.repairHistory` |
+| `workspace metadata [name]` | structured metadata for CLI/TUI consumption (v2.1.8) |
+| `workspace health [name]` | quick health score with per-subsystem breakdown; `--json` (v2.1.8) |
+| `workspace benchmark <name>` | `--runs <n>`, `--ops <list>`, `--json` (v2.1.8) |
 | `workspace compatibility history [name]` | shows past scans/repairs |
 
 ## Testing
 
 `cli/test/workspace-*.test.js` (store, schema, git, ssh, env,
 shellIntegration, docker, kubernetes, cloud, health, snapshot, bundle,
-switcher) and the Workspaces-page section of `cli/test/tui.test.js` -
-all against a temp `$HOME` and the real filesystem/git/tar, no mocks,
+switcher, excellence) and the Workspaces-page section of
+`cli/test/tui.test.js` - all against a temp `$HOME` and the real
+filesystem/git/tar, no mocks,
 the same philosophy `plugin-sdk.test.js` established.

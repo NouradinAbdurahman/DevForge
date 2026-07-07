@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["schemaVersion", "name", "description", "createdAt", "modifiedAt"],
   "properties": {
-    "schemaVersion": { "type": "integer", "const": 2 },
+    "schemaVersion": { "type": "integer", "const": 3 },
     "name": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
     "description": { "type": "string" },
     "createdAt": { "type": "string", "minLength": 1 },
@@ -22,7 +22,8 @@
     "plugins": { "type": "array", "items": { "type": "string" } },
     "templates": { "type": "array", "items": { "type": "string" } },
     "projectHistory": { "type": "array", "items": { "$ref": "#/$defs/projectHistoryEntry" } },
-    "variables": { "type": "object", "additionalProperties": { "type": "string" } },
+    "lastUsedAt": { "type": ["string", "null"] },
+    "healthScore": { "type": ["integer", "null"] },
     "git": { "$ref": "#/$defs/git" },
     "ssh": { "$ref": "#/$defs/ssh" },
     "env": { "$ref": "#/$defs/env" },

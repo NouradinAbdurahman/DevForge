@@ -4,12 +4,18 @@
 // are the full local lifecycle - the sequence a plugin author actually
 // runs, matching the product brief's example verbatim.
 import path from "node:path";
+import { existsSync } from "node:fs";
 import { discoverPlugins } from "../core/plugins.js";
 import { runShellCommand } from "../core/shell.js";
 import {
     createPlugin, testPlugin, buildPlugin, packagePlugin,
     publishPlugin, installPlugin
 } from "../core/pluginSdk.js";
+import {
+    validatePluginDir, validateAllPlugins, formatValidationResult,
+    scorePlugin, formatQualityScore,
+    diagnosePlugins, formatDiagnostics
+} from "../core/pluginValidation.js";
 import { ensureSigningKey, trustKey } from "../core/signing.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling, usageError } from "../core/errors.js";
@@ -85,24 +91,31 @@ export function registerPluginCommand(program) {
     plugin
         .command("create <name> [dir]")
         .description("Scaffold a new plugin project (plugin.yml, commands/, hooks/, tests/, README.md)")
-        .action(withErrorHandling(async (name, dir) => {
-            const pluginDir = createPlugin(name, dir || process.cwd());
-            logger.success(`Created plugin '${name}' at ${pluginDir}`);
+        .option("-t, --template <template>", "template to use (simple-command, tui-page, generator, benchmark, repair, graph-extension, ai-provider, compatibility-rule)", "simple-command")
+        .action(withErrorHandling(async function (name, dir) {
+            const opts = this.opts();
+            const pluginDir = createPlugin(name, dir || process.cwd(), { template: opts.template });
+            logger.success(`Created plugin '${name}' at ${pluginDir} (template: ${opts.template})`);
             logger.info(`Next: cd ${path.relative(process.cwd(), pluginDir) || "."} && devforgekit plugin test .`);
         }));
 
     plugin
         .command("test [dir]")
         .description("Validate a plugin's manifest and run its tests/*.sh")
-        .action(withErrorHandling(async (dir) => {
-            const { results, score, verdict } = await testPlugin(dir || process.cwd());
+        .option("--json", "output as JSON")
+        .action(withErrorHandling(async function (dir) {
+            const result = await testPlugin(dir || process.cwd());
+            if (this.opts().json) {
+                console.log(JSON.stringify(result, null, 2));
+                return;
+            }
             logger.section("Plugin Test Results");
-            for (const r of results) {
+            for (const r of result.results) {
                 if (r.status === "PASS") logger.success(r.description);
                 else logger.error(r.description);
             }
-            logger.info(`Score: ${score}% - ${verdict}`);
-            if (results.some((r) => r.status === "FAIL")) process.exitCode = 1;
+            logger.info(`Score: ${result.score}% - ${result.verdict}`);
+            if (result.results.some((r) => r.status === "FAIL")) process.exitCode = 1;
         }));
 
     plugin
@@ -117,17 +130,29 @@ export function registerPluginCommand(program) {
         .command("package [dir]")
         .description("Package a plugin into a signed, checksummed .tar.gz")
         .option("--out <dir>", "output directory (default: the plugin directory's parent)")
+        .option("--json", "output as JSON")
         .action(withErrorHandling(async function (dir) {
             const opts = this.opts();
             const pluginDir = dir || process.cwd();
-            // Must not default --out to pluginDir itself: packagePlugin tars
-            // the plugin directory, and writing the archive inside the very
-            // directory being archived makes tar fail (or, worse, race and
-            // sometimes succeed writing the archive into itself) - see
-            // packagePlugin's own doc comment in core/pluginSdk.js.
-            const { archivePath, checksum } = await packagePlugin(pluginDir, opts.out);
+            const { archivePath, checksum, signaturePath, manifest, lock } = await packagePlugin(pluginDir, opts.out);
+            if (opts.json) {
+                const statSync = (await import("node:fs")).statSync;
+                const sizeBytes = statSync(archivePath).size;
+                console.log(JSON.stringify({
+                    archivePath, checksum, signaturePath,
+                    name: manifest.name, version: manifest.version,
+                    sizeBytes, fileCount: Object.keys(lock.files).length,
+                    engine: manifest.engine,
+                }, null, 2));
+                return;
+            }
             logger.success(`Packaged ${archivePath}`);
+            const statSync = (await import("node:fs")).statSync;
+            const sizeKB = Math.round(statSync(archivePath).size / 1024 * 10) / 10;
             logger.info(`SHA-256: ${checksum}`);
+            logger.info(`Size: ${sizeKB} KB (${Object.keys(lock.files).length} files)`);
+            logger.info(`Signature: ${signaturePath}`);
+            logger.info(`Engine: ${manifest.engine}`);
         }));
 
     plugin
@@ -150,6 +175,55 @@ export function registerPluginCommand(program) {
             const opts = this.opts();
             const { installedDir, manifest } = await installPlugin(pathOrUrl, { assumeYes: opts.yes });
             logger.success(`Installed ${manifest.name}@${manifest.version} to ${installedDir}`);
+        }));
+
+    plugin
+        .command("validate [dir]")
+        .description("Validate a plugin's manifest, scripts, and structure")
+        .option("--json", "output as JSON")
+        .action(withErrorHandling(async function (dir) {
+            const result = validatePluginDir(dir || process.cwd());
+            if (this.opts().json) {
+                console.log(JSON.stringify(result, null, 2));
+                return;
+            }
+            for (const line of formatValidationResult(result)) console.log(line);
+            if (!result.valid) process.exitCode = 1;
+        }));
+
+    plugin
+        .command("quality [name|dir]")
+        .description("Score a plugin's quality across multiple categories")
+        .option("--json", "output as JSON")
+        .action(withErrorHandling(async function (nameOrDir) {
+            const arg = nameOrDir || process.cwd();
+            let dir = arg;
+            // If it's a plugin name, resolve to its directory
+            if (!existsSync(arg)) {
+                const found = discoverPlugins().find((p) => p.name === arg);
+                if (!found) throw usageError(`Unknown plugin '${arg}' or directory not found.`);
+                dir = found.dir;
+            }
+            const result = scorePlugin(dir);
+            if (this.opts().json) {
+                console.log(JSON.stringify(result, null, 2));
+                return;
+            }
+            for (const line of formatQualityScore(result)) console.log(line);
+        }));
+
+    plugin
+        .command("doctor")
+        .description("Diagnose all discovered plugins for common issues")
+        .option("--json", "output as JSON")
+        .action(withErrorHandling(async function () {
+            const result = diagnosePlugins();
+            if (this.opts().json) {
+                console.log(JSON.stringify(result, null, 2));
+                return;
+            }
+            for (const line of formatDiagnostics(result)) console.log(line);
+            if (result.summary.errors > 0) process.exitCode = 1;
         }));
 
     plugin

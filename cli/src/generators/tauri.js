@@ -41,6 +41,8 @@ export const tauriGenerator = {
     id: "tauri",
     label: "Tauri",
     description: "Desktop app: Rust core + TypeScript frontend, via the official create-tauri-app CLI",
+    tags: ["desktop", "rust", "typescript", "javascript", "js"],
+    recommends: ["tauri-cli", "rust", "cargo"],
     requiresTool: { command: "npx", hint: "Install Node.js (e.g. `devforgekit component install node`), which ships npx. A Rust toolchain (`cargo`) is also required to build/run - see https://tauri.app/start/prerequisites/." },
 
     async scaffold({ name, parentDir }) {

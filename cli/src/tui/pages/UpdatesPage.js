@@ -6,11 +6,12 @@
 // `git pull`, stated plainly rather than dressed up as a fake updater.
 import { useState, useEffect } from "react";
 import { Box, Text, useInput } from "ink";
-import { h, Panel, SelectList, KeyValue, KeyHints, Spinner, useDetailWidth } from "../components/ui.js";
+import { h, Panel, SelectList, KeyValue, KeyHints, LoadingState, EmptyState, useDetailWidth } from "../components/ui.js";
 import { useStore } from "../store.js";
 import { outdated, refreshAll, getPackageSafe } from "../data.js";
 import { update as updatePkg } from "../../core/installer.js";
 import { runScript, runShellCommand } from "../../core/shell.js";
+import { getPlatform } from "../../core/platform/index.js";
 
 export function UpdatesPage({ isActive }) {
     const { theme, state, actions, suspend } = useStore();
@@ -40,12 +41,12 @@ export function UpdatesPage({ isActive }) {
             const pkg = getPackageSafe(name);
             const code = pkg?.update
                 ? await updatePkg(pkg, { onOutput: () => {} })
-                : await runShellCommand(`brew upgrade ${name}`, { onOutput: () => {} });
+                : await runShellCommand(getPlatform().upgradeCommand(name), { onOutput: () => {} });
             actions.notify(`${name} ${code === 0 ? "updated" : "update failed"}`, code === 0 ? "success" : "error");
             refreshAll();
             setList(await outdated());
         } catch (err) {
-            actions.notify(`update failed: ${err.message}`, "error");
+            actions.notify(`Update failed: ${err.message}`, "error");
         } finally {
             setRunning(null);
             actions.setBusy(null);
@@ -69,18 +70,20 @@ export function UpdatesPage({ isActive }) {
     return h(Box, { flexGrow: 1 },
         h(Panel, { title: "Package updates (brew outdated)", theme, isActive, flexGrow: 1 },
             list === null
-                ? h(Box, null, h(Spinner, { theme }), h(Text, { color: theme.textMuted }, " checking for updates..."))
+                ? h(LoadingState, { label: "checking for updates...", theme })
                 : items.length === 0
-                    ? h(Text, { color: theme.success }, "Everything is up to date.")
+                    ? h(EmptyState, { title: "Everything is up to date.", theme })
                     : h(SelectList, {
                         items, isActive, height: 14, theme,
                         onHighlight: setHighlighted,
                         renderItem: (line, selected) => h(Text, {
                             key: line,
                             backgroundColor: selected && isActive ? theme.selection : undefined,
-                            color: selected && isActive ? theme.selectionText : theme.warning
+                            color: selected && isActive ? theme.selectionText : theme.warning,
+                            wrap: "truncate-end"
                         }, `${selected ? "❯ " : "  "}${line}${running === line.split(" ")[0] ? "  (updating...)" : ""}`)
                     }),
+            running ? h(Box, { marginTop: 1 }, h(LoadingState, { label: `updating ${running}...`, theme })) : null,
             h(Box, { marginTop: 1 }, h(KeyHints, { theme, hints: [["a", "update selected"], ["A", "run full update.sh (suspends)"]] }))
         ),
         h(Panel, { title: "Other update channels", theme, width: detailW },
