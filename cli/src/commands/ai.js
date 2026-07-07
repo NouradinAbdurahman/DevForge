@@ -855,10 +855,11 @@ export function registerAICommand(program) {
             console.log(`  Credential Backend: ${report.credentialBackend.location}`);
             console.log(`  Backend Status: ${report.credentialBackend.operational ? "Operational" : "Not operational"}`);
 
-            // API Key
-            const keyStatus = report.apiKey.available ? "Stored" : "Missing";
-            const keySource = report.apiKey.source ? ` (via ${report.apiKey.source})` : "";
-            console.log(`  API Key:        ${keyStatus}${keySource}`);
+            // API Key (status only — never the key value itself)
+            const apiKeyReport = report.apiKey || {};
+            const keyAvailable = apiKeyReport.available ? "Stored" : "Missing";
+            const keyVia = apiKeyReport.source ? ` (via ${apiKeyReport.source})` : "";
+            console.log(`  API Key:        ${keyAvailable}${keyVia}`);
 
             // Endpoint
             console.log(`  Endpoint:       ${report.endpoint || "default"}`);
