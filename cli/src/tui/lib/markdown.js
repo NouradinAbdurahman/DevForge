@@ -40,7 +40,7 @@ function stripHtml(text) {
             i += brMatch[0].length;
             continue;
         }
-        const scriptMatch = /^<script\b[\s\S]*?<\/script\s*>/i.exec(rest);
+        const scriptMatch = /^<script\b[\s\S]*?<\/script[^>]*>/i.exec(rest);
         if (scriptMatch) {
             i += scriptMatch[0].length;
             continue;
