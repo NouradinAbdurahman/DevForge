@@ -322,7 +322,7 @@ test("the AI Overview page shows a real Health Score in the AI Status panel titl
     const restore = withTempHome();
     try {
         const { lastFrame, unmount } = await renderApp({ initialPage: "ai-overview" });
-        await delay(150); // let scoreAIHealth()/checkHealth() resolve
+        await delay(500); // let scoreAIHealth()/checkHealth() resolve (git probes may be slow on CI)
         const frame = lastFrame();
         assert.match(frame, /Health \d+%/);
         unmount();
