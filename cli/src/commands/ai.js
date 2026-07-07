@@ -856,9 +856,9 @@ export function registerAICommand(program) {
             console.log(`  Backend Status: ${report.credentialBackend.operational ? "Operational" : "Not operational"}`);
 
             // API Key (status only — never the key value itself)
-            const apiKeyReport = report.apiKey || {};
-            const keyAvailable = apiKeyReport.available ? "Stored" : "Missing";
-            const keyVia = apiKeyReport.source ? ` (via ${apiKeyReport.source})` : "";
+            const { available: _keyAvail, source: _keySrc } = report.apiKey || {};
+            const keyAvailable = _keyAvail ? "Stored" : "Missing";
+            const keyVia = _keySrc ? ` (via ${_keySrc})` : "";
             console.log(`  API Key:        ${keyAvailable}${keyVia}`);
 
             // Endpoint
