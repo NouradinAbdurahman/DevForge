@@ -856,7 +856,9 @@ export function registerAICommand(program) {
             console.log(`  Backend Status: ${report.credentialBackend.operational ? "Operational" : "Not operational"}`);
 
             // API Key
-            console.log(`  API Key:        ${report.apiKey.available ? "Stored" : "Missing"}${report.apiKey.source ? ` (via ${report.apiKey.source})` : ""}`);
+            const keyStatus = report.apiKey.available ? "Stored" : "Missing";
+            const keySource = report.apiKey.source ? ` (via ${report.apiKey.source})` : "";
+            console.log(`  API Key:        ${keyStatus}${keySource}`);
 
             // Endpoint
             console.log(`  Endpoint:       ${report.endpoint || "default"}`);

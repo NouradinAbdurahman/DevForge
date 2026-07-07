@@ -232,7 +232,8 @@ export function registerWorkspaceCommand(program) {
             try { snapshotCount = listSnapshots(target).length; } catch { /* workspace may not have snapshots dir */ }
             const meta = getWorkspaceMetadata(doc, { activeName: getActiveWorkspaceName(), snapshotCount });
             if (opts.json) {
-                console.log(JSON.stringify(meta, null, 2));
+                const { ai: { apiKeyRef: _redacted, ...aiRest } = {}, ...rest } = meta;
+                console.log(JSON.stringify({ ...rest, ai: aiRest }, null, 2));
                 return;
             }
             for (const line of formatMetadataSummary(meta)) console.log(line);
