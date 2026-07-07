@@ -66,7 +66,7 @@ stats`/`info` use, synchronous, no network) and their real
 `version` remains `null` - real per-tool installed-version detection
 would mean shelling out again for every package, which this milestone
 deliberately didn't add on top of an already-real scan cost (see
-[Performance](#performance-caching)).
+[Performance](#performance-caching-phase-11)).
 
 Two node types that were declared in `NODE_TYPES`/were structurally
 impossible to populate before are now real:

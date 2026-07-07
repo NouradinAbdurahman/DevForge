@@ -46,63 +46,81 @@ The Workspace Manager spans 14 source files:
 ## Weaknesses
 
 ### W1: No `lastUsed` tracking
+
 Workspaces don't record when they were last switched to or used. The `modifiedAt` field only updates on explicit saves, not on switches. This means "recently used" sorting and display is impossible.
 
 ### W2: Verification output is flat
+
 `verifyWorkspace()` returns a flat list of PASS/WARNING/FAIL strings. There's no structured per-subsystem grouping — the user sees "git is installed", "git-lfs is installed", "Docker context 'prod' exists" as a flat list, not grouped under "Git" and "Docker" headings with details (User, Email, Context, Status).
 
 ### W3: No switch preview
+
 `switchToWorkspace()` applies everything immediately. There's no "preview what would change" mode showing the delta between the current live state and the target workspace's declared configuration. The user can't see "Git identity will change from John to Jane, Docker context will switch from default to prod" before confirming.
 
 ### W4: No workspace diff
+
 There's no way to diff two workspaces' configurations. `snapshot compare` diffs a snapshot vs current or vs another snapshot, but only at the top-level key granularity (added/removed/changed field names). No per-subsystem diff (git name differs, docker context differs, etc.).
 
 ### W5: Bundle import lacks preview/validation phase
+
 `importWorkspaceBundle()` extracts, repairs, and writes in one step. No preview mode to see what would be imported, what references would be dropped, and whether the bundle is compatible before committing.
 
 ### W6: No checksums on bundles
+
 Bundle archives have no integrity verification. A corrupted or tampered .tar.gz would be extracted without any detection.
 
 ### W7: TUI page is minimal
+
 The Workspace TUI page only supports list/create/switch/verify/snapshot/delete. No snapshots browsing, no history, no switch preview, no health score display, no search/filter, no tags view. The footer explicitly says "Full management... is available via CLI."
 
 ### W8: No workspace health score in metadata
+
 `verifyWorkspace()` returns a score, but it's not stored or cached. Each verify re-runs all checks. There's no quick "health" field on the workspace document or list output.
 
 ### W9: No performance benchmarking
+
 No way to measure how long switch/verify/snapshot/restore/bundle operations take. No benchmark command for the workspace subsystem.
 
 ### W10: `resolveWorkspaceComponents` duplicated
+
 The `resolveWorkspaceComponents` function exists in both `commands/workspace.js` (lines 44-56) and `core/workspace/health.js` (lines 46-69). Both do the same thing — expand profile/recipes/collections into a component set — but with slightly different shapes (one returns a Set, the other returns `{ adHoc, viaExpansion }`).
 
 ## Real Bugs
 
 ### B1: `deleteWorkspace` doesn't clean up SSH blocks
+
 When a workspace is deleted, `store.js`'s `deleteWorkspace()` removes the directory and clears the active pointer if needed, but never calls `ssh.js`'s `removeWorkspaceSsh(name)`. The workspace's `Host` blocks persist in `~/.ssh/config` forever, pointing at a workspace that no longer exists.
 
 ### B2: `createWorkspace` log message is misleading
+
 Line 181 of `commands/workspace.js`: `logger.success(\`Created workspace '${name}' at ${path.dirname(process.cwd())}\`)` — this prints the parent of the current working directory, not the workspace's actual path. The workspace is created under `~/.config/devforgekit/workspaces/<name>/`, not under `path.dirname(process.cwd())`.
 
 ### B3: `deactivateWorkspace` doesn't clean up SSH blocks
+
 When deactivating, `switcher.js` only clears the shell file and the active pointer. SSH Host blocks for the formerly-active workspace remain in `~/.ssh/config`. While this is by design (SSH blocks are additive and coexist), the deactivate flow could at least note that SSH blocks persist.
 
 ### B4: `rollbackToSnapshot` always creates a safety snapshot even for inactive workspaces
+
 `switcher.js` line 65: `createSnapshot(name, { message: ... })` runs unconditionally, even when the workspace is not active (so there's nothing live to lose). The safety snapshot is only meaningful for active workspaces where live state will be re-applied.
 
 ## Dead Code
 
 ### D1: `describeDockerReferences` and `describeKubernetesReferences` are unused
+
 `docker.js` exports `describeDockerReferences()` and `kubernetes.js` exports `describeKubernetesReferences()`, but neither is called anywhere in the codebase. They were likely intended for health/display but health.js reads the fields directly.
 
 ### D2: `variables` field in schema is unused
+
 `schema.js`'s `createWorkspaceDoc()` creates a top-level `variables: {}` field, but the actual env variables live under `env.variables`. The top-level `variables` is never read or written by any module.
 
 ## Duplicate Logic
 
 ### DL1: `resolveWorkspaceComponents` (see W10 above)
+
 Two implementations of the same expansion logic.
 
 ### DL2: `tempDir` helper
+
 `bundle.js` has its own `tempDir()` function (line 23-25). The benchmark engine and other modules have similar patterns. A shared `withTempDir` helper would reduce duplication.
 
 ## Improvement Plan
