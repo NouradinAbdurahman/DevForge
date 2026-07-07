@@ -108,36 +108,43 @@ Two implementations of the same expansion logic.
 ## Improvement Plan
 
 ### Phase 2: Better Metadata
+
 - Track `lastUsedAt` on switch
 - Expose structured metadata: git identity details, ssh identity count, docker context, k8s context, cloud refs, env var/secret counts, health score, compatibility status
 - Add `getWorkspaceMetadata(doc)` function returning a rich metadata object
 
 ### Phase 3: Better Verification
+
 - Group results by subsystem (Git, SSH, Docker, Kubernetes, Cloud, Env, Components, Plugins, AI, Editor)
 - Include structured details per check (not just "PASS: git is installed" but { subsystem: "git", field: "user.name", value: "John", status: "PASS" })
 - Add `verifyWorkspaceStructured()` returning grouped results
 
 ### Phase 4: Better Switching
+
 - Add `previewSwitch(name)` returning what would change for each subsystem
 - Add `--preview` flag to `workspace switch` command
 - Show current → target for each subsystem
 
 ### Phase 5: Workspace Diff
+
 - Add `diffWorkspaces(nameA, nameB)` comparing all subsystems
 - Add `workspace diff <a> <b>` CLI command
 - Per-subsystem diff: git, ssh, docker, k8s, cloud, env, shell, ai, editor
 
 ### Phase 6: Better Import/Export
+
 - Add `previewBundleImport(archivePath)` — extract to temp, report what would be imported, what references would be dropped, compatibility status
 - Add checksum (SHA-256) to bundle.json, verify on import
 - Add `--preview` flag to `workspace import`
 
 ### Phase 7: Workspace Health Score
+
 - Cache health score on workspace document after verify
 - Display health score in list/show/TUI
 - Per-subsystem health breakdown
 
 ### Phase 8: TUI Redesign
+
 - Tabs: Overview, Workspaces, Snapshots, History, Switch Preview
 - Health score card with per-subsystem indicators
 - Search and tag filtering
@@ -145,16 +152,19 @@ Two implementations of the same expansion logic.
 - Switch preview panel
 
 ### Phase 9: Performance Benchmark
+
 - Add `benchmarkWorkspace()` measuring switch/verify/snapshot/restore/bundle times
 - Add `workspace benchmark` CLI command
 
 ### Phase 10: Bug Fixes
+
 - Fix B1: Call `removeWorkspaceSsh(name)` in `deleteWorkspace()`
 - Fix B2: Print actual workspace path in create success message
 - Fix B3: Document SSH block persistence in deactivate output
 - Fix B4: Only create safety snapshot for active workspaces in rollback
 
 ### Phase 11: Dead Code Cleanup
+
 - Remove D1: `describeDockerReferences` and `describeKubernetesReferences`
 - Remove D2: Top-level `variables` field from schema
 - Consolidate DL1: Single `resolveWorkspaceComponents` helper

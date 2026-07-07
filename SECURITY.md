@@ -13,7 +13,7 @@ applied to the latest `main` branch and included in the next release.
 ## Reporting a Vulnerability
 
 If you discover a security vulnerability, please **do not** open a
-public GitHub issue. Instead, email **security@devforgekit.dev** with:
+public GitHub issue. Instead, email **<security@devforgekit.dev>** with:
 
 1. A description of the vulnerability
 2. Steps to reproduce
