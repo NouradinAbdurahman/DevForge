@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { existsSync, mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, cpSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import yaml from "js-yaml";
+import { load as yamlLoad, dump as yamlDump } from "js-yaml";
 import {
     migrateConfig,
     pendingMigrations,
@@ -167,18 +167,18 @@ test("full backup-modify-restore cycle preserves config with nested directories"
 
         // Create a rich config structure
         mkdirSync(configDir, { recursive: true });
-        writeFileSync(path.join(configDir, "config.yaml"), yaml.dump({
+        writeFileSync(path.join(configDir, "config.yaml"), yamlDump({
             editor: "vscode",
             shell: "zsh",
             configVersion: 1
         }));
         mkdirSync(path.join(configDir, "profiles"), { recursive: true });
-        writeFileSync(path.join(configDir, "profiles", "my-profile.yaml"), yaml.dump({
+        writeFileSync(path.join(configDir, "profiles", "my-profile.yaml"), yamlDump({
             name: "my-profile",
             components: ["node", "python"]
         }));
         mkdirSync(path.join(configDir, "recipes"), { recursive: true });
-        writeFileSync(path.join(configDir, "recipes", "my-recipe.yaml"), yaml.dump({
+        writeFileSync(path.join(configDir, "recipes", "my-recipe.yaml"), yamlDump({
             name: "my-recipe",
             components: ["docker"]
         }));
@@ -201,7 +201,7 @@ test("full backup-modify-restore cycle preserves config with nested directories"
         assert.ok(existsSync(path.join(configDir, "profiles", "my-profile.yaml")));
         assert.ok(existsSync(path.join(configDir, "recipes", "my-recipe.yaml")));
 
-        const restoredConfig = yaml.load(readFileSync(path.join(configDir, "config.yaml"), "utf8"));
+        const restoredConfig = yamlLoad(readFileSync(path.join(configDir, "config.yaml"), "utf8"));
         assert.equal(restoredConfig.editor, "vscode");
         assert.equal(restoredConfig.configVersion, 1);
     });

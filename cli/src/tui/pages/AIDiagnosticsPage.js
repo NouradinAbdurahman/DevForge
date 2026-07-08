@@ -81,7 +81,7 @@ export function AIDiagnosticsPage({ isActive }) {
         setProgress((p) => ({ ...p, done: 4 }));
 
         // 5. Latency check
-        let latencyMs = null;
+        let latencyMs;
         try {
             const provider = getProvider(providerId, { workspace });
             const start = Date.now();

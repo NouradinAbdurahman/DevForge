@@ -194,7 +194,7 @@ export async function buildPackageProfile(pkg, { installedPackages } = {}) {
     }
 
     // Health status
-    let healthStatus = "unknown";
+    let healthStatus;
     try {
         const validateCode = await validate(pkg);
         healthStatus = validateCode === 0 ? "healthy" : "broken";

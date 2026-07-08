@@ -4,7 +4,7 @@
 // hook (see docs/PlatformArchitecture.md section 4 - the Plugin SDK).
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import yaml from "js-yaml";
+import { load as yamlLoad } from "js-yaml";
 import Ajv2020 from "ajv/dist/2020.js";
 import semver from "semver";
 import { fileURLToPath } from "node:url";
@@ -71,7 +71,7 @@ export function discoverPlugins(roots = discoveryRoots()) {
 
             let manifest;
             try {
-                manifest = yaml.load(readFileSync(manifestPath, "utf8"));
+                manifest = yamlLoad(readFileSync(manifestPath, "utf8"));
             } catch (err) {
                 results.push({ name: entry.name, dir, manifest: null, valid: false, reason: `Failed to parse plugin.yml: ${err.message}` });
                 continue;

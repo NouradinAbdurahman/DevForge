@@ -476,7 +476,7 @@ export async function previewBundleImport(archivePath, { newName } = {}) {
         try {
             doc = migrateWorkspace(JSON.parse(readFileSync(manifestPath, "utf8")));
         } catch (err) {
-            throw new Error(`Bundle's workspace.json is incompatible: ${err.message}`);
+            throw new Error(`Bundle's workspace.json is incompatible: ${err.message}`, { cause: err });
         }
 
         const finalName = newName || doc.name;

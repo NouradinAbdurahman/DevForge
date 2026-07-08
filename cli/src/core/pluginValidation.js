@@ -6,7 +6,7 @@
 // names, platform/architecture compatibility.
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import yaml from "js-yaml";
+import { load as yamlLoad } from "js-yaml";
 import semver from "semver";
 import { validatePluginManifest, discoverPlugins } from "./plugins.js";
 import { getVersion } from "../version.js";
@@ -26,7 +26,7 @@ export function validatePluginDir(dir) {
 
     let manifest;
     try {
-        manifest = yaml.load(readFileSync(manifestPath, "utf8"));
+        manifest = yamlLoad(readFileSync(manifestPath, "utf8"));
         checks.push({ name: "manifest-parses", status: "PASS", detail: "plugin.yml parsed successfully" });
     } catch (err) {
         checks.push({ name: "manifest-parses", status: "FAIL", detail: `Failed to parse plugin.yml: ${err.message}` });
@@ -232,7 +232,7 @@ export function scorePlugin(dir) {
     const manifestPath = path.join(dir, "plugin.yml");
     let manifest = null;
     try {
-        manifest = yaml.load(readFileSync(manifestPath, "utf8"));
+        manifest = yamlLoad(readFileSync(manifestPath, "utf8"));
     } catch { /* handled below */ }
 
     const categories = [];

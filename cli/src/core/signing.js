@@ -79,7 +79,7 @@ export function loadTrustedKeys() {
     keys.push(publicKeyPem);
 
     const dir = trustedKeysDir();
-    let entries = [];
+    let entries;
     try {
         entries = readdirSync(dir).filter((f) => f.endsWith(".pub"));
     } catch {

@@ -13,7 +13,7 @@
 //    environment."
 import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import yaml from "js-yaml";
+import { load as yamlLoad, dump as yamlDump } from "js-yaml";
 import { runScript } from "../core/shell.js";
 import {
     loadProfiles,
@@ -40,7 +40,7 @@ function userProfilesDir() {
 function writeProfileFile(profile) {
     const filePath = path.join(userProfilesDir(), `${profile.name}.yaml`);
     mkdirSync(path.dirname(filePath), { recursive: true });
-    writeFileSync(filePath, yaml.dump(profile));
+    writeFileSync(filePath, yamlDump(profile));
     return filePath;
 }
 
@@ -197,7 +197,7 @@ export function registerProfileCommand(program) {
                 description: `Exported from this machine on ${new Date().toISOString().slice(0, 10)}`,
                 components: installed
             };
-            const doc = yaml.dump(exported);
+            const doc = yamlDump(exported);
 
             if (name) {
                 const filePath = writeProfileFile(exported);
@@ -214,7 +214,7 @@ export function registerProfileCommand(program) {
         .option("-y, --yes", "don't prompt if the compatibility check finds critical/unsupported issues")
         .action(withErrorHandling(async function (file) {
             const opts = this.opts();
-            const doc = validateProfileDoc(yaml.load(readFileSync(path.resolve(file), "utf8")));
+            const doc = validateProfileDoc(yamlLoad(readFileSync(path.resolve(file), "utf8")));
             const componentNames = expandProfile(doc);
 
             if (!opts.skipCompatibility && !(await checkCompatibilityBeforeInstall(componentNames, { assumeYes: opts.yes }))) {

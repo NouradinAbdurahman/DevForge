@@ -1945,7 +1945,7 @@ export async function runFullRepair({ assumeYes = false, skipBenchmark = true, o
     }
 
     // Stage 3: Create rollback point
-    let rollbackSnapshot = null;
+    let rollbackSnapshot;
     if (!assumeYes) {
         const shouldContinue = await confirm("\nProceed with repairs? A rollback snapshot will be created first.", false);
         if (!shouldContinue) {
