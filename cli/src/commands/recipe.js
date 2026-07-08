@@ -9,7 +9,7 @@
 // everything" checklist from the product brief.
 import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import yaml from "js-yaml";
+import { load as yamlLoad, dump as yamlDump } from "js-yaml";
 import {
     loadRecipes,
     getRecipe,
@@ -55,7 +55,7 @@ function userRecipesDir() {
 function writeRecipeFile(recipe) {
     const filePath = path.join(userRecipesDir(), `${recipe.name}.yaml`);
     mkdirSync(path.dirname(filePath), { recursive: true });
-    writeFileSync(filePath, yaml.dump(recipe));
+    writeFileSync(filePath, yamlDump(recipe));
     return filePath;
 }
 
@@ -188,7 +188,7 @@ export function registerRecipeCommand(program) {
         .option("-y, --yes", "don't prompt if the compatibility check finds critical/unsupported issues")
         .action(withErrorHandling(async function (file) {
             const opts = this.opts();
-            const doc = validateRecipeDoc(yaml.load(readFileSync(path.resolve(file), "utf8")));
+            const doc = validateRecipeDoc(yamlLoad(readFileSync(path.resolve(file), "utf8")));
             await installRecipeDoc(doc, { skipConfigure: opts.skipConfigure, skipVerify: opts.skipVerify, skipCompatibility: opts.skipCompatibility, assumeYes: opts.yes });
         }));
 

@@ -7,7 +7,7 @@ import { getVersion } from "../../version.js";
 
 export function AboutPage() {
     const { theme } = useStore();
-    let stats = null;
+    let stats;
     let loadError = null;
     try {
         stats = registrySnapshot().stats;

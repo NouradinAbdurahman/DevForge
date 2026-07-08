@@ -4,7 +4,7 @@
 // flags (applied by callers, not here).
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import yaml from "js-yaml";
+import { load as yamlLoad, dump as yamlDump } from "js-yaml";
 import { repoRoot, userConfigDir } from "./paths.js";
 import { DevForgeError } from "./errors.js";
 import { getPlatform } from "./platform/index.js";
@@ -61,7 +61,7 @@ function userConfigPath() {
 function readYamlIfExists(filePath) {
     if (!existsSync(filePath)) return {};
     try {
-        return yaml.load(readFileSync(filePath, "utf8")) || {};
+        return yamlLoad(readFileSync(filePath, "utf8")) || {};
     } catch (err) {
         throw new DevForgeError(`Invalid YAML in ${filePath}: ${err.message}`);
     }
@@ -109,7 +109,7 @@ export function setConfigValue(key, value) {
     mkdirSync(path.dirname(filePath), { recursive: true });
     const current = readYamlIfExists(filePath);
     current[key] = value;
-    writeFileSync(filePath, yaml.dump(current));
+    writeFileSync(filePath, yamlDump(current));
     return current;
 }
 

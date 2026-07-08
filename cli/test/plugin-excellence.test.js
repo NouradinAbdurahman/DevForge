@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import yaml from "js-yaml";
+import { load as yamlLoad, dump as yamlDump } from "js-yaml";
 import {
     createPlugin, testPlugin, buildPlugin, packagePlugin,
 } from "../src/core/pluginSdk.js";
@@ -33,7 +33,7 @@ test("createPlugin scaffolds schemaVersion 2 with new metadata fields", async ()
         const workDir = mkdtempSync(path.join(tmpdir(), "devforgekit-meta-"));
         try {
             const pluginDir = createPlugin("meta-test", workDir);
-            const manifest = yaml.load(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
+            const manifest = yamlLoad(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
             assert.equal(manifest.schemaVersion, 2);
             assert.ok(manifest.author !== undefined, "author field present");
             assert.ok(manifest.license !== undefined, "license field present");
@@ -182,9 +182,9 @@ test("validatePluginDir checks platform compatibility", async () => {
         try {
             const pluginDir = createPlugin("platform-test", workDir);
             const manifestPath = path.join(pluginDir, "plugin.yml");
-            const manifest = yaml.load(readFileSync(manifestPath, "utf8"));
+            const manifest = yamlLoad(readFileSync(manifestPath, "utf8"));
             manifest.compatibility = { platforms: ["linux"], architectures: ["x64"] };
-            writeFileSync(manifestPath, yaml.dump(manifest));
+            writeFileSync(manifestPath, yamlDump(manifest));
 
             const result = validatePluginDir(pluginDir);
             const platformCheck = result.checks.find((c) => c.name === "platform-compat");
@@ -220,12 +220,12 @@ test("validatePluginDir detects duplicate command names within a plugin", async 
         try {
             const pluginDir = createPlugin("dupe-test", workDir);
             const manifestPath = path.join(pluginDir, "plugin.yml");
-            const manifest = yaml.load(readFileSync(manifestPath, "utf8"));
+            const manifest = yamlLoad(readFileSync(manifestPath, "utf8"));
             manifest.commands = [
                 { name: "hello", run: "./commands/hello.sh" },
                 { name: "hello", run: "./commands/hello.sh" },
             ];
-            writeFileSync(manifestPath, yaml.dump(manifest));
+            writeFileSync(manifestPath, yamlDump(manifest));
 
             const result = validatePluginDir(pluginDir);
             const dupeCheck = result.checks.find((c) => c.name === "no-duplicate-commands");
@@ -337,7 +337,7 @@ test("diagnosePlugins flags deprecated schema v1", async () => {
     await withTempHome(async (tempHome) => {
         const userPluginsDir = path.join(tempHome, ".devforgekit", "plugins");
         mkdirSync(path.join(userPluginsDir, "v1-plugin"), { recursive: true });
-        writeFileSync(path.join(userPluginsDir, "v1-plugin", "plugin.yml"), yaml.dump({
+        writeFileSync(path.join(userPluginsDir, "v1-plugin", "plugin.yml"), yamlDump({
             schemaVersion: 1,
             name: "v1-plugin",
             version: "0.1.0",
@@ -360,7 +360,7 @@ test("createPlugin with --template tui-page scaffolds tui-page capability", asyn
         const workDir = mkdtempSync(path.join(tmpdir(), "devforgekit-tui-tpl-"));
         try {
             const pluginDir = createPlugin("tui-test", workDir, { template: "tui-page" });
-            const manifest = yaml.load(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
+            const manifest = yamlLoad(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
             assert.deepEqual(manifest.capabilities, ["tui-page"]);
             assert.ok(existsSync(path.join(pluginDir, "commands", "open-page.sh")));
         } finally {
@@ -374,7 +374,7 @@ test("createPlugin with --template generator scaffolds generator capability", as
         const workDir = mkdtempSync(path.join(tmpdir(), "devforgekit-gen-tpl-"));
         try {
             const pluginDir = createPlugin("gen-test", workDir, { template: "generator" });
-            const manifest = yaml.load(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
+            const manifest = yamlLoad(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
             assert.deepEqual(manifest.capabilities, ["generator"]);
             assert.ok(existsSync(path.join(pluginDir, "commands", "generate.sh")));
         } finally {
@@ -388,7 +388,7 @@ test("createPlugin with --template benchmark scaffolds benchmark capability", as
         const workDir = mkdtempSync(path.join(tmpdir(), "devforgekit-bench-tpl-"));
         try {
             const pluginDir = createPlugin("bench-test", workDir, { template: "benchmark" });
-            const manifest = yaml.load(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
+            const manifest = yamlLoad(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
             assert.deepEqual(manifest.capabilities, ["benchmark"]);
             assert.ok(existsSync(path.join(pluginDir, "commands", "bench.sh")));
         } finally {
@@ -402,7 +402,7 @@ test("createPlugin with --template repair scaffolds repair capability", async ()
         const workDir = mkdtempSync(path.join(tmpdir(), "devforgekit-repair-tpl-"));
         try {
             const pluginDir = createPlugin("repair-test", workDir, { template: "repair" });
-            const manifest = yaml.load(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
+            const manifest = yamlLoad(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
             assert.deepEqual(manifest.capabilities, ["repair"]);
             assert.ok(existsSync(path.join(pluginDir, "commands", "repair.sh")));
         } finally {
@@ -416,7 +416,7 @@ test("createPlugin with --template graph-extension scaffolds graph capability", 
         const workDir = mkdtempSync(path.join(tmpdir(), "devforgekit-graph-tpl-"));
         try {
             const pluginDir = createPlugin("graph-test", workDir, { template: "graph-extension" });
-            const manifest = yaml.load(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
+            const manifest = yamlLoad(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
             assert.deepEqual(manifest.capabilities, ["graph"]);
             assert.ok(existsSync(path.join(pluginDir, "commands", "graph-query.sh")));
         } finally {
@@ -430,7 +430,7 @@ test("createPlugin with --template ai-provider scaffolds ai-provider capability"
         const workDir = mkdtempSync(path.join(tmpdir(), "devforgekit-ai-tpl-"));
         try {
             const pluginDir = createPlugin("ai-test", workDir, { template: "ai-provider" });
-            const manifest = yaml.load(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
+            const manifest = yamlLoad(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
             assert.deepEqual(manifest.capabilities, ["ai-provider"]);
             assert.ok(existsSync(path.join(pluginDir, "commands", "ask.sh")));
         } finally {
@@ -444,7 +444,7 @@ test("createPlugin with --template compatibility-rule scaffolds compatibility-ru
         const workDir = mkdtempSync(path.join(tmpdir(), "devforgekit-compat-tpl-"));
         try {
             const pluginDir = createPlugin("compat-test", workDir, { template: "compatibility-rule" });
-            const manifest = yaml.load(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
+            const manifest = yamlLoad(readFileSync(path.join(pluginDir, "plugin.yml"), "utf8"));
             assert.deepEqual(manifest.capabilities, ["compatibility-rule"]);
             assert.ok(manifest.rules, "should have rules object");
             assert.ok(existsSync(path.join(pluginDir, "commands", "check-compat.sh")));

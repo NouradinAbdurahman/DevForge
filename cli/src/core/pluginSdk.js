@@ -9,7 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
-import yaml from "js-yaml";
+import { load as yamlLoad, dump as yamlDump } from "js-yaml";
 import semver from "semver";
 import { runShellCommand } from "./shell.js";
 import { signFile, isSignatureTrusted } from "./signing.js";
@@ -127,7 +127,7 @@ export function createPlugin(name, destDir = process.cwd(), { template = "simple
     mkdirSync(path.join(pluginDir, "tests"), { recursive: true });
 
     const manifest = tpl.manifest(name, getVersion());
-    writeFileSync(path.join(pluginDir, "plugin.yml"), yaml.dump(manifest));
+    writeFileSync(path.join(pluginDir, "plugin.yml"), yamlDump(manifest));
 
     for (const [relPath, content] of Object.entries(tpl.files(name))) {
         const fullPath = path.join(pluginDir, relPath);
@@ -280,7 +280,7 @@ export async function testPlugin(dir) {
         throw new DevForgeError(`No plugin.yml found in ${dir}`);
     }
 
-    const manifest = yaml.load(readFileSync(manifestPath, "utf8"));
+    const manifest = yamlLoad(readFileSync(manifestPath, "utf8"));
     const results = [];
 
     const validation = validatePluginManifest(manifest);
@@ -385,7 +385,7 @@ export async function packagePlugin(dir, outDir = path.dirname(dir)) {
     } else {
         lock = JSON.parse(readFileSync(path.join(dir, "plugin.lock.json"), "utf8"));
     }
-    const manifest = yaml.load(readFileSync(path.join(dir, "plugin.yml"), "utf8"));
+    const manifest = yamlLoad(readFileSync(path.join(dir, "plugin.yml"), "utf8"));
 
     const archiveName = `${manifest.name}-${manifest.version}.tar.gz`;
     mkdirSync(outDir, { recursive: true });
@@ -525,7 +525,7 @@ export async function installPlugin(pathOrUrl, { assumeYes = false } = {}) {
         throw new DevForgeError(`Extracted package has no plugin.yml at ${manifestPath}`);
     }
 
-    const manifest = yaml.load(readFileSync(manifestPath, "utf8"));
+    const manifest = yamlLoad(readFileSync(manifestPath, "utf8"));
     const validation = validatePluginManifest(manifest);
     if (!validation.valid) {
         throw new DevForgeError(`Installed plugin.yml is invalid: ${validation.reason}`);

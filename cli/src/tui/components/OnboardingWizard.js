@@ -92,7 +92,7 @@ export function OnboardingWizard() {
                 h(Text, { color: theme.text }, "Workspaces - switch git/SSH/env/cloud identity as one unit"),
                 h(Text, { color: theme.textMuted, wrap: "wrap" }, "\n? opens the full keyboard/page reference again from anywhere.")));
     } else if (STEPS[step] === "profile") {
-        let profiles = [];
+        let profiles;
         try {
             const registry = registrySnapshot();
             profiles = SUGGESTED_PROFILE_NAMES

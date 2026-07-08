@@ -17,7 +17,7 @@
 // for expected failures (network errors, merge conflicts), only for bugs.
 import { existsSync, mkdirSync, cpSync, readFileSync, writeFileSync, rmSync, readdirSync } from "node:fs";
 import path from "node:path";
-import yaml from "js-yaml";
+import { load as yamlLoad, dump as yamlDump } from "js-yaml";
 import { repoRoot, cliRoot, userConfigDir, userStateDir } from "./paths.js";
 import { captureShellCommand, runShellCommand } from "./shell.js";
 import { getVersion } from "../version.js";
@@ -204,7 +204,6 @@ export function extractChangelog(oldVersion, newVersion) {
 
     for (const section of sections) {
         if (section.version === oldVersion) {
-            collecting = false;
             break;
         }
         if (section.version === "Unreleased" || !oldVersion) {
@@ -220,7 +219,6 @@ export function extractChangelog(oldVersion, newVersion) {
 
     // If we didn't find a boundary, just return everything up to newVersion
     if (result.length === 0 && oldVersion !== newVersion) {
-        collecting = true;
         for (const section of sections) {
             if (section.version === oldVersion) break;
             result.push(section);
@@ -332,9 +330,9 @@ export async function selfUpdate({ dryRun = false, skipPlugins = false, skipNpm 
     let migrationResult;
     if (existsSync(configPath)) {
         try {
-            const rawConfig = yaml.load(readFileSync(configPath, "utf8")) || {};
+            const rawConfig = yamlLoad(readFileSync(configPath, "utf8")) || {};
             const { config: migrated, migrated: count } = migrateConfig(rawConfig);
-            writeFileSync(configPath, yaml.dump(migrated));
+            writeFileSync(configPath, yamlDump(migrated));
             migrationResult = { ok: true, migrated: count };
             if (count > 0) {
                 logger.success(`Config migrated (${count} migration${count > 1 ? "s" : ""} applied)`);

@@ -4,7 +4,7 @@
 // add more packages/*.yaml files, not to change this loader.
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import yaml from "js-yaml";
+import { load as yamlLoad } from "js-yaml";
 import Ajv2020 from "ajv/dist/2020.js";
 import { repoRoot, userConfigDir } from "./paths.js";
 import { DevForgeError } from "./errors.js";
@@ -36,7 +36,7 @@ function readYamlFiles(dir) {
     }
     return entries.map((file) => {
         const filePath = path.join(dir, file);
-        const doc = yaml.load(readFileSync(filePath, "utf8"));
+        const doc = yamlLoad(readFileSync(filePath, "utf8"));
         return { file, filePath, doc };
     });
 }

@@ -45,7 +45,7 @@ export function initialState({ initialPage } = {}) {
     // TUI reads it at launch and `config set`-style writes happen on the
     // Configuration page.
     let themeName = "dark";
-    let onboarding = true;
+    let onboarding;
     try {
         const config = loadConfig();
         if (config.tuiTheme) themeName = config.tuiTheme;
