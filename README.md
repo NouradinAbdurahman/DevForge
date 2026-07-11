@@ -36,7 +36,6 @@ The complete local-first development environment platform for building, managing
 
 ---
 
-
 ## Features
 
 <div align="center">
