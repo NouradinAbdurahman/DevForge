@@ -19,7 +19,9 @@ import {
     clearCache,
     searchPackages,
     applyFilter,
-    packageInfo
+    packageInfo,
+    analyzePackages,
+    getInstalledPackageNames
 } from "../src/core/packageIntel.js";
 import { loadPackages } from "../src/core/registry.js";
 
@@ -636,4 +638,37 @@ test("packageInfo profile is null when not in analysis", () => {
     const info = packageInfo("flutter", { analysis });
     assert.ok(info.registry);
     assert.equal(info.profile, null);
+});
+
+// Regression guard: analyzePackages() had two independent sequential-loop
+// bugs discovered live - its own "detect installed" first pass was
+// already bounded-concurrency, but the more expensive "build a profile
+// per installed package" second pass (packagePrefix/which/du -sk/usage
+// detection each) was still a plain for-loop, and getInstalledPackageNames()
+// (used directly by `package tree`/`package graph`) had never been
+// converted at all. Both made `package analyze/duplicates/orphan/outdated/
+// search/unused --json` hang indefinitely on a real, populated machine -
+// confirmed directly (25s+ with zero output before the fix). These bounds
+// are generous (this really does shell out many times against real
+// installed software) but would catch a regression back to unbounded
+// sequential processing, which took well over a minute even for a modest
+// subset of installed packages.
+test("getInstalledPackageNames() resolves in bounded time against the real registry", async () => {
+    const start = Date.now();
+    const names = await getInstalledPackageNames();
+    const elapsedMs = Date.now() - start;
+    assert.ok(Array.isArray(names));
+    assert.ok(elapsedMs < 60_000, `expected bounded-concurrency validation to finish well under 60s, took ${elapsedMs}ms`);
+});
+
+test("analyzePackages() completes in bounded time and returns a well-formed analysis", async () => {
+    const start = Date.now();
+    const analysis = await analyzePackages({ useCache: false, silent: true });
+    const elapsedMs = Date.now() - start;
+    assert.ok(analysis.summary);
+    assert.ok(Array.isArray(analysis.profiles));
+    assert.ok(Array.isArray(analysis.orphans));
+    assert.ok(Array.isArray(analysis.duplicates));
+    assert.ok(Array.isArray(analysis.outdated));
+    assert.ok(elapsedMs < 150_000, `expected bounded-concurrency profile building to finish well under 150s, took ${elapsedMs}ms`);
 });

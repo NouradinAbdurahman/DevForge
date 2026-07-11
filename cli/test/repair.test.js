@@ -529,13 +529,22 @@ test("scanCliInstallIssues reports no failed-packages issue when install-state.j
 
 // ─── Integration: verifyRepairs ───────────────────────────────────────
 
-test("verifyRepairs returns verification results with health score", async () => {
+test("verifyRepairs returns verification results with health score, in bounded time", async () => {
     const originalHome = process.env.HOME;
     const tempHome = mkdtempSync(path.join(tmpdir(), "devforgekit-repair-verify-"));
     process.env.HOME = tempHome;
 
     try {
+        // Regression guard: repair.js's own getInstalledPackageNames()
+        // (a plain for-loop calling validate() once per registry package)
+        // was a third, independent copy of the same unbounded-sequential
+        // bug already fixed elsewhere - confirmed live that `repair
+        // benchmark --json` (which runs this same Compatibility check)
+        // hung well past 25s before it was converted to mapWithConcurrency.
+        const start = Date.now();
         const result = await verifyRepairs();
+        const elapsedMs = Date.now() - start;
+        assert.ok(elapsedMs < 60_000, `expected bounded-concurrency verification to finish well under 60s, took ${elapsedMs}ms`);
 
         assert.ok(result.results);
         assert.ok(Array.isArray(result.results));
