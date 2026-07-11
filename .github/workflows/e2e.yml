@@ -76,7 +76,18 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::doctor"
-          node bin/devforgekit.js doctor --skip-bash --json > /dev/null
+          # --skip-compatibility: GitHub-hosted runner images ship
+          # pre-installed with dozens of unrelated tools (docker, git,
+          # python, cloud CLIs, ...) that this lifecycle test never
+          # touched. The Compatibility Engine correctly flags any of them
+          # whose registry entry doesn't yet declare this platform
+          # (Linux/Windows registry coverage is still partial - see
+          # registry/research-queue.md) as UNSUPPORTED, which is real and
+          # correct on a real machine, but isn't what this test checks -
+          # it verifies the install/validate/doctor/env/repair/workspace/
+          # uninstall lifecycle itself works, not a clean bill of health
+          # for whatever software happens to preexist on the runner image.
+          node bin/devforgekit.js doctor --skip-bash --skip-compatibility --json > /dev/null
           echo "::endgroup::"
 
           echo "::group::environment: regenerate + doctor"
