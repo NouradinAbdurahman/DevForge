@@ -2,23 +2,41 @@ schemaVersion: 1
 name: claude-code
 description: Anthropic's official agentic coding CLI
 category: ai
-platforms: [macos, linux]
-architectures: [intel, apple-silicon, linux]
-install: { method: npm, id: "@anthropic-ai/claude-code" }
-dependencies: [node]
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
+install:
+  method: npm
+  id: '@anthropic-ai/claude-code'
+dependencies:
+  - node
+conflicts: []
 validate: claude --version
-versionCommand: "claude --version"
-repair: "npm install -g @anthropic-ai/claude-code@latest"
-update: "npm install -g @anthropic-ai/claude-code@latest"
-uninstall: { method: npm, id: "@anthropic-ai/claude-code" }
+versionCommand: claude --version
+repair: npm install -g @anthropic-ai/claude-code@latest
+update: npm install -g @anthropic-ai/claude-code@latest
+uninstall:
+  method: npm
+  id: '@anthropic-ai/claude-code'
 post_install: []
-homepage: "https://claude.com/claude-code"
-repository: "https://github.com/anthropics/claude-code"
+recommendedAlternatives:
+  - aider
+  - continue
+homepage: https://claude.com/claude-code
+repository: https://github.com/anthropics/claude-code
 license: proprietary
-documentation: "https://docs.claude.com/en/docs/claude-code"
+documentation: https://docs.claude.com/en/docs/claude-code
 maintainer: DevForgeKit Registry
 tags: [ai, cli, agent]
 aliases: [claude]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives: [aider, continue]
+lastVerified: '2026-07-05'
+platformInstall:
+  macos:
+    method: npm
+    id: '@anthropic-ai/claude-code'
+  linux:
+    method: npm
+    id: '@anthropic-ai/claude-code'
+  windows:
+    method: npm
+    id: '@anthropic-ai/claude-code'

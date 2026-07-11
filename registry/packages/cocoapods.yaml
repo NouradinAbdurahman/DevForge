@@ -2,16 +2,14 @@ schemaVersion: 1
 name: cocoapods
 description: A dependency manager for Swift and Objective-C Cocoa projects
 category: apple-development
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-formula
   id: cocoapods
 dependencies:
   - ruby
+conflicts: []
 validate: pod --version
 versionCommand: pod --version
 repair: brew reinstall cocoapods
@@ -25,16 +23,11 @@ repository: https://github.com/CocoaPods/CocoaPods
 license: MIT
 documentation: https://guides.cocoapods.org
 maintainer: DevForgeKit Registry
-tags:
-  - apple-development
-  - package-manager
-  - ios
-aliases:
-  - pod
+tags: [apple-development, package-manager, ios]
+aliases: [pod]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: cocoapods
-

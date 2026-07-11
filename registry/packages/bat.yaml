@@ -2,20 +2,13 @@ schemaVersion: 1
 name: bat
 description: A cat clone with syntax highlighting and Git integration
 category: utilities
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: bat
 dependencies: []
+conflicts: []
 validate: bat --version
 versionCommand: bat --version
 repair: brew reinstall bat
@@ -29,13 +22,10 @@ repository: https://github.com/sharkdp/bat
 license: MIT
 documentation: https://github.com/sharkdp/bat#readme
 maintainer: DevForgeKit Registry
-tags:
-  - utility
-  - cli
-aliases:
-  - batcat
+tags: [utility, cli]
+aliases: [batcat]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 ciVerified: true
 platformInstall:
   macos:
@@ -47,4 +37,3 @@ platformInstall:
   windows:
     method: winget
     id: sharkdp.bat
-

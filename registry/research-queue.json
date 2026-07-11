@@ -1,0 +1,2685 @@
+{
+  "generatedFrom": "registry/completeness-baseline.json state after Registry Completion infrastructure + easy-package + docker.yaml passes",
+  "totalRemaining": 206,
+  "note": "colima (docker variant) linux support is also still unresolved - excluded here since docker.yaml is variants-based, not a flat package.",
+  "buckets": {
+    "DevOps": [
+      {
+        "name": "act",
+        "bucket": "DevOps",
+        "registryCategory": "ci-cd",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "act",
+        "homepage": "https://github.com/nektos/act",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "arduino-cli",
+        "bucket": "DevOps",
+        "registryCategory": "embedded",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "arduino-cli",
+        "homepage": "https://arduino.github.io/arduino-cli",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "bazelisk",
+        "bucket": "DevOps",
+        "registryCategory": "build-systems",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "bazelisk",
+        "homepage": "https://bazel.build",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "btop",
+        "bucket": "DevOps",
+        "registryCategory": "monitoring",
+        "missingPlatforms": [
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "btop",
+        "homepage": "https://github.com/aristocratos/btop",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "buildkite-agent",
+        "bucket": "DevOps",
+        "registryCategory": "ci-cd",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "buildkite-agent",
+        "homepage": "https://buildkite.com/docs/agent",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "circleci",
+        "bucket": "DevOps",
+        "registryCategory": "ci-cd",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "circleci",
+        "homepage": "https://circleci.com/docs/local-cli",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "consul",
+        "bucket": "DevOps",
+        "registryCategory": "devops",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "hashicorp/tap/consul",
+        "homepage": "https://www.consul.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "gitlab-runner",
+        "bucket": "DevOps",
+        "registryCategory": "ci-cd",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "gitlab-runner",
+        "homepage": "https://docs.gitlab.com/runner",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "glances",
+        "bucket": "DevOps",
+        "registryCategory": "monitoring",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "glances",
+        "homepage": "https://nicolargo.github.io/glances",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "grafana",
+        "bucket": "DevOps",
+        "registryCategory": "monitoring",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "grafana",
+        "homepage": "https://grafana.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "just",
+        "bucket": "DevOps",
+        "registryCategory": "build-systems",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "just",
+        "homepage": "https://github.com/casey/just",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "meson",
+        "bucket": "DevOps",
+        "registryCategory": "build-systems",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "meson",
+        "homepage": "https://mesonbuild.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "netdata",
+        "bucket": "DevOps",
+        "registryCategory": "monitoring",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "netdata",
+        "homepage": "https://www.netdata.cloud",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "ninja",
+        "bucket": "DevOps",
+        "registryCategory": "build-systems",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "ninja",
+        "homepage": "https://ninja-build.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "nomad",
+        "bucket": "DevOps",
+        "registryCategory": "devops",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "hashicorp/tap/nomad",
+        "homepage": "https://www.nomadproject.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "openocd",
+        "bucket": "DevOps",
+        "registryCategory": "embedded",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "open-ocd",
+        "homepage": "https://openocd.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "packer",
+        "bucket": "DevOps",
+        "registryCategory": "devops",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "hashicorp/tap/packer",
+        "homepage": "https://www.packer.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "platformio",
+        "bucket": "DevOps",
+        "registryCategory": "embedded",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "platformio",
+        "homepage": "https://platformio.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "prometheus",
+        "bucket": "DevOps",
+        "registryCategory": "monitoring",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "prometheus",
+        "homepage": "https://prometheus.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "pulumi",
+        "bucket": "DevOps",
+        "registryCategory": "devops",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "pulumi",
+        "homepage": "https://www.pulumi.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "terraform",
+        "bucket": "DevOps",
+        "registryCategory": "devops",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "hashicorp/tap/terraform",
+        "homepage": "https://www.terraform.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "vault",
+        "bucket": "DevOps",
+        "registryCategory": "devops",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "hashicorp/tap/vault",
+        "homepage": "https://www.vaultproject.io",
+        "estimatedEffort": "low"
+      }
+    ],
+    "Security": [
+      {
+        "name": "age",
+        "bucket": "Security",
+        "registryCategory": "package-signing",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "age",
+        "homepage": "https://age-encryption.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "aircrack-ng",
+        "bucket": "Security",
+        "registryCategory": "security",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "aircrack-ng",
+        "homepage": "https://www.aircrack-ng.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "binwalk",
+        "bucket": "Security",
+        "registryCategory": "reverse-engineering",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "binwalk",
+        "homepage": "https://github.com/ReFirmLabs/binwalk",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "burp-suite",
+        "bucket": "Security",
+        "registryCategory": "security",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "burp-suite",
+        "homepage": "https://portswigger.net/burp",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "cosign",
+        "bucket": "Security",
+        "registryCategory": "package-signing",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "cosign",
+        "homepage": "https://docs.sigstore.dev/cosign/overview",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "ghidra",
+        "bucket": "Security",
+        "registryCategory": "security",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "ghidra",
+        "homepage": "https://ghidra-sre.org",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "gnupg",
+        "bucket": "Security",
+        "registryCategory": "package-signing",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "gnupg",
+        "homepage": "https://gnupg.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "hydra",
+        "bucket": "Security",
+        "registryCategory": "security",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "hydra",
+        "homepage": "https://github.com/vanhauser-thc/thc-hydra",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "john",
+        "bucket": "Security",
+        "registryCategory": "security",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "john",
+        "homepage": "https://www.openwall.com/john",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "metasploit",
+        "bucket": "Security",
+        "registryCategory": "security",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "metasploit",
+        "homepage": "https://www.metasploit.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "mkcert",
+        "bucket": "Security",
+        "registryCategory": "security",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "mkcert",
+        "homepage": "https://github.com/FiloSottile/mkcert",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "nikto",
+        "bucket": "Security",
+        "registryCategory": "security",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "nikto",
+        "homepage": "https://cirt.net/Nikto2",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "nmap",
+        "bucket": "Security",
+        "registryCategory": "security",
+        "missingPlatforms": [
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "nmap",
+        "homepage": "https://nmap.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "openssl",
+        "bucket": "Security",
+        "registryCategory": "security",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "openssl@3",
+        "homepage": "https://www.openssl.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "radare2",
+        "bucket": "Security",
+        "registryCategory": "reverse-engineering",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "radare2",
+        "homepage": "https://www.radare.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "sqlmap",
+        "bucket": "Security",
+        "registryCategory": "security",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "sqlmap",
+        "homepage": "https://sqlmap.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "wireshark",
+        "bucket": "Security",
+        "registryCategory": "security",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "wireshark",
+        "homepage": "https://www.wireshark.org",
+        "estimatedEffort": "high"
+      }
+    ],
+    "AI": [
+      {
+        "name": "aider",
+        "bucket": "AI",
+        "registryCategory": "ai",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "shell",
+        "homepage": "https://aider.chat",
+        "estimatedEffort": "medium"
+      },
+      {
+        "name": "continue",
+        "bucket": "AI",
+        "registryCategory": "ai",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "shell",
+        "homepage": "https://continue.dev",
+        "estimatedEffort": "medium"
+      },
+      {
+        "name": "llama-cpp",
+        "bucket": "AI",
+        "registryCategory": "ai",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "llama.cpp",
+        "homepage": "https://github.com/ggml-org/llama.cpp",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "ollama",
+        "bucket": "AI",
+        "registryCategory": "ai",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "ollama",
+        "homepage": "https://ollama.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "whisper-cpp",
+        "bucket": "AI",
+        "registryCategory": "ai",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "whisper-cpp",
+        "homepage": "https://github.com/ggml-org/whisper.cpp",
+        "estimatedEffort": "low"
+      }
+    ],
+    "Utilities": [
+      {
+        "name": "alacritty",
+        "bucket": "Utilities",
+        "registryCategory": "terminals",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "alacritty",
+        "homepage": "https://alacritty.org",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "atuin",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "atuin",
+        "homepage": "https://atuin.sh",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "bind",
+        "bucket": "Utilities",
+        "registryCategory": "networking",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "bind",
+        "homepage": "https://www.isc.org/bind",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "curl",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "curl",
+        "homepage": "https://curl.se",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "difftastic",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "difftastic",
+        "homepage": "https://github.com/Wilfred/difftastic",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "direnv",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "direnv",
+        "homepage": "https://direnv.net",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "entr",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "entr",
+        "homepage": "https://eradman.com/entrproject",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "exiftool",
+        "bucket": "Utilities",
+        "registryCategory": "media",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "exiftool",
+        "homepage": "https://exiftool.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "eza",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "eza",
+        "homepage": "https://eza.rocks",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "git-delta",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "git-delta",
+        "homepage": "https://github.com/dandavison/delta",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "glow",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "glow",
+        "homepage": "https://github.com/charmbracelet/glow",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "gum",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "gum",
+        "homepage": "https://github.com/charmbracelet/gum",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "hugo",
+        "bucket": "Utilities",
+        "registryCategory": "documentation",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "hugo",
+        "homepage": "https://gohugo.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "hyperfine",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "hyperfine",
+        "homepage": "https://github.com/sharkdp/hyperfine",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "iperf3",
+        "bucket": "Utilities",
+        "registryCategory": "networking",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "iperf3",
+        "homepage": "https://iperf.fr",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "iterm2",
+        "bucket": "Utilities",
+        "registryCategory": "terminals",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "iterm2",
+        "homepage": "https://iterm2.com",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "k6",
+        "bucket": "Utilities",
+        "registryCategory": "testing",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "k6",
+        "homepage": "https://k6.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "kitty",
+        "bucket": "Utilities",
+        "registryCategory": "terminals",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "kitty",
+        "homepage": "https://sw.kovidgoyal.net/kitty",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "mtr",
+        "bucket": "Utilities",
+        "registryCategory": "networking",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "mtr",
+        "homepage": "https://www.bitwizard.nl/mtr",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "ncdu",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "ncdu",
+        "homepage": "https://dev.yorhel.nl/ncdu",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "netcat",
+        "bucket": "Utilities",
+        "registryCategory": "networking",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "netcat",
+        "homepage": "http://netcat.sourceforge.net",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "postman",
+        "bucket": "Utilities",
+        "registryCategory": "testing",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "postman",
+        "homepage": "https://www.postman.com",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "procs",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "procs",
+        "homepage": "https://github.com/dalance/procs",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "sd",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "sd",
+        "homepage": "https://github.com/chmln/sd",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "sox",
+        "bucket": "Utilities",
+        "registryCategory": "media",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "sox",
+        "homepage": "https://sourceforge.net/projects/sox",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "speedtest-cli",
+        "bucket": "Utilities",
+        "registryCategory": "networking",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "speedtest-cli",
+        "homepage": "https://github.com/sivel/speedtest-cli",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "tcpdump",
+        "bucket": "Utilities",
+        "registryCategory": "networking",
+        "missingPlatforms": [
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "tcpdump",
+        "homepage": "https://www.tcpdump.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "tlrc",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "tlrc",
+        "homepage": "https://github.com/tldr-pages/tlrc",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "vlc",
+        "bucket": "Utilities",
+        "registryCategory": "media",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "vlc",
+        "homepage": "https://www.videolan.org/vlc",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "warp",
+        "bucket": "Utilities",
+        "registryCategory": "terminals",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "warp",
+        "homepage": "https://www.warp.dev",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "watchexec",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "watchexec",
+        "homepage": "https://watchexec.github.io/",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "wezterm",
+        "bucket": "Utilities",
+        "registryCategory": "terminals",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "wezterm",
+        "homepage": "https://wezterm.org",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "wget",
+        "bucket": "Utilities",
+        "registryCategory": "utilities",
+        "missingPlatforms": [
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "wget",
+        "homepage": "https://www.gnu.org/software/wget",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "whois",
+        "bucket": "Utilities",
+        "registryCategory": "networking",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "whois",
+        "homepage": "https://github.com/rfc1036/whois",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "yt-dlp",
+        "bucket": "Utilities",
+        "registryCategory": "media",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "yt-dlp",
+        "homepage": "https://github.com/yt-dlp/yt-dlp",
+        "estimatedEffort": "low"
+      }
+    ],
+    "Mobile": [
+      {
+        "name": "android-studio",
+        "bucket": "Mobile",
+        "registryCategory": "mobile",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "android-studio",
+        "homepage": "https://developer.android.com/studio",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "cocoapods",
+        "bucket": "Mobile",
+        "registryCategory": "apple-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "cocoapods",
+        "homepage": "https://cocoapods.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "fastlane",
+        "bucket": "Mobile",
+        "registryCategory": "apple-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "fastlane",
+        "homepage": "https://fastlane.tools",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "flutter",
+        "bucket": "Mobile",
+        "registryCategory": "mobile",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "flutter",
+        "homepage": "https://flutter.dev",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "genymotion",
+        "bucket": "Mobile",
+        "registryCategory": "android",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "genymotion",
+        "homepage": "https://www.genymotion.com",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "scrcpy",
+        "bucket": "Mobile",
+        "registryCategory": "android",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "scrcpy",
+        "homepage": "https://github.com/Genymobile/scrcpy",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "swiftformat",
+        "bucket": "Mobile",
+        "registryCategory": "apple-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "swiftformat",
+        "homepage": "https://github.com/nicklockwood/SwiftFormat",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "swiftlint",
+        "bucket": "Mobile",
+        "registryCategory": "apple-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "swiftlint",
+        "homepage": "https://github.com/realm/SwiftLint",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "watchman",
+        "bucket": "Mobile",
+        "registryCategory": "mobile",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "watchman",
+        "homepage": "https://facebook.github.io/watchman",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "xcbeautify",
+        "bucket": "Mobile",
+        "registryCategory": "apple-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "xcbeautify",
+        "homepage": "https://github.com/cpisciotta/xcbeautify",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "xcode",
+        "bucket": "Mobile",
+        "registryCategory": "apple-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "xcodes",
+        "homepage": "https://developer.apple.com/xcode",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "xcodegen",
+        "bucket": "Mobile",
+        "registryCategory": "apple-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "xcodegen",
+        "homepage": "https://github.com/yonaskolb/XcodeGen",
+        "estimatedEffort": "low"
+      }
+    ],
+    "Databases": [
+      {
+        "name": "arangodb",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "arangodb",
+        "homepage": "https://arangodb.com",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "cassandra",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "cassandra",
+        "homepage": "https://cassandra.apache.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "clickhouse",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "clickhouse",
+        "homepage": "https://clickhouse.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "cockroachdb",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "cockroachdb/tap/cockroach",
+        "homepage": "https://www.cockroachlabs.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "duckdb",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "duckdb",
+        "homepage": "https://duckdb.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "elasticsearch",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "elasticsearch",
+        "homepage": "https://www.elastic.co/elasticsearch",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "influxdb",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "influxdb",
+        "homepage": "https://www.influxdata.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "mariadb",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "mariadb",
+        "homepage": "https://mariadb.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "minio",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "minio",
+        "homepage": "https://min.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "mongodb",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "mongodb-community",
+        "homepage": "https://www.mongodb.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "mysql",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "mysql",
+        "homepage": "https://www.mysql.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "neo4j",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "neo4j",
+        "homepage": "https://neo4j.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "postgres",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "postgresql@17",
+        "homepage": "https://www.postgresql.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "qdrant",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "qdrant",
+        "homepage": "https://qdrant.tech",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "redis",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "redis",
+        "homepage": "https://redis.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "sqlite",
+        "bucket": "Databases",
+        "registryCategory": "databases",
+        "missingPlatforms": [
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "sqlite",
+        "homepage": "https://www.sqlite.org",
+        "estimatedEffort": "low"
+      }
+    ],
+    "Frontend": [
+      {
+        "name": "arc",
+        "bucket": "Frontend",
+        "registryCategory": "browsers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "arc",
+        "homepage": "https://arc.net",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "blender",
+        "bucket": "Frontend",
+        "registryCategory": "game-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "blender",
+        "homepage": "https://www.blender.org",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "brave",
+        "bucket": "Frontend",
+        "registryCategory": "browsers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "brave-browser",
+        "homepage": "https://brave.com",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "caddy",
+        "bucket": "Frontend",
+        "registryCategory": "web",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "caddy",
+        "homepage": "https://caddyserver.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "cascadia-code",
+        "bucket": "Frontend",
+        "registryCategory": "fonts",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "font-cascadia-code",
+        "homepage": "https://github.com/microsoft/cascadia-code",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "certbot",
+        "bucket": "Frontend",
+        "registryCategory": "web",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "certbot",
+        "homepage": "https://certbot.eff.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "chrome",
+        "bucket": "Frontend",
+        "registryCategory": "browsers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "google-chrome",
+        "homepage": "https://www.google.com/chrome",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "edge",
+        "bucket": "Frontend",
+        "registryCategory": "browsers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "microsoft-edge",
+        "homepage": "https://www.microsoft.com/edge",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "figma",
+        "bucket": "Frontend",
+        "registryCategory": "design",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "figma",
+        "homepage": "https://www.figma.com",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "fira-code",
+        "bucket": "Frontend",
+        "registryCategory": "fonts",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "font-fira-code",
+        "homepage": "https://github.com/tonsky/FiraCode",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "firefox",
+        "bucket": "Frontend",
+        "registryCategory": "browsers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "firefox",
+        "homepage": "https://www.mozilla.org/firefox",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "godot",
+        "bucket": "Frontend",
+        "registryCategory": "game-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "godot",
+        "homepage": "https://godotengine.org",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "hack",
+        "bucket": "Frontend",
+        "registryCategory": "fonts",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "font-hack",
+        "homepage": "https://sourcefoundry.org/hack",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "hack-nerd-font",
+        "bucket": "Frontend",
+        "registryCategory": "fonts",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "font-hack-nerd-font",
+        "homepage": "https://github.com/ryanoasis/nerd-fonts",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "ibm-plex-mono",
+        "bucket": "Frontend",
+        "registryCategory": "fonts",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "font-ibm-plex-mono",
+        "homepage": "https://www.ibm.com/plex",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "jetbrains-mono",
+        "bucket": "Frontend",
+        "registryCategory": "fonts",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "font-jetbrains-mono",
+        "homepage": "https://www.jetbrains.com/lp/mono",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "love",
+        "bucket": "Frontend",
+        "registryCategory": "game-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "love",
+        "homepage": "https://love2d.org",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "meslo-lg-nerd-font",
+        "bucket": "Frontend",
+        "registryCategory": "fonts",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "font-meslo-lg-nerd-font",
+        "homepage": "https://github.com/ryanoasis/nerd-fonts",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "monaspace",
+        "bucket": "Frontend",
+        "registryCategory": "fonts",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "font-monaspace",
+        "homepage": "https://monaspace.githubnext.com",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "nginx",
+        "bucket": "Frontend",
+        "registryCategory": "web",
+        "missingPlatforms": [
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "nginx",
+        "homepage": "https://nginx.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "raylib",
+        "bucket": "Frontend",
+        "registryCategory": "game-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "raylib",
+        "homepage": "https://www.raylib.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "rive",
+        "bucket": "Frontend",
+        "registryCategory": "design",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "rive",
+        "homepage": "https://rive.app",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "unity-hub",
+        "bucket": "Frontend",
+        "registryCategory": "game-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "unity-hub",
+        "homepage": "https://unity.com/unity-hub",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "victor-mono",
+        "bucket": "Frontend",
+        "registryCategory": "fonts",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "font-victor-mono",
+        "homepage": "https://rubjo.github.io/victor-mono",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "zen-browser",
+        "bucket": "Frontend",
+        "registryCategory": "browsers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "zen-browser",
+        "homepage": "https://zen-browser.app",
+        "estimatedEffort": "high"
+      }
+    ],
+    "Backend": [
+      {
+        "name": "asdf",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "asdf",
+        "homepage": "https://asdf-vm.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "brew",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "shell",
+        "homepage": "https://brew.sh",
+        "estimatedEffort": "medium"
+      },
+      {
+        "name": "bun",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "shell",
+        "homepage": "https://bun.sh",
+        "estimatedEffort": "medium"
+      },
+      {
+        "name": "cargo",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "shell",
+        "homepage": "https://doc.rust-lang.org/cargo",
+        "estimatedEffort": "medium"
+      },
+      {
+        "name": "composer",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "composer",
+        "homepage": "https://getcomposer.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "gem",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "shell",
+        "homepage": "https://rubygems.org",
+        "estimatedEffort": "medium"
+      },
+      {
+        "name": "golangci-lint",
+        "bucket": "Backend",
+        "registryCategory": "code-quality",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "golangci-lint",
+        "homepage": "https://golangci-lint.run",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "gradle",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "gradle",
+        "homepage": "https://gradle.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "grpcurl",
+        "bucket": "Backend",
+        "registryCategory": "api-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "grpcurl",
+        "homepage": "https://github.com/fullstorydev/grpcurl",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "httpie",
+        "bucket": "Backend",
+        "registryCategory": "api-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "httpie",
+        "homepage": "https://httpie.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "insomnia",
+        "bucket": "Backend",
+        "registryCategory": "api-development",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "insomnia",
+        "homepage": "https://insomnia.rest",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "maven",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "maven",
+        "homepage": "https://maven.apache.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "miniconda",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "miniconda",
+        "homepage": "https://docs.conda.io/projects/miniconda",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "pip",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "shell",
+        "homepage": "https://pip.pypa.io",
+        "estimatedEffort": "medium"
+      },
+      {
+        "name": "pipx",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "pipx",
+        "homepage": "https://pipx.pypa.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "poetry",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "poetry",
+        "homepage": "https://python-poetry.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "sdkman",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "shell",
+        "homepage": "https://sdkman.io",
+        "estimatedEffort": "medium"
+      },
+      {
+        "name": "uv",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "uv",
+        "homepage": "https://docs.astral.sh/uv",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "volta",
+        "bucket": "Backend",
+        "registryCategory": "package-managers",
+        "missingPlatforms": [
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "volta",
+        "homepage": "https://volta.sh",
+        "estimatedEffort": "low"
+      }
+    ],
+    "Cloud": [
+      {
+        "name": "aws-cli",
+        "bucket": "Cloud",
+        "registryCategory": "cloud",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "awscli",
+        "homepage": "https://aws.amazon.com/cli",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "azure-cli",
+        "bucket": "Cloud",
+        "registryCategory": "cloud",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "azure-cli",
+        "homepage": "https://learn.microsoft.com/cli/azure",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "cloudflare",
+        "bucket": "Cloud",
+        "registryCategory": "cloud",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "cloudflared",
+        "homepage": "https://developers.cloudflare.com/cloudflare-one/connections/connect-networks",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "doctl",
+        "bucket": "Cloud",
+        "registryCategory": "cloud",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "doctl",
+        "homepage": "https://docs.digitalocean.com/reference/doctl",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "firebase",
+        "bucket": "Cloud",
+        "registryCategory": "cloud",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "firebase-cli",
+        "homepage": "https://firebase.google.com/docs/cli",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "flyio",
+        "bucket": "Cloud",
+        "registryCategory": "cloud",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "flyctl",
+        "homepage": "https://fly.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "gcloud",
+        "bucket": "Cloud",
+        "registryCategory": "cloud",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "google-cloud-sdk",
+        "homepage": "https://cloud.google.com/sdk",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "heroku",
+        "bucket": "Cloud",
+        "registryCategory": "cloud",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "heroku",
+        "homepage": "https://devcenter.heroku.com/articles/heroku-cli",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "linode-cli",
+        "bucket": "Cloud",
+        "registryCategory": "cloud",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "linode-cli",
+        "homepage": "https://www.linode.com/docs/products/tools/cli",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "railway",
+        "bucket": "Cloud",
+        "registryCategory": "cloud",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "railway",
+        "homepage": "https://railway.app",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "supabase",
+        "bucket": "Cloud",
+        "registryCategory": "cloud",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "supabase",
+        "homepage": "https://supabase.com/docs/guides/cli",
+        "estimatedEffort": "low"
+      }
+    ],
+    "Containers": [
+      {
+        "name": "buildah",
+        "bucket": "Containers",
+        "registryCategory": "containers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "buildah",
+        "homepage": "https://buildah.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "colima",
+        "bucket": "Containers",
+        "registryCategory": "containers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "colima",
+        "homepage": "https://github.com/abiosoft/colima",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "dive",
+        "bucket": "Containers",
+        "registryCategory": "containers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "dive",
+        "homepage": "https://github.com/wagoodman/dive",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "k9s",
+        "bucket": "Containers",
+        "registryCategory": "kubernetes",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "k9s",
+        "homepage": "https://k9scli.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "kind",
+        "bucket": "Containers",
+        "registryCategory": "containers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "kind",
+        "homepage": "https://kind.sigs.k8s.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "kubectl",
+        "bucket": "Containers",
+        "registryCategory": "kubernetes",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "kubernetes-cli",
+        "homepage": "https://kubernetes.io/docs/reference/kubectl",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "kubectx",
+        "bucket": "Containers",
+        "registryCategory": "kubernetes",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "kubectx",
+        "homepage": "https://github.com/ahmetb/kubectx",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "kubens",
+        "bucket": "Containers",
+        "registryCategory": "kubernetes",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "kubectx",
+        "homepage": "https://github.com/ahmetb/kubectx",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "kustomize",
+        "bucket": "Containers",
+        "registryCategory": "kubernetes",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "kustomize",
+        "homepage": "https://kustomize.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "lazydocker",
+        "bucket": "Containers",
+        "registryCategory": "containers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "lazydocker",
+        "homepage": "https://github.com/jesseduffield/lazydocker",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "lima",
+        "bucket": "Containers",
+        "registryCategory": "containers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "lima",
+        "homepage": "https://lima-vm.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "minikube",
+        "bucket": "Containers",
+        "registryCategory": "containers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "minikube",
+        "homepage": "https://minikube.sigs.k8s.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "nerdctl",
+        "bucket": "Containers",
+        "registryCategory": "containers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "nerdctl",
+        "homepage": "https://github.com/containerd/nerdctl",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "podman",
+        "bucket": "Containers",
+        "registryCategory": "containers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "podman",
+        "homepage": "https://podman.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "skaffold",
+        "bucket": "Containers",
+        "registryCategory": "kubernetes",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "skaffold",
+        "homepage": "https://skaffold.dev",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "skopeo",
+        "bucket": "Containers",
+        "registryCategory": "containers",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "skopeo",
+        "homepage": "https://github.com/containers/skopeo",
+        "estimatedEffort": "low"
+      }
+    ],
+    "Languages": [
+      {
+        "name": "c",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "shell",
+        "homepage": "https://clang.llvm.org",
+        "estimatedEffort": "medium"
+      },
+      {
+        "name": "clojure",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "clojure",
+        "homepage": "https://clojure.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "cpp",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "gcc",
+        "homepage": "https://gcc.gnu.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "csharp",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "dotnet-sdk",
+        "homepage": "https://dotnet.microsoft.com",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "dart",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "dart",
+        "homepage": "https://dart.dev",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "elixir",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "elixir",
+        "homepage": "https://elixir-lang.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "haskell",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "ghc",
+        "homepage": "https://www.haskell.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "java",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "openjdk",
+        "homepage": "https://openjdk.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "julia",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "julia",
+        "homepage": "https://julialang.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "kotlin",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "kotlin",
+        "homepage": "https://kotlinlang.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "lua",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "lua",
+        "homepage": "https://www.lua.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "nim",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "nim",
+        "homepage": "https://nim-lang.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "ocaml",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "ocaml",
+        "homepage": "https://ocaml.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "perl",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "perl",
+        "homepage": "https://www.perl.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "php",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "php",
+        "homepage": "https://www.php.net",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "r",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "r",
+        "homepage": "https://www.r-project.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "rust",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "shell",
+        "homepage": "https://www.rust-lang.org",
+        "estimatedEffort": "medium"
+      },
+      {
+        "name": "scala",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "scala",
+        "homepage": "https://www.scala-lang.org",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "swift",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "shell",
+        "homepage": "https://www.swift.org",
+        "estimatedEffort": "medium"
+      },
+      {
+        "name": "zig",
+        "bucket": "Languages",
+        "registryCategory": "languages",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "zig",
+        "homepage": "https://ziglang.org",
+        "estimatedEffort": "low"
+      }
+    ],
+    "Editors": [
+      {
+        "name": "cursor",
+        "bucket": "Editors",
+        "registryCategory": "editors",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "cursor",
+        "homepage": "https://www.cursor.com",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "helix",
+        "bucket": "Editors",
+        "registryCategory": "editors",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "helix",
+        "homepage": "https://helix-editor.com",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "jetbrains-toolbox",
+        "bucket": "Editors",
+        "registryCategory": "editors",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "jetbrains-toolbox",
+        "homepage": "https://www.jetbrains.com/toolbox-app",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "micro",
+        "bucket": "Editors",
+        "registryCategory": "editors",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-formula",
+        "macosId": "micro",
+        "homepage": "https://micro-editor.github.io",
+        "estimatedEffort": "low"
+      },
+      {
+        "name": "sublime-text",
+        "bucket": "Editors",
+        "registryCategory": "editors",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "sublime-text",
+        "homepage": "https://www.sublimetext.com",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "vscode",
+        "bucket": "Editors",
+        "registryCategory": "editors",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "visual-studio-code",
+        "homepage": "https://code.visualstudio.com",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "windsurf",
+        "bucket": "Editors",
+        "registryCategory": "editors",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "windsurf",
+        "homepage": "https://windsurf.com",
+        "estimatedEffort": "high"
+      },
+      {
+        "name": "zed",
+        "bucket": "Editors",
+        "registryCategory": "editors",
+        "missingPlatforms": [
+          "linux",
+          "windows"
+        ],
+        "macosMethod": "brew-cask",
+        "macosId": "zed",
+        "homepage": "https://zed.dev",
+        "estimatedEffort": "high"
+      }
+    ]
+  }
+}

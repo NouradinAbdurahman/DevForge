@@ -2,22 +2,38 @@ schemaVersion: 1
 name: prettier
 description: An opinionated code formatter
 category: code-quality
-platforms: [macos, linux]
-architectures: [intel, apple-silicon, linux]
-install: { method: npm, id: prettier }
-dependencies: [node]
-validate: "prettier --version"
-versionCommand: "prettier --version"
-repair: "npm install -g prettier@latest"
-update: "npm install -g prettier@latest"
-uninstall: { method: npm, id: prettier }
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
+install:
+  method: npm
+  id: prettier
+dependencies:
+  - node
+conflicts: []
+validate: prettier --version
+versionCommand: prettier --version
+repair: npm install -g prettier@latest
+update: npm install -g prettier@latest
+uninstall:
+  method: npm
+  id: prettier
 post_install: []
-homepage: "https://prettier.io"
-repository: "https://github.com/prettier/prettier"
+homepage: https://prettier.io
+repository: https://github.com/prettier/prettier
 license: MIT
-documentation: "https://prettier.io/docs/en/"
+documentation: https://prettier.io/docs/en/
 maintainer: DevForgeKit Registry
 tags: [code-quality, formatter]
 aliases: [prettier-cli]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
+platformInstall:
+  macos:
+    method: npm
+    id: prettier
+  linux:
+    method: npm
+    id: prettier
+  windows:
+    method: npm
+    id: prettier

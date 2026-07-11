@@ -9,18 +9,51 @@ import { DevForgeError } from "./errors.js";
 import { emitInstallEvent } from "./events.js";
 import { diagnoseFailure, logInstallation, updateVerificationStatus, INSTALL_STATUS } from "./installAudit.js";
 import { getPlatform } from "./platform/index.js";
+import { PlatformNotSupportedError } from "./platform/errors.js";
+
+// pickPlatformEntry(entry) - a platformInstall[platformId] value is one
+// of three shapes (see package.schema.json's platformInstallEntry): a
+// single installStep, an explicit { unsupported, reason } declaration,
+// or - Linux/Windows only, when more than one mainstream package
+// manager is genuinely viable (apt/dnf/pacman, winget/choco/scoop) - an
+// array of installSteps. For an array, pick the one whose `method`
+// matches the package manager actually detected on this machine
+// (getPlatform().packageManagerId()) - a manifest declaring both apt and
+// dnf entries must run the apt one on an apt box and the dnf one on a
+// dnf box, never always the first-listed method regardless of what's
+// really installed. Falls back to the first entry when detection comes
+// back empty (still better than refusing outright).
+function pickPlatformEntry(entry) {
+    if (!entry) return undefined;
+    if (Array.isArray(entry)) {
+        const pmId = getPlatform().packageManagerId();
+        return entry.find((e) => e.method === pmId) || entry[0];
+    }
+    return entry;
+}
+
+// assertSupported(entry, pkgName, platformId) - an explicit
+// { unsupported, reason } declaration must fail with its real, authored
+// reason (e.g. "no Linux port exists") rather than falling through to
+// commandForStep's generic "Unknown install method: undefined".
+function assertSupported(entry, pkgName, platformId) {
+    if (entry?.unsupported) {
+        throw new PlatformNotSupportedError(`'${pkgName}' is not available on ${platformId}: ${entry.reason}`);
+    }
+    return entry;
+}
 
 // resolvePlatformInstall(pkg) - if the manifest declares a
 // `platformInstall` map with an entry for the current platform, return
 // that step; otherwise fall back to the top-level `install` field.
-// This lets a single package manifest support macOS (brew), Linux (apt),
-// and Windows (winget) without variants or separate files.
+// This lets a single package manifest support macOS (brew), Linux (apt/
+// dnf/pacman), and Windows (winget/choco/scoop) without variants or
+// separate files.
 function resolvePlatformInstall(pkg) {
     if (pkg.platformInstall) {
         const platformId = getPlatform().id;
-        if (pkg.platformInstall[platformId]) {
-            return pkg.platformInstall[platformId];
-        }
+        const entry = pickPlatformEntry(pkg.platformInstall[platformId]);
+        if (entry) return assertSupported(entry, pkg.name, platformId);
     }
     return pkg.install;
 }
@@ -51,9 +84,8 @@ export function resolveInstallStep(pkg, variantId) {
         }
         if (variant.platformInstall) {
             const platformId = getPlatform().id;
-            if (variant.platformInstall[platformId]) {
-                return variant.platformInstall[platformId];
-            }
+            const entry = pickPlatformEntry(variant.platformInstall[platformId]);
+            if (entry) return assertSupported(entry, `${pkg.name} (${variant.id})`, platformId);
         }
         return variant.install;
     }
@@ -138,7 +170,25 @@ export async function validate(pkg) {
     return runShellCommand(pkg.validate, { silent: true });
 }
 
+// assertPlatformSupported(pkg) - repair()/update() run pkg.repair/
+// pkg.update as opaque, pre-formatted shell strings (e.g. "brew reinstall
+// bat"), unlike install()/uninstall() which dispatch through
+// commandForStep()'s per-method platform validation - so an explicit
+// { unsupported, reason } platformInstall declaration needs its own
+// check here. Without it, a package genuinely unsupported on the
+// current platform would fail with a raw "brew: command not found"
+// instead of the same clear, actionable PlatformNotSupportedError
+// install()/uninstall() already produce.
+function assertPlatformSupported(pkg) {
+    const platformId = getPlatform().id;
+    const entry = pkg.platformInstall?.[platformId];
+    if (entry && !Array.isArray(entry) && entry.unsupported) {
+        throw new PlatformNotSupportedError(`'${pkg.name}' is not available on ${platformId}: ${entry.reason}`);
+    }
+}
+
 export async function repair(pkg, { onOutput } = {}) {
+    assertPlatformSupported(pkg);
     if (!pkg.repair) {
         throw new DevForgeError(`'${pkg.name}' has no repair command defined`);
     }
@@ -146,6 +196,7 @@ export async function repair(pkg, { onOutput } = {}) {
 }
 
 export async function update(pkg, { onOutput } = {}) {
+    assertPlatformSupported(pkg);
     if (!pkg.update) {
         throw new DevForgeError(`'${pkg.name}' has no update command defined`);
     }

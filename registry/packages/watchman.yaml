@@ -2,17 +2,13 @@ schemaVersion: 1
 name: watchman
 description: A file watching service, commonly used by React Native
 category: mobile
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: watchman
 dependencies: []
+conflicts: []
 validate: watchman --version
 versionCommand: watchman --version
 repair: brew reinstall watchman
@@ -26,16 +22,11 @@ repository: https://github.com/facebook/watchman
 license: MIT
 documentation: https://facebook.github.io/watchman/docs/
 maintainer: DevForgeKit Registry
-tags:
-  - mobile
-  - file-watching
-  - react-native
-aliases:
-  - watchman-fs
+tags: [mobile, file-watching, react-native]
+aliases: [watchman-fs]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: watchman
-

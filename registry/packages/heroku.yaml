@@ -2,17 +2,13 @@ schemaVersion: 1
 name: heroku
 description: The official Heroku command-line interface
 category: cloud
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: heroku
 dependencies: []
+conflicts: []
 validate: heroku --version
 versionCommand: heroku --version
 repair: brew reinstall heroku
@@ -21,24 +17,19 @@ uninstall:
   method: brew-formula
   id: heroku
 post_install: []
+recommendedAlternatives:
+  - vercel
+  - railway
 homepage: https://devcenter.heroku.com/articles/heroku-cli
 repository: https://github.com/heroku/cli
 license: ISC
 documentation: https://devcenter.heroku.com/articles/heroku-cli
 maintainer: DevForgeKit Registry
-tags:
-  - cloud
-  - deployment
-  - paas
-aliases:
-  - heroku-cli
+tags: [cloud, deployment, paas]
+aliases: [heroku-cli]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - vercel
-  - railway
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: heroku
-

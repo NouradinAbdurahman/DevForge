@@ -2,17 +2,13 @@ schemaVersion: 1
 name: miniconda
 description: A minimal installer for the Conda package and environment manager
 category: package-managers
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-cask
   id: miniconda
 dependencies: []
+conflicts: []
 validate: conda --version
 versionCommand: conda --version
 repair: brew reinstall --cask miniconda
@@ -26,16 +22,11 @@ repository: https://github.com/conda/conda
 license: BSD-3-Clause
 documentation: https://docs.conda.io/projects/miniconda
 maintainer: DevForgeKit Registry
-tags:
-  - package-manager
-  - python
-  - data-science
-aliases:
-  - conda
+tags: [package-manager, python, data-science]
+aliases: [conda]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: miniconda
-

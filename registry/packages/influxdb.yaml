@@ -2,15 +2,13 @@ schemaVersion: 1
 name: influxdb
 description: InfluxDB - a time-series database
 category: databases
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-formula
   id: influxdb
 dependencies: []
+conflicts: []
 validate: influxd version
 versionCommand: influx version
 repair: brew services restart influxdb
@@ -20,22 +18,18 @@ uninstall:
   id: influxdb
 post_install:
   - brew services start influxdb
+recommendedAlternatives:
+  - prometheus
 homepage: https://www.influxdata.com
 repository: https://github.com/influxdata/influxdb
 license: MIT
 documentation: https://docs.influxdata.com
 maintainer: DevForgeKit Registry
-tags:
-  - database
-  - time-series
-aliases:
-  - influxdb-ts
+tags: [database, time-series]
+aliases: [influxdb-ts]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - prometheus
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: influxdb
-

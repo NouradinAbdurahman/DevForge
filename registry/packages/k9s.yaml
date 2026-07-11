@@ -2,18 +2,14 @@ schemaVersion: 1
 name: k9s
 description: A terminal UI to interact with your Kubernetes clusters
 category: kubernetes
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: k9s
 dependencies:
   - kubectl
+conflicts: []
 validate: k9s version
 versionCommand: k9s version
 repair: brew reinstall k9s
@@ -22,23 +18,19 @@ uninstall:
   method: brew-formula
   id: k9s
 post_install: []
+recommendedAlternatives:
+  - kubectl
+  - kubectx
 homepage: https://k9scli.io
 repository: https://github.com/derailed/k9s
 license: Apache-2.0
 documentation: https://k9scli.io/topics/
 maintainer: DevForgeKit Registry
-tags:
-  - kubernetes
-  - tui
-aliases:
-  - k9s-k8s
+tags: [kubernetes, tui]
+aliases: [k9s-k8s]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - kubectl
-  - kubectx
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: k9s
-

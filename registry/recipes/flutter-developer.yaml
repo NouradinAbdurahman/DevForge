@@ -1,7 +1,7 @@
 schemaVersion: 1
 name: flutter-developer
 description: Cross-platform Flutter mobile development - Flutter, Dart, Android Studio, Java, and CocoaPods for iOS builds - installed, configured, and verified in one command
-icon: "📱"
+icon: 📱
 tags: [flutter, mobile, dart]
 collections: [flutter]
 components: [cocoapods]

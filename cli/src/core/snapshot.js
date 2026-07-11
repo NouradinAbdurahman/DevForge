@@ -27,12 +27,13 @@
 //   - ai/providers for AI-powered explanations
 //   - stats.js for machine info gathering
 //   - self-update.js for config backup/restore
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, readdirSync, rmSync, cpSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, readdirSync, rmSync, cpSync, statSync, lstatSync } from "node:fs";
 import { tmpdir, hostname, userInfo, arch } from "node:os";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import crypto from "node:crypto";
 import { runShellCommand, captureShellCommand, shellQuote } from "./shell.js";
+import { assertSafeTarArchive } from "./archiveSafety.js";
 import { repoRoot, userConfigDir, userStateDir } from "./paths.js";
 import { loadConfig, getConfigValue } from "./config.js";
 import { loadPackages, loadProfiles, loadRecipes, loadCollections } from "./registry.js";
@@ -553,6 +554,7 @@ export async function extractArchive(archivePath) {
     if (!existsSync(archivePath)) {
         throw new DevForgeError(`No such file: ${archivePath}`);
     }
+    await assertSafeTarArchive(archivePath);
     const extractDir = tempDir("devforgekit-snapshot-extract-");
     const code = await runShellCommand(
         `tar -xzf ${shellQuote(archivePath)} -C ${shellQuote(extractDir)}`,
@@ -715,13 +717,19 @@ export async function inspectSnapshot(archivePath) {
 // ─── List ─────────────────────────────────────────────────────────────
 
 // Reads snapshot.json from a .dfk archive synchronously by extracting just
-// that one file to a temp directory.
+// that one named member to a temp directory. Extracting a single named
+// member (rather than the whole archive) already means any other
+// traversal-path entry in a malicious .dfk is never selected here - but
+// a crafted archive could still name its own malicious entry exactly
+// "./snapshot.json" as a symlink pointing elsewhere (e.g. /etc/passwd),
+// which tar would happily create; refuse to read through a symlink so
+// listing snapshots can never leak an arbitrary local file's contents.
 function readSnapshotMetaFromArchive(filePath) {
     try {
         const staging = tempDir("devforgekit-snapshot-meta-");
         spawnSync("sh", ["-c", `tar -xzf ${shellQuote(filePath)} -C ${shellQuote(staging)} ./snapshot.json 2>/dev/null`], { encoding: "utf8" });
         const metaPath = path.join(staging, "snapshot.json");
-        if (!existsSync(metaPath)) {
+        if (!existsSync(metaPath) || lstatSync(metaPath).isSymbolicLink()) {
             rmSync(staging, { recursive: true, force: true });
             return null;
         }

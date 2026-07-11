@@ -2,18 +2,14 @@ schemaVersion: 1
 name: kustomize
 description: Customize raw, template-free Kubernetes YAML manifests
 category: kubernetes
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: kustomize
 dependencies:
   - kubectl
+conflicts: []
 validate: kustomize version
 versionCommand: kustomize version
 repair: brew reinstall kustomize
@@ -27,15 +23,11 @@ repository: https://github.com/kubernetes-sigs/kustomize
 license: Apache-2.0
 documentation: https://kubectl.docs.kubernetes.io/references/kustomize/
 maintainer: DevForgeKit Registry
-tags:
-  - kubernetes
-  - configuration
-aliases:
-  - kustomize-k8s
+tags: [kubernetes, configuration]
+aliases: [kustomize-k8s]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: kustomize
-

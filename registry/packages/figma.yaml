@@ -2,15 +2,13 @@ schemaVersion: 1
 name: figma
 description: A collaborative interface design tool
 category: design
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: figma
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/Figma.app'
 versionCommand: ls /Applications | grep Figma
 repair: brew reinstall --cask figma
@@ -24,15 +22,11 @@ repository: https://www.figma.com
 license: proprietary
 documentation: https://help.figma.com
 maintainer: DevForgeKit Registry
-tags:
-  - design
-  - ui-ux
-aliases:
-  - figma-design
+tags: [design, ui-ux]
+aliases: [figma-design]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: figma
-

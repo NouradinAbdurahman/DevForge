@@ -2,17 +2,13 @@ schemaVersion: 1
 name: dart
 description: The Dart programming language, used by Flutter
 category: languages
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: dart
 dependencies: []
+conflicts: []
 validate: dart --version
 versionCommand: dart --version
 repair: brew reinstall dart
@@ -21,22 +17,18 @@ uninstall:
   method: brew-formula
   id: dart
 post_install: []
+recommendedAlternatives:
+  - kotlin
 homepage: https://dart.dev
 repository: https://github.com/dart-lang/sdk
 license: BSD-3-Clause
 documentation: https://dart.dev/guides
 maintainer: DevForgeKit Registry
-tags:
-  - language
-  - mobile
-aliases:
-  - dartlang
+tags: [language, mobile]
+aliases: [dartlang]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - kotlin
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: dart
-

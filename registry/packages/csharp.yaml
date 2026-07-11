@@ -2,15 +2,13 @@ schemaVersion: 1
 name: csharp
 description: The .NET SDK (C#, F#, Visual Basic)
 category: languages
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: dotnet-sdk
 dependencies: []
+conflicts: []
 validate: dotnet --version
 versionCommand: dotnet --version
 repair: brew reinstall --cask dotnet-sdk
@@ -24,17 +22,11 @@ repository: https://github.com/dotnet/sdk
 license: MIT
 documentation: https://learn.microsoft.com/dotnet/
 maintainer: DevForgeKit Registry
-tags:
-  - language
-  - dotnet
-aliases:
-  - dotnet
-  - csharp
-  - c#
+tags: [language, dotnet]
+aliases: [dotnet, c#]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: dotnet-sdk
-

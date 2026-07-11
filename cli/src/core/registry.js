@@ -9,6 +9,7 @@ import Ajv2020 from "ajv/dist/2020.js";
 import { repoRoot, userConfigDir } from "./paths.js";
 import { DevForgeError } from "./errors.js";
 import { scoreManifest } from "./quality.js";
+import { didYouMeanMessage } from "../lib/suggest.js";
 
 // The schemas under registry/schema/ declare $schema: .../2020-12/schema,
 // so they must be compiled with Ajv's draft-2020-12 build - the default
@@ -27,7 +28,21 @@ const collectionSchema = ajv.compile(loadSchema("registry/schema/collection.sche
 const profileSchema = ajv.compile(loadSchema("registry/schema/profile.schema.json"));
 const recipeSchema = ajv.compile(loadSchema("registry/schema/recipe.schema.json"));
 
-function readYamlFiles(dir) {
+// REGISTRY_SCHEMAS/readYamlFiles/formatAjvErrors - exported so
+// core/registryLint.js can validate every file and collect per-field
+// errors across every file in one pass, without loadCategories()/
+// loadPackages()'s throw-on-first-invalid-manifest behavior (correct
+// for normal CLI use - fail fast - but wrong for a lint pass that wants
+// to report every problem in one run).
+export const REGISTRY_SCHEMAS = {
+    categories: categorySchema,
+    packages: packageSchema,
+    collections: collectionSchema,
+    profiles: profileSchema,
+    recipes: recipeSchema
+};
+
+export function readYamlFiles(dir) {
     let entries;
     try {
         entries = readdirSync(dir).filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"));
@@ -41,7 +56,7 @@ function readYamlFiles(dir) {
     });
 }
 
-function formatAjvErrors(errors) {
+export function formatAjvErrors(errors) {
     return (errors || [])
         .map((e) => `  ${e.instancePath || "/"} ${e.message}`)
         .join("\n");
@@ -122,7 +137,17 @@ export function getPackage(name) {
     }
     const pkg = map.get(name);
     if (!pkg) {
-        throw new DevForgeError(`Unknown component '${name}'. Run 'devforgekit component list' to see available components.`);
+        // A declared alias (registry package.schema.json's `aliases`
+        // field) that getPackage() doesn't resolve directly is a
+        // different case than a typo: "jdk" IS a real, registry-declared
+        // name for java, so the message should point straight at java,
+        // not run edit-distance scoring against it (which could easily
+        // rank an unrelated same-length name above the real answer).
+        const aliasOwner = packages.find((p) => (p.aliases || []).includes(name));
+        const suggestion = aliasOwner
+            ? `Did you mean '${aliasOwner.name}'? ('${name}' is an alias of it.)`
+            : didYouMeanMessage(name, packages.map((p) => p.name));
+        throw new DevForgeError(`Unknown component '${name}'.${suggestion ? ` ${suggestion}` : ""} Run 'devforgekit component list' to see available components.`);
     }
     return pkg;
 }
@@ -153,9 +178,11 @@ export function loadCollections(dir = path.join(repoRoot(), "registry", "collect
 }
 
 export function getCollection(name) {
-    const collection = loadCollections().find((c) => c.name === name);
+    const collections = loadCollections();
+    const collection = collections.find((c) => c.name === name);
     if (!collection) {
-        throw new DevForgeError(`Unknown collection '${name}'. Run 'devforgekit collection list' to see available collections.`);
+        const suggestion = didYouMeanMessage(name, collections.map((c) => c.name));
+        throw new DevForgeError(`Unknown collection '${name}'.${suggestion ? ` ${suggestion}` : ""} Run 'devforgekit collection list' to see available collections.`);
     }
     return collection;
 }
@@ -210,9 +237,11 @@ export function loadProfiles(roots = profileDiscoveryRoots()) {
 }
 
 export function getProfile(name) {
-    const profile = loadProfiles().find((p) => p.name === name);
+    const profiles = loadProfiles();
+    const profile = profiles.find((p) => p.name === name);
     if (!profile) {
-        throw new DevForgeError(`Unknown profile '${name}'. Run 'devforgekit profile list' to see available profiles.`);
+        const suggestion = didYouMeanMessage(name, profiles.map((p) => p.name));
+        throw new DevForgeError(`Unknown profile '${name}'.${suggestion ? ` ${suggestion}` : ""} Run 'devforgekit profile list' to see available profiles.`);
     }
     return profile;
 }
@@ -311,9 +340,11 @@ export function loadRecipes(roots = recipeDiscoveryRoots()) {
 }
 
 export function getRecipe(name) {
-    const recipe = loadRecipes().find((r) => r.name === name);
+    const recipes = loadRecipes();
+    const recipe = recipes.find((r) => r.name === name);
     if (!recipe) {
-        throw new DevForgeError(`Unknown recipe '${name}'. Run 'devforgekit recipe list' to see available recipes.`);
+        const suggestion = didYouMeanMessage(name, recipes.map((r) => r.name));
+        throw new DevForgeError(`Unknown recipe '${name}'.${suggestion ? ` ${suggestion}` : ""} Run 'devforgekit recipe list' to see available recipes.`);
     }
     return recipe;
 }

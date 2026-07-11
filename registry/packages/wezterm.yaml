@@ -2,15 +2,13 @@ schemaVersion: 1
 name: wezterm
 description: A GPU-accelerated cross-platform terminal emulator and multiplexer
 category: terminals
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: wezterm
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/WezTerm.app'
 versionCommand: wezterm --version
 repair: brew reinstall --cask wezterm
@@ -19,25 +17,20 @@ uninstall:
   method: brew-cask
   id: wezterm
 post_install: []
+recommendedAlternatives:
+  - alacritty
+  - kitty
+  - iterm2
 homepage: https://wezterm.org
 repository: https://github.com/wez/wezterm
 license: MIT
 documentation: https://wezterm.org/index.html
 maintainer: DevForgeKit Registry
-tags:
-  - terminal
-  - gpu-accelerated
-  - multiplexer
-aliases:
-  - wezterm-terminal
+tags: [terminal, gpu-accelerated, multiplexer]
+aliases: [wezterm-terminal]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - alacritty
-  - kitty
-  - iterm2
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: wezterm
-

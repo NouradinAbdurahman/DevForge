@@ -38,13 +38,18 @@
     "install": { "$ref": "#/$defs/installStep" },
     "platformInstall": {
       "type": "object",
-      "description": "Platform-specific install steps. Keys are platform IDs (macos, linux, windows). The installer picks the entry matching the current platform; falls back to the top-level install field if no match.",
+      "description": "Platform-specific install steps. Keys are platform IDs (macos, linux, windows). The installer picks the entry matching the current platform; falls back to the top-level install field if no match. Registry Completion (v3.0): every package must declare all three keys explicitly - a real installStep where the software exists on that platform, or { unsupported: true, reason } where it genuinely doesn't. A platform key must never be silently omitted.",
       "properties": {
-        "macos": { "$ref": "#/$defs/installStep" },
-        "linux": { "$ref": "#/$defs/installStep" },
-        "windows": { "$ref": "#/$defs/installStep" }
+        "macos": { "$ref": "#/$defs/platformInstallEntry" },
+        "linux": { "$ref": "#/$defs/platformInstallEntry" },
+        "windows": { "$ref": "#/$defs/platformInstallEntry" }
       },
       "additionalProperties": false
+    },
+    "binary": {
+      "type": "string",
+      "description": "The executable name to probe for on PATH, when it differs from (or isn't reliably inferable from) versionCommand/validate's first word and the package name itself - see core/environment/discovery.js's binaryNameFor(). Optional: most packages don't need this because the inference already works.",
+      "minLength": 1
     },
     "dependencies": {
       "type": "array",
@@ -99,13 +104,48 @@
       "type": "array",
       "description": "Names of other registry packages that serve a similar purpose and may be worth considering (Compatibility Engine repair suggestions).",
       "items": { "type": "string" }
-    }
+    },
+    "environment": { "$ref": "#/$defs/environment" }
   },
   "oneOf": [
     { "required": ["install"] },
     { "required": ["variants"] }
   ],
   "$defs": {
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Environment Configuration Engine metadata (core/environment/) - PATH entries, variables, and raw shell lines this package needs, generated into a single owned shell file rather than requiring manual .zshrc edits. Only path/variables/shell are implemented so far; aliases/functions/completions/startupCommands/shutdownCommands/validation/repair/uninstall are planned but not yet processed by the engine - see docs/EnvironmentEngine.md.",
+      "properties": {
+        "path": {
+          "type": "array",
+          "description": "Directories to add to PATH, as shell expressions (may reference $HOME/$VARNAME - expanded at shell-startup time, not at generation time).",
+          "items": { "type": "string" }
+        },
+        "variables": {
+          "type": "object",
+          "description": "Environment variables this package needs. Each value is either a literal shell expression (`value`, may reference $HOME/other vars) or a shell command whose stdout becomes the value at shell-startup time (`command` - e.g. resolving a keg-only Homebrew formula's real install path), never both.",
+          "additionalProperties": { "$ref": "#/$defs/environmentVariable" }
+        },
+        "shell": {
+          "type": "array",
+          "description": "Raw shell lines to append verbatim (e.g. `eval \"$(mise activate zsh)\"`). Trusted, registry-authored content - embedded as-is, not escaped.",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "environmentVariable": {
+      "type": "object",
+      "additionalProperties": false,
+      "oneOf": [
+        { "required": ["value"] },
+        { "required": ["command"] }
+      ],
+      "properties": {
+        "value": { "type": "string" },
+        "command": { "type": "string" }
+      }
+    },
     "installStep": {
       "type": "object",
       "additionalProperties": false,
@@ -113,12 +153,34 @@
       "properties": {
         "method": {
           "type": "string",
-          "enum": ["brew-formula", "brew-cask", "npm", "pip", "cargo", "mise", "shell", "apt", "dnf", "pacman", "winget", "choco", "scoop"]
+          "enum": ["brew-formula", "brew-cask", "npm", "pip", "cargo", "mise", "shell", "apt", "dnf", "pacman", "winget", "choco", "scoop", "go"]
         },
         "id": { "type": "string" },
         "command": { "type": "string" },
         "tap": { "type": "string" }
       }
+    },
+    "unsupportedPlatform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unsupported", "reason"],
+      "description": "An explicit, intentional declaration that this software genuinely does not exist on this platform (e.g. Xcode on Linux) - Registry Completion (v3.0) requires this instead of silently omitting the platform key, so 'nobody has checked yet' and 'this doesn't exist here' are never confused.",
+      "properties": {
+        "unsupported": { "const": true },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "platformInstallEntry": {
+      "description": "Either a single installStep, a { unsupported, reason } declaration, or (Linux/Windows only, where more than one mainstream package manager is genuinely viable - apt/dnf/pacman, winget/choco/scoop) an array of installSteps, one per method. installer.js's resolveInstallStep() picks the array entry whose method matches the actually-detected package manager on the running machine, so a single package manifest correctly serves an apt user AND a dnf user AND a pacman user instead of assuming one distro family.",
+      "oneOf": [
+        { "$ref": "#/$defs/installStep" },
+        { "$ref": "#/$defs/unsupportedPlatform" },
+        {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/installStep" }
+        }
+      ]
     },
     "variant": {
       "type": "object",
@@ -130,11 +192,11 @@
         "install": { "$ref": "#/$defs/installStep" },
         "platformInstall": {
           "type": "object",
-          "description": "Platform-specific install steps for this variant.",
+          "description": "Platform-specific install steps for this variant. Same Registry Completion (v3.0) rule as the top-level platformInstall: every key explicit, real installStep or unsupportedPlatform.",
           "properties": {
-            "macos": { "$ref": "#/$defs/installStep" },
-            "linux": { "$ref": "#/$defs/installStep" },
-            "windows": { "$ref": "#/$defs/installStep" }
+            "macos": { "$ref": "#/$defs/platformInstallEntry" },
+            "linux": { "$ref": "#/$defs/platformInstallEntry" },
+            "windows": { "$ref": "#/$defs/platformInstallEntry" }
           },
           "additionalProperties": false
         }

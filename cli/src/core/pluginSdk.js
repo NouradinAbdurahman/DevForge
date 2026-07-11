@@ -12,6 +12,8 @@ import crypto from "node:crypto";
 import { load as yamlLoad, dump as yamlDump } from "js-yaml";
 import semver from "semver";
 import { runShellCommand } from "./shell.js";
+import { assertSafeTarArchive } from "./archiveSafety.js";
+import { recordPluginTrust } from "./pluginTrust.js";
 import { signFile, isSignatureTrusted } from "./signing.js";
 import { validatePluginManifest, discoverPlugins } from "./plugins.js";
 import { scoreResults } from "./health.js";
@@ -506,6 +508,8 @@ export async function installPlugin(pathOrUrl, { assumeYes = false } = {}) {
         }
     }
 
+    await assertSafeTarArchive(localArchivePath);
+
     const destRoot = path.join(userStateDir(), "plugins");
     mkdirSync(destRoot, { recursive: true });
     const extractTempDir = mkdtempSync(path.join(tmpdir(), "devforgekit-plugin-extract-"));
@@ -536,6 +540,13 @@ export async function installPlugin(pathOrUrl, { assumeYes = false } = {}) {
     renameSync(extractedDir, finalDir);
     rmSync(extractTempDir, { recursive: true, force: true });
     if (tempDir) rmSync(tempDir, { recursive: true, force: true });
+
+    // Record this exact content as reviewed/accepted - the point this
+    // whole function just walked the user through (verified signature,
+    // or an explicit "install anyway" confirm) - so registerPluginEventHooks()
+    // (core/plugins.js) wires this plugin's automatic hooks instead of
+    // skipping them as unreviewed on the next CLI startup.
+    recordPluginTrust(manifest.name, finalDir);
 
     const discovered = discoverPlugins();
     const missingDeps = (manifest.dependencies || []).filter((dep) => !discovered.some((p) => p.name === dep && p.valid));

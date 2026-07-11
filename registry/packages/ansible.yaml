@@ -2,21 +2,14 @@ schemaVersion: 1
 name: ansible
 description: An agentless IT automation and configuration management tool
 category: devops
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: ansible
 dependencies:
   - python
+conflicts: []
 validate: ansible --version
 versionCommand: ansible --version
 repair: brew reinstall ansible
@@ -25,21 +18,17 @@ uninstall:
   method: brew-formula
   id: ansible
 post_install: []
+recommendedAlternatives:
+  - terraform
 homepage: https://www.ansible.com
 repository: https://github.com/ansible/ansible
 license: GPL-3.0
 documentation: https://docs.ansible.com
 maintainer: DevForgeKit Registry
-tags:
-  - devops
-  - automation
-  - configuration-management
-aliases:
-  - ansible-core
+tags: [devops, automation, configuration-management]
+aliases: [ansible-core]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - terraform
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -50,4 +39,3 @@ platformInstall:
   windows:
     method: winget
     id: Ansible.Ansible
-

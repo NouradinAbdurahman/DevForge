@@ -4,7 +4,7 @@
 // `devforgekit profile install <name>`.
 import { useState } from "react";
 import { Box, Text, useInput } from "ink";
-import { h, Panel, SelectList, DetailPanel, InstallProgress, useDetailWidth } from "../components/ui.js";
+import { h, Panel, SelectList, DetailPanel, InstallProgress, EmptyState, useDetailWidth } from "../components/ui.js";
 
 const EMPTY_TEXT = "No profiles found.";
 import { useStore } from "../store.js";
@@ -63,6 +63,12 @@ export function ProfilesPage({ isActive }) {
             actions.notify(`Default profile set to '${current.name}'`, "success");
         }
     }, { isActive: Boolean(isActive) && !state.searchOpen });
+
+    if (profiles.length === 0) {
+        return h(Box, { flexGrow: 1 },
+            h(Panel, { title: "Profiles (0)", theme, isActive, flexGrow: 1 },
+                h(EmptyState, { title: "No profiles found.", hint: "devforgekit profile create", theme })));
+    }
 
     return h(Box, { flexGrow: 1 },
         h(Panel, { title: `Profiles (${profiles.length})`, theme, isActive, flexGrow: 1 },

@@ -2,17 +2,13 @@ schemaVersion: 1
 name: prometheus
 description: A monitoring system and time-series database
 category: monitoring
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: prometheus
 dependencies: []
+conflicts: []
 validate: prometheus --version
 versionCommand: prometheus --version
 repair: brew reinstall prometheus
@@ -22,24 +18,19 @@ uninstall:
   id: prometheus
 post_install:
   - brew services start prometheus
+recommendedAlternatives:
+  - grafana
+  - netdata
 homepage: https://prometheus.io
 repository: https://github.com/prometheus/prometheus
 license: Apache-2.0
 documentation: https://prometheus.io/docs/introduction/overview/
 maintainer: DevForgeKit Registry
-tags:
-  - monitoring
-  - metrics
-  - time-series
-aliases:
-  - prometheus-monitor
+tags: [monitoring, metrics, time-series]
+aliases: [prometheus-monitor]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - grafana
-  - netdata
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: prometheus
-

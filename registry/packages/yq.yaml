@@ -2,20 +2,13 @@ schemaVersion: 1
 name: yq
 description: A lightweight command-line YAML/JSON/XML processor
 category: utilities
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: yq
 dependencies: []
+conflicts: []
 validate: yq --version
 versionCommand: yq --version
 repair: brew reinstall yq
@@ -24,21 +17,17 @@ uninstall:
   method: brew-formula
   id: yq
 post_install: []
+recommendedAlternatives:
+  - jq
 homepage: https://mikefarah.gitbook.io/yq
 repository: https://github.com/mikefarah/yq
 license: MIT
 documentation: https://mikefarah.gitbook.io/yq/
 maintainer: DevForgeKit Registry
-tags:
-  - utility
-  - yaml
-  - cli
-aliases:
-  - yq-yaml
+tags: [utility, yaml, cli]
+aliases: [yq-yaml]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - jq
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -49,4 +38,3 @@ platformInstall:
   windows:
     method: winget
     id: MikeFarah.yq
-

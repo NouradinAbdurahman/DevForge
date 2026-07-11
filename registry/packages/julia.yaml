@@ -2,17 +2,13 @@ schemaVersion: 1
 name: julia
 description: The Julia programming language for scientific computing
 category: languages
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: julia
 dependencies: []
+conflicts: []
 validate: julia --version
 versionCommand: julia --version
 repair: brew reinstall julia
@@ -21,24 +17,19 @@ uninstall:
   method: brew-formula
   id: julia
 post_install: []
+recommendedAlternatives:
+  - python
+  - r
 homepage: https://julialang.org
 repository: https://github.com/JuliaLang/julia
 license: MIT
 documentation: https://docs.julialang.org
 maintainer: DevForgeKit Registry
-tags:
-  - language
-  - scientific-computing
-  - data-science
-aliases:
-  - julialang
+tags: [language, scientific-computing, data-science]
+aliases: [julialang]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - python
-  - r
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: julia
-

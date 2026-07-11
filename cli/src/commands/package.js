@@ -18,6 +18,7 @@ import {
     getInstalledPackageNames
 } from "../core/packageIntel.js";
 import { getPackage } from "../core/registry.js";
+import { table, section } from "../lib/ui.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling } from "../core/errors.js";
 
@@ -37,7 +38,7 @@ export function registerPackageCommand(program) {
         .option("--save", "save analysis to history")
         .action(withErrorHandling(async function () {
             const opts = this.opts();
-            const analysis = await analyzePackages({ useCache: opts.cache });
+            const analysis = await analyzePackages({ useCache: opts.cache, silent: Boolean(opts.json) });
 
             if (opts.save) {
                 const filePath = saveAnalysis(analysis);
@@ -46,7 +47,16 @@ export function registerPackageCommand(program) {
 
             if (opts.json) {
                 console.log(JSON.stringify(analysis, null, 2));
+                return;
             }
+
+            console.log(section("Package Intelligence Summary", [
+                `Packages:   ${analysis.summary.total} (${formatBytes(analysis.summary.totalSizeBytes || 0)})`,
+                `Orphans:    ${analysis.summary.orphanCount}`,
+                `Duplicates: ${analysis.summary.duplicateCount}`,
+                `Outdated:   ${analysis.summary.outdatedCount}`
+            ]));
+            logger.info("Next: devforgekit package orphan, devforgekit package duplicates, or devforgekit package outdated");
         }));
 
     // ─── info ────────────────────────────────────────────────────────
@@ -56,7 +66,7 @@ export function registerPackageCommand(program) {
         .option("--json", "output as JSON")
         .action(withErrorHandling(async function (name) {
             const opts = this.opts();
-            const analysis = await analyzePackages({ useCache: true });
+            const analysis = await analyzePackages({ useCache: true, silent: Boolean(opts.json) });
             const info = packageInfo(name, { analysis });
 
             if (opts.json) {
@@ -165,7 +175,7 @@ export function registerPackageCommand(program) {
         .option("--json", "output as JSON")
         .action(withErrorHandling(async function () {
             const opts = this.opts();
-            const analysis = await analyzePackages({ useCache: true });
+            const analysis = await analyzePackages({ useCache: true, silent: Boolean(opts.json) });
 
             if (opts.json) {
                 console.log(JSON.stringify(analysis.orphans, null, 2));
@@ -194,7 +204,7 @@ export function registerPackageCommand(program) {
         .option("--json", "output as JSON")
         .action(withErrorHandling(async function () {
             const opts = this.opts();
-            const analysis = await analyzePackages({ useCache: true });
+            const analysis = await analyzePackages({ useCache: true, silent: Boolean(opts.json) });
 
             if (opts.json) {
                 console.log(JSON.stringify(analysis.duplicates, null, 2));
@@ -222,7 +232,7 @@ export function registerPackageCommand(program) {
         .option("--json", "output as JSON")
         .action(withErrorHandling(async function () {
             const opts = this.opts();
-            const analysis = await analyzePackages({ useCache: true });
+            const analysis = await analyzePackages({ useCache: true, silent: Boolean(opts.json) });
 
             if (opts.json) {
                 console.log(JSON.stringify(analysis.orphans, null, 2));
@@ -250,7 +260,7 @@ export function registerPackageCommand(program) {
         .option("--json", "output as JSON")
         .action(withErrorHandling(async function () {
             const opts = this.opts();
-            const analysis = await analyzePackages({ useCache: true });
+            const analysis = await analyzePackages({ useCache: true, silent: Boolean(opts.json) });
 
             if (opts.json) {
                 console.log(JSON.stringify(analysis.outdated, null, 2));
@@ -280,7 +290,7 @@ export function registerPackageCommand(program) {
         .option("--endpoint <url>", "custom API endpoint")
         .action(withErrorHandling(async function () {
             const opts = this.opts();
-            const analysis = await analyzePackages({ useCache: true });
+            const analysis = await analyzePackages({ useCache: true, silent: Boolean(opts.json) });
 
             const result = await recommend(analysis, {
                 provider: opts.provider,
@@ -302,7 +312,7 @@ export function registerPackageCommand(program) {
         .option("--json", "output as JSON")
         .action(withErrorHandling(async function (name) {
             const opts = this.opts();
-            const analysis = await analyzePackages({ useCache: true });
+            const analysis = await analyzePackages({ useCache: true, silent: Boolean(opts.json) });
             const impact = await packageImpact(name, { analysis });
 
             if (opts.json) {
@@ -350,7 +360,7 @@ export function registerPackageCommand(program) {
         .option("--json", "output as JSON")
         .action(withErrorHandling(async function (query) {
             const opts = this.opts();
-            const analysis = await analyzePackages({ useCache: true });
+            const analysis = await analyzePackages({ useCache: true, silent: Boolean(opts.json) });
             const results = searchPackages(analysis, query, { filter: opts.filter });
 
             if (opts.json) {
@@ -416,19 +426,26 @@ export function registerPackageCommand(program) {
                 return;
             }
 
-            logger.section("Analysis History");
-            console.log("\n  Date                          Packages  Size      Orphans  Duplicates  Outdated");
-            console.log("  " + "-".repeat(95));
-            for (const h of history) {
-                const date = h.createdAt ? h.createdAt.slice(0, 19).replace("T", " ") : "unknown";
-                const total = String(h.total).padStart(8);
-                const size = formatBytes(h.totalSizeBytes || 0).padStart(8);
-                const orphans = String(h.orphanCount).padStart(8);
-                const dupes = String(h.duplicateCount).padStart(11);
-                const outdated = String(h.outdatedCount).padStart(9);
-                console.log(`  ${date}  ${total}  ${size}  ${orphans}  ${dupes}  ${outdated}`);
-            }
-            console.log(`\n  ${history.length} record(s)`);
+            console.log(section(`Analysis History (${history.length})`, [
+                table(
+                    history.map((h) => ({
+                        date: h.createdAt ? h.createdAt.slice(0, 19).replace("T", " ") : "unknown",
+                        total: h.total,
+                        size: formatBytes(h.totalSizeBytes || 0),
+                        orphans: h.orphanCount,
+                        duplicates: h.duplicateCount,
+                        outdated: h.outdatedCount
+                    })),
+                    [
+                        { key: "date", label: "DATE" },
+                        { key: "total", label: "PACKAGES" },
+                        { key: "size", label: "SIZE" },
+                        { key: "orphans", label: "ORPHANS" },
+                        { key: "duplicates", label: "DUPLICATES" },
+                        { key: "outdated", label: "OUTDATED" }
+                    ]
+                )
+            ]));
         }));
 
     // ─── export ──────────────────────────────────────────────────────
@@ -440,7 +457,7 @@ export function registerPackageCommand(program) {
         .option("--save", "save analysis first before exporting")
         .action(withErrorHandling(async function () {
             const opts = this.opts();
-            const analysis = await analyzePackages({ useCache: true });
+            const analysis = await analyzePackages({ useCache: true, silent: Boolean(opts.json) });
 
             if (opts.save) {
                 saveAnalysis(analysis);

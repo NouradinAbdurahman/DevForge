@@ -2,15 +2,13 @@ schemaVersion: 1
 name: genymotion
 description: An Android emulator for app development and testing
 category: android
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: genymotion
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/Genymotion.app'
 versionCommand: ls /Applications | grep Genymotion
 repair: brew reinstall --cask genymotion
@@ -19,24 +17,19 @@ uninstall:
   method: brew-cask
   id: genymotion
 post_install: []
+recommendedAlternatives:
+  - android-studio
+  - scrcpy
 homepage: https://www.genymotion.com
 repository: https://www.genymotion.com
 license: proprietary
 documentation: https://docs.genymotion.com
 maintainer: DevForgeKit Registry
-tags:
-  - android
-  - mobile
-  - emulator
-aliases:
-  - genymotion-android
+tags: [android, mobile, emulator]
+aliases: [genymotion-android]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - android-studio
-  - scrcpy
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: genymotion
-

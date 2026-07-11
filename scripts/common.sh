@@ -33,6 +33,18 @@ log_section() {
     printf '\n%s%s=== %s ===%s\n' "$COLOR_SECTION" "$COLOR_BOLD" "$*" "$COLOR_RESET"
 }
 
+# log_step_section <total> <current> <title> - like log_section, but
+# prefixed with a "Step N/total" line so a long-running install reads as
+# a known-length sequence instead of an unbroken wall of output. Callers
+# track their own current-step counter (bootstrap.sh increments a plain
+# STEP_CURRENT variable) rather than this function owning global state,
+# since bash 3.2 has no static/local-persisting-across-calls counters.
+log_step_section() {
+    local total="$1" current="$2" title="$3"
+    printf '\n%s%sStep %d/%d%s\n' "$COLOR_DIM" "$COLOR_BOLD" "$current" "$total" "$COLOR_RESET"
+    log_section "$title"
+}
+
 # --------------------------------------------------------------------------
 # Timing
 # --------------------------------------------------------------------------
@@ -114,6 +126,70 @@ confirm() {
 }
 
 # --------------------------------------------------------------------------
+# Safe test mode for destructive operations
+# --------------------------------------------------------------------------
+#
+# Real incident this exists to prevent: testing scripts/uninstall.sh by
+# piping "n" into it (assuming that would decline) instead actually
+# uninstalled a real package on a real machine - `confirm()`'s non-tty
+# auto-yes (intentional, above, for unattended install/backup/update in
+# CI) is the wrong default for anything destructive. Two separate fixes:
+#
+# 1. Destructive commands (uninstall.sh) must gate on a real tty or an
+#    explicit --force flag *before* ever reaching confirm() - see
+#    scripts/uninstall.sh's own option parsing, not this file.
+# 2. Every actual destructive operation - `brew uninstall`, `brew
+#    services stop/start`, an editor's --uninstall-extension, deleting a
+#    file - should be routed through dfk_run_destructive/dfk_remove_file
+#    below, so tests can set DEVFORGEKIT_TEST_MODE=1 and exercise the
+#    real surrounding logic (flag parsing, category selection, preview
+#    generation, install-state bookkeeping) with zero risk of touching
+#    the machine actually running the test, regardless of whether the
+#    tty/--force gate has a bug. Defense in depth, not a substitute for (1).
+DEVFORGEKIT_TEST_MODE="${DEVFORGEKIT_TEST_MODE:-0}"
+DEVFORGEKIT_TEST_LOG="${DEVFORGEKIT_TEST_LOG:-}"
+
+# dfk_run_destructive <description> -- <cmd...> - the one chokepoint
+# every destructive external command (brew install/uninstall, brew
+# services start/stop, `code`/`cursor` --install-extension/
+# --uninstall-extension, ...) should run through instead of calling the
+# real command directly. In test mode: logs "<description>: <cmd...>" to
+# DEVFORGEKIT_TEST_LOG (if set) and returns success without running
+# anything. Otherwise: runs the real command and returns its real exit
+# status.
+dfk_run_destructive() {
+    local description="$1"
+    shift
+    [[ "${1:-}" == "--" ]] && shift
+
+    if [[ "$DEVFORGEKIT_TEST_MODE" == "1" ]]; then
+        log_step "[test-mode] $description: $*"
+        if [[ -n "$DEVFORGEKIT_TEST_LOG" ]]; then
+            printf '%s: %s\n' "$description" "$*" >> "$DEVFORGEKIT_TEST_LOG"
+        fi
+        return 0
+    fi
+
+    "$@"
+}
+
+# dfk_remove_file <path> - the file-deletion equivalent of
+# dfk_run_destructive (a bare `rm` has no "command + args" shape worth
+# logging the same way, and callers care about "did this path get
+# removed", not a generic command's exit status).
+dfk_remove_file() {
+    local target="$1"
+    if [[ "$DEVFORGEKIT_TEST_MODE" == "1" ]]; then
+        log_step "[test-mode] would remove: $target"
+        if [[ -n "$DEVFORGEKIT_TEST_LOG" ]]; then
+            printf 'remove: %s\n' "$target" >> "$DEVFORGEKIT_TEST_LOG"
+        fi
+        return 0
+    fi
+    rm -f "$target"
+}
+
+# --------------------------------------------------------------------------
 # Filesystem helpers
 # --------------------------------------------------------------------------
 
@@ -151,7 +227,20 @@ fs_safe_copy() {
     fi
 
     fs_ensure_dir "$(dirname "$dest")"
-    cp "$src" "$dest"
+    # Write to a same-directory temp file and mv it into place rather than
+    # `cp "$src" "$dest"` directly - if $dest were swapped for a symlink
+    # between the `[[ -f "$dest" ]]` check above and this write (a TOCTOU
+    # race), a plain cp follows the symlink and overwrites whatever it
+    # points at; mv replaces the dest directory entry itself instead
+    # (same mktemp+mv idiom this file already uses for INSTALL_STATE_FILE).
+    local tmp
+    tmp="$(mktemp "${dest}.XXXXXX")"
+    # -p: mktemp creates $tmp at mode 0600 regardless of $src's own mode;
+    # without -p that 0600 would survive the mv below, silently tightening
+    # every file this function has ever copied (.zshrc, .gitconfig, editor
+    # settings) instead of just fixing the symlink race.
+    cp -p "$src" "$tmp"
+    mv "$tmp" "$dest"
     log_success "Installed $dest"
 }
 
@@ -390,6 +479,246 @@ ensure_homebrew() {
     command_exists brew
 }
 
+# _brewfile_tap_lines <brewfile> - every `tap "..."` line in a Brewfile,
+# needed on any single-entry Brewfile built from it (e.g. terraform's
+# hashicorp/tap entry won't resolve without its tap line present).
+_brewfile_tap_lines() {
+    grep -E '^[[:space:]]*tap[[:space:]]+"' "$1" 2>/dev/null || true
+}
+
+# --------------------------------------------------------------------------
+# Already-installed detection
+# --------------------------------------------------------------------------
+
+# _already_installed_ids <formula|cask> -> space-separated ids Homebrew
+# already reports as installed. One batched `brew list` call (not one
+# per package) so install_brewfile_per_line can report "Already
+# installed" instead of quietly re-running a no-op `brew bundle install`
+# for something that's already satisfied.
+_already_installed_ids() {
+    case "$1" in
+        formula) brew list --formula 2>/dev/null | tr '\n' ' ' ;;
+        cask) brew list --cask 2>/dev/null | tr '\n' ' ' ;;
+    esac
+}
+
+# --------------------------------------------------------------------------
+# Install state (resume support)
+# --------------------------------------------------------------------------
+
+# ~/.config/devforgekit/install-state.json tracks the outcome of the most
+# recent Homebrew install run (one entry per brew/cask id: "installed" or
+# "failed") so a later `./bootstrap.sh` can offer to resume instead of
+# reinstalling everything - see install_state_* below and the resume
+# prompt in bootstrap.sh. Genuinely valid JSON (not just JSON-shaped), so
+# it's inspectable outside this repo, but read back with plain grep/sed
+# rather than requiring jq - the whole point of this file is to survive
+# an install that was interrupted before jq itself got installed.
+INSTALL_STATE_FILE="$HOME/.config/devforgekit/install-state.json"
+
+# install_state_reset - starts a fresh state file for a new install run.
+install_state_reset() {
+    fs_ensure_dir "$(dirname "$INSTALL_STATE_FILE")"
+    printf '{}\n' > "$INSTALL_STATE_FILE"
+}
+
+# install_state_set <id> <installed|failed> <brew|cask> - records one
+# package's outcome and its Brewfile type (needed to reconstruct a
+# `brew "id"` vs `cask "id"` line on resume). Rewrites the whole (small)
+# file each time rather than appending - simplest way to keep it valid
+# JSON with no duplicate keys when a package is retried after a prior
+# failure.
+install_state_set() {
+    local id="$1" status="$2" type="$3"
+    [[ -f "$INSTALL_STATE_FILE" ]] || install_state_reset
+
+    local tmp
+    tmp="$(mktemp -t devforgekit-install-state.XXXXXX)"
+    {
+        echo "{"
+        # `|| true`: an empty/fresh state file means this grep|grep pipe
+        # legitimately matches nothing, which is not an error - without
+        # this, pipefail would report the pipe's non-zero exit status,
+        # and under errexit that would abort the entire calling script
+        # the very first time a package's outcome is ever recorded
+        # (confirmed live - this exact shape crashed install_brewfile_per_line
+        # after its first entry, same bug class as _wizard_size_lookup).
+        grep -oE '"[a-zA-Z0-9@/_.-]+": *"(installed|failed):(brew|cask)"' "$INSTALL_STATE_FILE" 2>/dev/null \
+            | grep -vF "\"$id\":" | sed 's/^/  /; s/$/,/' || true
+        printf '  "%s": "%s:%s"\n' "$id" "$status" "$type"
+        echo "}"
+    } > "$tmp"
+    mv "$tmp" "$INSTALL_STATE_FILE"
+}
+
+# install_state_failed_lines -> "brew \"id\"" / "cask \"id\"" lines (one
+# per line, ready to drop straight into a Brewfile) for every package
+# the last run recorded as failed - what a resumed install actually
+# needs to retry, without re-attempting anything already installed.
+install_state_failed_lines() {
+    [[ -f "$INSTALL_STATE_FILE" ]] || return 0
+    grep -oE '"[a-zA-Z0-9@/_.-]+": *"failed:(brew|cask)"' "$INSTALL_STATE_FILE" 2>/dev/null \
+        | sed -E 's/^"([^"]+)": *"failed:(brew|cask)"/\2 "\1"/' || true
+}
+
+# install_state_installed_lines -> "brew \"id\"" / "cask \"id\"" lines for
+# every package the state file records as installed - what
+# `devforgekit uninstall --packages` actually removes, since it's a more
+# accurate record of what THIS machine has than assuming any particular
+# Brewfile/profile.
+install_state_installed_lines() {
+    [[ -f "$INSTALL_STATE_FILE" ]] || return 0
+    grep -oE '"[a-zA-Z0-9@/_.-]+": *"installed:(brew|cask)"' "$INSTALL_STATE_FILE" 2>/dev/null \
+        | sed -E 's/^"([^"]+)": *"installed:(brew|cask)"/\2 "\1"/' || true
+}
+
+# install_state_has_entries - true if the state file exists and records
+# at least one package (used to decide whether resume is even offered).
+install_state_has_entries() {
+    [[ -f "$INSTALL_STATE_FILE" ]] && grep -q '": "' "$INSTALL_STATE_FILE" 2>/dev/null
+}
+
+# install_brewfile_per_line <brewfile>
+# Installs one Brewfile entry at a time via its own single-entry Brewfile,
+# instead of one `brew bundle install` call for the whole file. Used as a
+# fallback (see install_brewfile below) because `brew bundle install`
+# aborts entirely at the first broken entry and never attempts the rest -
+# confirmed live: a bogus formula ahead of a real one caused the real one
+# to never even be attempted. Reuses run_step's STEP_RESULTS ledger for
+# the pass/fail tally, then offers to retry whatever failed.
+install_brewfile_per_line() {
+    local brewfile="$1" tap_lines failed=() line id type status
+    local installed_formulae installed_casks
+
+    tap_lines="$(_brewfile_tap_lines "$brewfile")"
+    installed_formulae=" $(_already_installed_ids formula) "
+    installed_casks=" $(_already_installed_ids cask) "
+
+    INSTALL_SUCCEEDED=()
+    INSTALL_FAILED=()
+    INSTALL_ALREADY=()
+
+    while IFS= read -r line; do
+        case "$line" in
+            brew\ \"*) type="brew" ;;
+            cask\ \"*) type="cask" ;;
+            vscode\ \"*|npm\ \"*) continue ;;
+            *) continue ;;
+        esac
+        id="$(printf '%s' "$line" | sed -E 's/^[a-z]+[[:space:]]+"([^"]+)".*/\1/')"
+
+        if { [[ "$type" == "brew" ]] && [[ "$installed_formulae" == *" $id "* ]]; } \
+            || { [[ "$type" == "cask" ]] && [[ "$installed_casks" == *" $id "* ]]; }; then
+            STEP_RESULTS+=("PASS|$id already installed")
+            log_success "$id - already installed"
+            INSTALL_ALREADY+=("$id")
+            install_state_set "$id" "installed" "$type"
+            continue
+        fi
+
+        local tmp_single
+        tmp_single="$(mktemp -t devforgekit-brewfile-line.XXXXXX)"
+        { [[ -n "$tap_lines" ]] && printf '%s\n' "$tap_lines"; printf '%s\n' "$line"; } > "$tmp_single"
+
+        set +e
+        dfk_run_destructive "Install $id" -- brew bundle install --file="$tmp_single" >/dev/null 2>&1
+        status=$?
+        set -e
+        rm -f "$tmp_single"
+
+        if [[ $status -eq 0 ]]; then
+            STEP_RESULTS+=("PASS|Installed $id")
+            log_success "Installed $id"
+            INSTALL_SUCCEEDED+=("$id")
+            install_state_set "$id" "installed" "$type"
+        else
+            failed+=("$line")
+            STEP_RESULTS+=("FAIL|$id failed to install (exit $status)")
+            log_error "$id failed to install (exit $status)"
+            INSTALL_FAILED+=("$id")
+            install_state_set "$id" "failed" "$type"
+        fi
+    done < "$brewfile"
+
+    if [[ ${#failed[@]} -gt 0 ]]; then
+        log_warn "${#failed[@]} package(s) failed to install."
+        if confirm "Retry the ${#failed[@]} failed package(s)?"; then
+            local retry_brewfile retry_status retry_id
+            retry_brewfile="$(mktemp -t devforgekit-brewfile-retry.XXXXXX)"
+            { [[ -n "$tap_lines" ]] && printf '%s\n' "$tap_lines"; printf '%s\n' "${failed[@]}"; } > "$retry_brewfile"
+            set +e
+            dfk_run_destructive "Retry failed packages" -- brew bundle install --file="$retry_brewfile"
+            retry_status=$?
+            set -e
+            rm -f "$retry_brewfile"
+            if [[ $retry_status -eq 0 ]]; then
+                STEP_RESULTS+=("PASS|Retry failed packages")
+                log_success "Retry failed packages"
+                local retry_type
+                for line in "${failed[@]}"; do
+                    retry_id="$(printf '%s' "$line" | sed -E 's/^[a-z]+[[:space:]]+"([^"]+)".*/\1/')"
+                    case "$line" in brew\ \"*) retry_type="brew" ;; *) retry_type="cask" ;; esac
+                    install_state_set "$retry_id" "installed" "$retry_type"
+                    INSTALL_SUCCEEDED+=("$retry_id")
+                done
+                INSTALL_FAILED=()
+            else
+                STEP_RESULTS+=("WARNING|Retry failed packages (exit $retry_status)")
+                log_warn "Retry failed packages skipped or failed (exit $retry_status)"
+            fi
+        fi
+    fi
+
+    return 0
+}
+
+# install_brewfile <brewfile>
+# Tries the normal, fast single `brew bundle install` call first - the
+# common case where everything succeeds is unchanged from before. Only
+# falls back to the slower one-entry-at-a-time path (see
+# install_brewfile_per_line above) when that call actually fails, so one
+# broken formula doesn't block every other package in the file. Populates
+# the same INSTALL_SUCCEEDED/INSTALL_FAILED/INSTALL_ALREADY globals and
+# install-state file either way, so bootstrap.sh's post-install summary
+# and resume support work the same regardless of which path ran.
+install_brewfile() {
+    local brewfile="$1"
+    local installed_formulae installed_casks line type id
+
+    installed_formulae=" $(_already_installed_ids formula) "
+    installed_casks=" $(_already_installed_ids cask) "
+    INSTALL_SUCCEEDED=()
+    INSTALL_FAILED=()
+    INSTALL_ALREADY=()
+
+    if dfk_run_destructive "Homebrew packages (brew bundle)" -- brew bundle install --file="$brewfile"; then
+        STEP_RESULTS+=("PASS|Homebrew packages (brew bundle)")
+        log_success "Homebrew packages (brew bundle)"
+
+        while IFS= read -r line; do
+            case "$line" in
+                brew\ \"*) type="brew" ;;
+                cask\ \"*) type="cask" ;;
+                *) continue ;;
+            esac
+            id="$(printf '%s' "$line" | sed -E 's/^[a-z]+[[:space:]]+"([^"]+)".*/\1/')"
+            install_state_set "$id" "installed" "$type"
+            if { [[ "$type" == "brew" ]] && [[ "$installed_formulae" == *" $id "* ]]; } \
+                || { [[ "$type" == "cask" ]] && [[ "$installed_casks" == *" $id "* ]]; }; then
+                INSTALL_ALREADY+=("$id")
+            else
+                INSTALL_SUCCEEDED+=("$id")
+            fi
+        done < "$brewfile"
+
+        return 0
+    fi
+
+    log_warn "brew bundle install failed - Homebrew aborts on the first broken entry rather than continuing past it."
+    log_warn "Retrying one package at a time so a single bad formula/cask doesn't block the rest..."
+    install_brewfile_per_line "$brewfile"
+}
+
 # install_global_command - symlinks this repo's `devforgekit` CLI into the
 # Homebrew prefix's bin directory (already on PATH via brew shellenv) so it
 # can be run as a plain `devforgekit` command from anywhere, not just
@@ -417,6 +746,91 @@ install_global_command() {
     fs_ensure_dir "$target_dir"
     ln -sf "$target" "$link_path"
     log_success "Linked $link_path -> $target (run 'devforgekit' from anywhere)"
+}
+
+# verify_global_command - bounded post-install check that `devforgekit`
+# resolves on PATH to this repo's dispatcher and the Node CLI dependencies
+# it needs are present; retries install_global_command/
+# ensure_cli_dependencies once on failure before giving up. This is
+# intentionally narrow (symlink + node_modules only) - not the full
+# repair-engine "CLI install" category, which is separate follow-up work
+# (see docs/InstallationAudit.md).
+verify_global_command() {
+    local resolved target ok=0
+
+    target="$DEV_SETUP_ROOT/devforgekit"
+    resolved="$(command -v devforgekit 2>/dev/null || true)"
+    if [[ -z "$resolved" ]] || [[ "$(readlink "$resolved" 2>/dev/null || echo "$resolved")" != "$target" ]]; then
+        log_warn "'devforgekit' does not resolve to this repo's dispatcher yet - retrying the symlink..."
+        install_global_command || ok=1
+    fi
+
+    if [[ ! -d "$DEV_SETUP_ROOT/cli/node_modules" ]]; then
+        log_warn "cli/node_modules is missing - retrying the Node CLI setup..."
+        ensure_cli_dependencies || ok=1
+    fi
+
+    resolved="$(command -v devforgekit 2>/dev/null || true)"
+    if [[ -z "$resolved" ]] || [[ "$(readlink "$resolved" 2>/dev/null || echo "$resolved")" != "$target" ]]; then
+        ok=1
+    fi
+    [[ ! -d "$DEV_SETUP_ROOT/cli/node_modules" ]] && ok=1
+
+    return $ok
+}
+
+# _verify_run <description> <cmd...> - like run_step (STEP_RESULTS entry,
+# never aborts the caller under errexit), but returns the wrapped
+# command's real exit status instead of always 0 - run_step deliberately
+# always returns 0 so a failing step never aborts the script, which also
+# means callers can't use `run_step ... || ...` to learn whether it
+# actually passed. verify_devforgekit_cli needs that (its own caller
+# needs to know whether every check really passed).
+_verify_run() {
+    local description="$1"
+    shift
+    set +e
+    "$@" >/dev/null 2>&1
+    local status=$?
+    set -e
+    if [[ $status -eq 0 ]]; then
+        STEP_RESULTS+=("PASS|$description")
+        log_success "$description"
+    else
+        STEP_RESULTS+=("FAIL|$description (exit $status)")
+        log_error "$description failed (exit $status)"
+    fi
+    return $status
+}
+
+# verify_devforgekit_cli - the mandatory post-install check: not just
+# inferring the install worked from file/symlink presence, but actually
+# executing real commands and checking their exit codes.
+# verify_global_command's symlink/node_modules check runs first (with
+# its own auto-repair), then three real invocations: `devforgekit
+# --version`, `devforgekit check` (the fast, read-only PASS/WARNING/FAIL
+# sweep - safe to run unattended right after install), and devforgekit
+# itself forced down its non-TTY fallback path
+# (DEVFORGEKIT_NO_TUI=1 - the same env var isTuiCapable() already
+# documents) so verification never hangs waiting on an interactive
+# dashboard it can't actually test headlessly.
+verify_devforgekit_cli() {
+    run_step_optional "devforgekit command resolves correctly" verify_global_command
+
+    if ! command_exists devforgekit; then
+        log_warn "devforgekit still isn't on PATH - skipping command execution checks."
+        return 1
+    fi
+
+    local ok=0
+    _verify_run "devforgekit --version" devforgekit --version || ok=1
+    _verify_run "devforgekit check" devforgekit check || ok=1
+    _verify_run "devforgekit (dashboard fallback)" env DEVFORGEKIT_NO_TUI=1 devforgekit || ok=1
+
+    if [[ $ok -eq 0 ]]; then
+        log_success "Everything works."
+    fi
+    return $ok
 }
 
 # --------------------------------------------------------------------------
@@ -508,6 +922,11 @@ restore_editor() {
     fs_safe_copy "$DEV_SETUP_ROOT/$editor/settings.json" "$support_dir/settings.json"
     fs_safe_copy "$DEV_SETUP_ROOT/$editor/keybindings.json" "$support_dir/keybindings.json"
 
+    if [[ "${SKIP_EDITOR_EXTENSIONS:-0}" == "1" ]]; then
+        log_step "Skipping $editor extension install (install wizard choice)"
+        return 0
+    fi
+
     if command_exists "$cli" && [[ -f "$extensions_file" ]]; then
         log_step "Installing $editor extensions..."
         while IFS= read -r extension; do
@@ -549,21 +968,31 @@ SERVICE_LIST=("postgresql@17" "mysql" "redis")
 service_start_all() {
     local svc
     for svc in "${SERVICE_LIST[@]}"; do
-        brew services start "$svc" >/dev/null 2>&1 || log_warn "Could not start $svc"
+        dfk_run_destructive "Start $svc" -- brew services start "$svc" >/dev/null 2>&1 || log_warn "Could not start $svc"
+    done
+}
+
+# service_start_selected <svc...> - like service_start_all but only for an
+# explicit subset (the install wizard's "Choose" services option). A call
+# with zero arguments is a deliberate no-op, not an error.
+service_start_selected() {
+    local svc
+    for svc in "$@"; do
+        dfk_run_destructive "Start $svc" -- brew services start "$svc" >/dev/null 2>&1 || log_warn "Could not start $svc"
     done
 }
 
 service_stop_all() {
     local svc
     for svc in "${SERVICE_LIST[@]}"; do
-        brew services stop "$svc" >/dev/null 2>&1 || log_warn "Could not stop $svc"
+        dfk_run_destructive "Stop $svc" -- brew services stop "$svc" >/dev/null 2>&1 || log_warn "Could not stop $svc"
     done
 }
 
 service_restart_all() {
     local svc
     for svc in "${SERVICE_LIST[@]}"; do
-        brew services restart "$svc" >/dev/null 2>&1 || log_warn "Could not restart $svc"
+        dfk_run_destructive "Restart $svc" -- brew services restart "$svc" >/dev/null 2>&1 || log_warn "Could not restart $svc"
     done
 }
 
@@ -660,8 +1089,28 @@ print_summary() {
 #   if print_summary; then STATUS=0; else STATUS=1; fi
 #   print_health_score
 #   exit $STATUS
-print_health_score() {
-    local pass=0 warn=0 fail=0 entry status total score
+# _health_score_value - the pure 0-100 computation (PASS=full credit,
+# WARNING=half, FAIL=none) over STEP_RESULTS, shared by print_health_score
+# and the post-install welcome screen so both stay in sync instead of
+# duplicating the formula.
+_health_score_value() {
+    local pass warn fail
+    read -r pass warn fail <<< "$(_health_score_counts)"
+
+    local total=$((pass + warn + fail))
+    if [[ $total -eq 0 ]]; then
+        echo 100
+    else
+        echo $(((pass * 100 + warn * 50) / total))
+    fi
+}
+
+# _health_score_counts - "pass warn fail" over STEP_RESULTS, the same
+# tally _health_score_value folds into one percentage - split out so the
+# welcome screen can show "N verified, M warnings" without re-deriving
+# the loop.
+_health_score_counts() {
+    local pass=0 warn=0 fail=0 entry status
 
     for entry in "${STEP_RESULTS[@]}"; do
         status="${entry%%|*}"
@@ -672,14 +1121,30 @@ print_health_score() {
         esac
     done
 
-    total=$((pass + warn + fail))
-    if [[ $total -eq 0 ]]; then
-        score=100
-    else
-        score=$(((pass * 100 + warn * 50) / total))
-    fi
+    echo "$pass $warn $fail"
+}
+
+# ui_health_bar <score> - a 24-cell block bar, same fill characters
+# (█/░) and 90/70 color thresholds as the Node CLI's lib/ui.js
+# healthBar() - one shared visual language for "percent done" whether a
+# score was computed by bash or Node.
+ui_health_bar() {
+    local score="$1" bar_width=24 filled empty i bar="" color
+    filled=$(((score * bar_width + 50) / 100))
+    [[ $filled -gt $bar_width ]] && filled=$bar_width
+    empty=$((bar_width - filled))
+    if [[ $score -ge 90 ]]; then color="$COLOR_SUCCESS"; elif [[ $score -ge 70 ]]; then color="$COLOR_WARNING"; else color="$COLOR_ERROR"; fi
+    for ((i = 0; i < filled; i++)); do bar+="█"; done
+    for ((i = 0; i < empty; i++)); do bar+="░"; done
+    printf '%s%s  %d%%%s\n' "$color" "$bar" "$score" "$COLOR_RESET"
+}
+
+print_health_score() {
+    local score
+    score="$(_health_score_value)"
 
     echo
+    ui_health_bar "$score"
     if [[ $score -ge 90 ]]; then
         printf '%sHealth Score: %d%%%s\n' "$COLOR_SUCCESS" "$score" "$COLOR_RESET"
         printf '%sMachine Ready%s\n' "$COLOR_SUCCESS" "$COLOR_RESET"
@@ -690,4 +1155,59 @@ print_health_score() {
         printf '%sHealth Score: %d%%%s\n' "$COLOR_ERROR" "$score" "$COLOR_RESET"
         printf '%sMachine Needs Attention%s\n' "$COLOR_ERROR" "$COLOR_RESET"
     fi
+}
+
+# print_welcome_screen <verified-tool...>
+# The first-run "you're all set" summary shown instead of silently
+# handing off to the dashboard or dropping back to the shell: health
+# score (same computation print_health_score uses), which tools this
+# run actually verified, and a numbered next-steps menu. Only ever
+# called on a real success, a real tty, and never in --dry-run - see the
+# gate around this call in bootstrap.sh. Exits the caller via exec/exit
+# itself based on the menu choice, so nothing after this call runs.
+print_welcome_screen() {
+    local installed=("$@") score pass warn fail tool choice
+
+    score="$(_health_score_value)"
+    read -r pass warn fail <<< "$(_health_score_counts)"
+
+    echo
+    echo "${COLOR_BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${COLOR_RESET}"
+    echo "${COLOR_BOLD}DevForgeKit is ready.${COLOR_RESET}"
+    echo
+    ui_health_bar "$score"
+    printf '%s%d verified%s, %s%d warning(s)%s, %s%d failed%s\n' \
+        "$COLOR_SUCCESS" "$pass" "$COLOR_RESET" \
+        "$COLOR_WARNING" "$warn" "$COLOR_RESET" \
+        "$COLOR_ERROR" "$fail" "$COLOR_RESET"
+
+    if [[ ${#installed[@]} -gt 0 ]]; then
+        echo
+        echo "Installed:"
+        for tool in "${installed[@]-}"; do
+            [[ -n "$tool" ]] && printf '  %s%s%s %s\n' "$COLOR_SUCCESS" "$SYMBOL_PASS" "$COLOR_RESET" "$tool"
+        done
+    fi
+
+    echo
+    echo "Configuration:"
+    printf '  %s%s%s .zshrc, .gitconfig, mise.toml restored\n' "$COLOR_SUCCESS" "$SYMBOL_PASS" "$COLOR_RESET"
+
+    echo
+    echo "Next steps:"
+    echo "  1) Launch dashboard"
+    echo "  2) Run doctor"
+    echo "  3) Generate first project"
+    echo "  4) Exit"
+    echo
+    echo "Docs: docs/CommandReference.md - docs/Troubleshooting.md - docs/PlatformArchitecture.md"
+    echo "${COLOR_BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${COLOR_RESET}"
+
+    read -r -p "Enter a number [1-4] (default 1): " choice
+    case "${choice:-1}" in
+        2) exec "$DEV_SETUP_ROOT/devforgekit" doctor ;;
+        3) exec "$DEV_SETUP_ROOT/devforgekit" new ;;
+        4) exit 0 ;;
+        *) exec "$DEV_SETUP_ROOT/devforgekit" ;;
+    esac
 }

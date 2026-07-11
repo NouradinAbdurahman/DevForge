@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { runProjectGenerator, writeGeneratedFiles } from "../src/core/projectGenerator.js";
+import { runProjectGenerator, writeGeneratedFiles, validateProjectName } from "../src/core/projectGenerator.js";
 
 function withWorkDir(fn) {
     const workDir = mkdtempSync(path.join(tmpdir(), "devforgekit-projectgen-test-"));
@@ -30,6 +30,48 @@ test("writeGeneratedFiles honors an explicit file mode", () => {
         writeGeneratedFiles(workDir, [{ path: "run.sh", content: "#!/bin/sh\n", mode: 0o755 }]);
         const stat = readFileSync(path.join(workDir, "run.sh"), "utf8");
         assert.equal(stat, "#!/bin/sh\n");
+    });
+});
+
+test("validateProjectName rejects shell metacharacters, reserved Windows device names, and leading dot/dash", () => {
+    assert.throws(() => validateProjectName(`x" ; rm -rf ~ ; echo "`), /Invalid project name/);
+    assert.throws(() => validateProjectName("con"), /reserved name/);
+    assert.throws(() => validateProjectName("NUL"), /reserved name/);
+    assert.throws(() => validateProjectName(".hidden"), /can't start with/);
+    assert.throws(() => validateProjectName("-flag"), /can't start with/);
+    assert.doesNotThrow(() => validateProjectName("my-app_2.0"));
+});
+
+// Regression test: runProjectGenerator is the one chokepoint every
+// caller funnels through (devforgekit new, ai generate, the TUI's
+// GeneratorPage) - a malicious/unvalidated name must be rejected here,
+// before any generator's scaffold()/generate() ever runs and has a
+// chance to interpolate it into a shell command (several generators,
+// e.g. spring-boot.js, build shell strings from `name` with no
+// escaping). Previously only the `devforgekit new` CLI path validated
+// the name itself; ai generate (AI-response-derived) and the TUI
+// (raw TextField) both bypassed it entirely.
+test("runProjectGenerator rejects a malicious name before invoking the generator's scaffold/generate at all", async () => {
+    await withWorkDir(async (workDir) => {
+        let scaffoldCalled = false;
+        const fixtureGenerator = {
+            id: "fixture",
+            label: "Fixture",
+            scaffold: () => {
+                scaffoldCalled = true;
+                return 0;
+            },
+            generate: () => {
+                scaffoldCalled = true;
+                return [];
+            }
+        };
+        const maliciousName = `evil" ; touch /tmp/pwned ; echo "`;
+        await assert.rejects(
+            () => runProjectGenerator(fixtureGenerator, { name: maliciousName, parentDir: workDir }),
+            /Invalid project name/
+        );
+        assert.equal(scaffoldCalled, false, "scaffold/generate must never run for an invalid name");
     });
 });
 

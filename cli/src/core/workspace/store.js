@@ -14,6 +14,7 @@ import { userConfigDir } from "../paths.js";
 import { DevForgeError, usageError } from "../errors.js";
 import { createWorkspaceDoc, migrateWorkspace, validateWorkspaceDoc } from "./schema.js";
 import { removeWorkspaceSsh } from "./ssh.js";
+import { didYouMeanMessage } from "../../lib/suggest.js";
 
 const NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
 
@@ -92,7 +93,8 @@ export function getWorkspace(name) {
     const entry = loadWorkspaceEntry(name);
     if (!entry.valid) {
         if (entry.reason === "No workspace.json found") {
-            throw new DevForgeError(`Unknown workspace '${name}'. Run 'devforgekit workspace list' to see available workspaces.`);
+            const suggestion = didYouMeanMessage(name, listWorkspaces().map((e) => e.name));
+            throw new DevForgeError(`Unknown workspace '${name}'.${suggestion ? ` ${suggestion}` : ""} Run 'devforgekit workspace list' to see available workspaces.`);
         }
         throw new DevForgeError(`Workspace '${name}' is invalid: ${entry.reason}`);
     }

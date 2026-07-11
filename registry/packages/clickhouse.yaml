@@ -2,15 +2,13 @@ schemaVersion: 1
 name: clickhouse
 description: ClickHouse - a column-oriented database for real-time analytics
 category: databases
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-formula
   id: clickhouse
 dependencies: []
+conflicts: []
 validate: clickhouse --version
 versionCommand: clickhouse-client --version
 repair: brew reinstall clickhouse
@@ -19,24 +17,19 @@ uninstall:
   method: brew-formula
   id: clickhouse
 post_install: []
+recommendedAlternatives:
+  - duckdb
+  - postgres
 homepage: https://clickhouse.com
 repository: https://github.com/ClickHouse/ClickHouse
 license: Apache-2.0
 documentation: https://clickhouse.com/docs
 maintainer: DevForgeKit Registry
-tags:
-  - database
-  - analytics
-  - olap
-aliases:
-  - clickhouse-db
+tags: [database, analytics, olap]
+aliases: [clickhouse-db]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - duckdb
-  - postgres
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: clickhouse
-

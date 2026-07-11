@@ -2,17 +2,13 @@ schemaVersion: 1
 name: grpcurl
 description: A command-line tool for interacting with gRPC servers
 category: api-development
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: grpcurl
 dependencies: []
+conflicts: []
 validate: grpcurl --version
 versionCommand: grpcurl --version
 repair: brew reinstall grpcurl
@@ -26,15 +22,11 @@ repository: https://github.com/fullstorydev/grpcurl
 license: MIT
 documentation: https://github.com/fullstorydev/grpcurl
 maintainer: DevForgeKit Registry
-tags:
-  - api-development
-  - grpc
-aliases:
-  - grpcurl-cli
+tags: [api-development, grpc]
+aliases: [grpcurl-cli]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: grpcurl
-

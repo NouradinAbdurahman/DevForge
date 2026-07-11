@@ -4,21 +4,28 @@ description: RubyGems - Ruby's package manager, bundled with Ruby
 category: package-managers
 platforms: [macos, linux]
 architectures: [intel, apple-silicon, linux]
-install: { method: shell, command: "gem update --system" }
-dependencies: [ruby]
+install:
+  method: shell
+  command: gem update --system
+dependencies:
+  - ruby
+conflicts: []
 validate: gem --version
-versionCommand: "gem --version"
-repair: "gem update --system"
-update: "gem update --system"
-uninstall: { method: shell, command: "echo 'gem ships with Ruby - remove Ruby to remove gem'" }
+versionCommand: gem --version
+repair: gem update --system
+update: gem update --system
+uninstall:
+  method: shell
+  command: echo 'gem ships with Ruby - remove Ruby to remove gem'
 post_install: []
-homepage: "https://rubygems.org"
-repository: "https://github.com/rubygems/rubygems"
+recommendedAlternatives:
+  - npm
+homepage: https://rubygems.org
+repository: https://github.com/rubygems/rubygems
 license: MIT
-documentation: "https://guides.rubygems.org"
+documentation: https://guides.rubygems.org
 maintainer: DevForgeKit Registry
 tags: [package-manager, ruby]
 aliases: [rubygems]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives: [npm]
+lastVerified: '2026-07-05'

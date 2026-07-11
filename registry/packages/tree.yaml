@@ -2,20 +2,13 @@ schemaVersion: 1
 name: tree
 description: Display directories as recursive, indented trees
 category: utilities
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: tree
 dependencies: []
+conflicts: []
 validate: tree --version
 versionCommand: tree --version
 repair: brew reinstall tree
@@ -29,13 +22,10 @@ repository: https://gitlab.com/OldManProgrammer/unix-tree
 license: GPL-2.0
 documentation: http://mama.indstate.edu/users/ice/tree
 maintainer: DevForgeKit Registry
-tags:
-  - utility
-  - cli
-aliases:
-  - tree-cli
+tags: [utility, cli]
+aliases: [tree-cli]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 ciVerified: true
 platformInstall:
   macos:
@@ -47,4 +37,3 @@ platformInstall:
   windows:
     method: winget
     id: JesseAdrien.Tree
-

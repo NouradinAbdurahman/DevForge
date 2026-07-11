@@ -2,17 +2,13 @@ schemaVersion: 1
 name: bazelisk
 description: A version manager for the Bazel build system
 category: build-systems
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: bazelisk
 dependencies: []
+conflicts: []
 validate: bazel --version
 versionCommand: bazelisk version
 repair: brew reinstall bazelisk
@@ -26,16 +22,11 @@ repository: https://github.com/bazelbuild/bazelisk
 license: Apache-2.0
 documentation: https://github.com/bazelbuild/bazelisk#readme
 maintainer: DevForgeKit Registry
-tags:
-  - build-tool
-  - build
-  - bazel
-aliases:
-  - bazel
+tags: [build-tool, build, bazel]
+aliases: [bazel]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: bazelisk
-

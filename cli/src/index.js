@@ -8,8 +8,10 @@ import { Command } from "commander";
 import { getVersion } from "./version.js";
 import { setLogLevel } from "./core/logger.js";
 import { registerPluginCommands, registerPluginEventHooks } from "./core/plugins.js";
+import { registerEnvironmentEventHooks } from "./core/environment/index.js";
 
 import { registerInstallCommand } from "./commands/install.js";
+import { registerUninstallCommand } from "./commands/uninstall.js";
 import { registerNewCommand } from "./commands/new.js";
 import { registerDashboardCommand } from "./commands/dashboard.js";
 import { registerUpdateCommand } from "./commands/update.js";
@@ -44,6 +46,8 @@ import { registerBenchmarkCommand } from "./commands/benchmark.js";
 import { registerRepairCommand } from "./commands/repair.js";
 import { registerPackageCommand } from "./commands/package.js";
 import { registerGraphCommand } from "./commands/graph.js";
+import { registerEnvironmentCommand } from "./commands/environment.js";
+import { registerExplainCommand } from "./commands/explain.js";
 
 export function createProgram() {
     const program = new Command();
@@ -69,6 +73,10 @@ Examples:
   $ devforgekit doctor --fix
   $ devforgekit component install
   $ devforgekit component list --category devops
+  $ devforgekit component list --status --installed
+  $ devforgekit component info flutter
+  $ devforgekit component doctor flutter
+  $ devforgekit component reinstall flutter
   $ devforgekit search postgres --category databases
   $ devforgekit collection install backend
   $ devforgekit profile install ai
@@ -128,9 +136,17 @@ Examples:
   $ devforgekit graph impact flutter
   $ devforgekit graph path node docker
   $ devforgekit graph stats
+  $ devforgekit env doctor
+  $ devforgekit env list
+  $ devforgekit env regenerate
+  $ devforgekit env graph java
+  $ devforgekit env diff
+  $ devforgekit env watch
+  $ devforgekit explain flutter
 `);
 
     registerInstallCommand(program);
+    registerUninstallCommand(program);
     registerNewCommand(program);
     registerDashboardCommand(program);
     registerUpdateCommand(program);
@@ -165,6 +181,8 @@ Examples:
     registerRepairCommand(program);
     registerPackageCommand(program);
     registerGraphCommand(program);
+    registerEnvironmentCommand(program);
+    registerExplainCommand(program);
 
     // Layer 3 extension point: any plugins/*/plugin.yml declaring a
     // command hook gets registered as a live top-level command here, on
@@ -172,6 +190,7 @@ Examples:
     // shared pluginEvents bus (core/events.js) the same way.
     registerPluginCommands(program);
     registerPluginEventHooks();
+    registerEnvironmentEventHooks();
 
     return program;
 }

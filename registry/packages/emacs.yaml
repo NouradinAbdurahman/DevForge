@@ -2,20 +2,13 @@ schemaVersion: 1
 name: emacs
 description: An extensible, customizable text editor
 category: editors
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: emacs
 dependencies: []
+conflicts: []
 validate: emacs --version
 versionCommand: emacs --version
 repair: brew reinstall emacs
@@ -24,20 +17,17 @@ uninstall:
   method: brew-formula
   id: emacs
 post_install: []
+recommendedAlternatives:
+  - neovim
 homepage: https://www.gnu.org/software/emacs
 repository: https://git.savannah.gnu.org/cgit/emacs.git
 license: GPL-3.0
 documentation: https://www.gnu.org/software/emacs/manual/
 maintainer: DevForgeKit Registry
-tags:
-  - editor
-  - lisp
-aliases:
-  - gnu-emacs
+tags: [editor, lisp]
+aliases: [gnu-emacs]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - neovim
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -48,4 +38,3 @@ platformInstall:
   windows:
     method: winget
     id: GNU.Emacs
-

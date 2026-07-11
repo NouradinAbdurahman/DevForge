@@ -27,15 +27,17 @@ import { captureDockerContext } from "../core/workspace/docker.js";
 import { captureKubeContext } from "../core/workspace/kubernetes.js";
 import { installShellHook, uninstallShellHook, isShellHookInstalled, shellInitScript } from "../core/workspace/shellIntegration.js";
 import { getWorkspaceMetadata, formatMetadataSummary } from "../core/workspace/metadata.js";
-import { verifyWorkspaceStructured, formatStructuredVerification, previewSwitch, formatSwitchPreview, diffWorkspaces, formatWorkspaceDiff, previewBundleImport, formatBundlePreview, computeWorkspaceHealth, formatHealthScore } from "../core/workspace/verification.js";
+import { verifyWorkspaceStructured, previewSwitch, formatSwitchPreview, diffWorkspaces, formatWorkspaceDiff, previewBundleImport, formatBundlePreview, computeWorkspaceHealth } from "../core/workspace/verification.js";
 import { benchmarkWorkspace, formatBenchmarkResult } from "../core/workspace/benchmark.js";
 import { getPlatform } from "../core/platform/index.js";
 import { getProfile, getRecipe, getCollection, expandProfile, expandRecipe } from "../core/registry.js";
 import { scanCompatibility } from "../core/compatibility/engine.js";
 import { planRepair, executeRepairPlan } from "../core/compatibility/repair.js";
 import { text, confirm } from "../lib/prompts.js";
+import { table, section, healthBar } from "../lib/ui.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling, usageError } from "../core/errors.js";
+import chalk from "chalk";
 
 // resolveWorkspaceComponents(doc) -> deduplicated string[] of every
 // component a workspace resolves to (its ad hoc `components` plus whatever
@@ -119,7 +121,8 @@ function printHealthResult(result) {
         else if (r.status === "WARNING") logger.warn(r.description);
         else logger.error(r.description);
     }
-    logger.info(`Score: ${result.score}% - ${result.verdict} (${result.pass} pass, ${result.warn} warn, ${result.fail} fail)`);
+    console.log(`\n${healthBar(result.score)}`);
+    logger.info(`${result.verdict} (${result.pass} pass, ${result.warn} warn, ${result.fail} fail)`);
 }
 
 // printSubsystemResults(subsystems) - each subsystem's apply*() has a
@@ -149,7 +152,16 @@ function printSubsystemResults(subsystems) {
 export function registerWorkspaceCommand(program) {
     const workspace = program
         .command("workspace")
-        .description("Manage isolated development environments (git/ssh/env/docker/k8s/cloud/shell identity, switched with one command)");
+        .description("Manage isolated development environments (git/ssh/env/docker/k8s/cloud/shell identity, switched with one command)")
+        .addHelpText("after", `
+Examples:
+  $ devforgekit workspace create acme         Create a new workspace
+  $ devforgekit workspace switch acme         Apply its git/ssh/env/docker/cloud identity live
+  $ devforgekit workspace health              Quick per-subsystem health score
+  $ devforgekit workspace verify --structured Full PASS/WARNING/FAIL sweep, grouped by subsystem
+  $ devforgekit workspace snapshot create acme  Point-in-time backup before risky changes
+
+Learn more: docs/WorkspaceManager.md`);
 
     // ---------------------------------------------------------------
     // Lifecycle
@@ -329,8 +341,23 @@ export function registerWorkspaceCommand(program) {
                     console.log(JSON.stringify(result, null, 2));
                     return;
                 }
-                logger.section(`Verifying '${target}'`);
-                for (const line of formatStructuredVerification(result)) console.log(line);
+                const groups = result.subsystems.map((sub) => [
+                    chalk.bold(sub.label),
+                    table(
+                        sub.checks.map((check) => ({
+                            field: check.field,
+                            value: check.value,
+                            status: check.status === "PASS" ? chalk.green("✓") : check.status === "WARNING" ? chalk.yellow("⚠") : chalk.red("✗")
+                        })),
+                        [
+                            { key: "field", label: "FIELD" },
+                            { key: "value", label: "VALUE" },
+                            { key: "status", label: "" }
+                        ]
+                    )
+                ].join("\n"));
+                console.log(section(`Verifying '${target}'`, [healthBar(result.score), "", ...groups]));
+                logger.info(`${result.verdict} (${result.pass} pass, ${result.warn} warn, ${result.fail} fail)`);
                 if (result.fail > 0) process.exitCode = 1;
                 return;
             }
@@ -410,7 +437,22 @@ export function registerWorkspaceCommand(program) {
                 console.log(JSON.stringify(health, null, 2));
                 return;
             }
-            for (const line of formatHealthScore(health)) console.log(line);
+            console.log(section(`Workspace Health: '${target}'`, [
+                healthBar(health.score),
+                "",
+                table(
+                    health.breakdown.map((item) => ({
+                        subsystem: item.subsystem,
+                        status: item.status === "healthy" ? chalk.green("✓ healthy") : chalk.dim("○ unconfigured"),
+                        detail: item.detail
+                    })),
+                    [
+                        { key: "subsystem", label: "SUBSYSTEM" },
+                        { key: "status", label: "STATUS" },
+                        { key: "detail", label: "DETAIL", maxWidth: 40 }
+                    ]
+                )
+            ]));
         }));
 
     // ---------------------------------------------------------------
@@ -741,9 +783,9 @@ export function registerWorkspaceCommand(program) {
 
     workspace
         .command("benchmark <name>")
-        .description("Benchmark core workspace operations (metadata, health, verify, snapshot, diff, switch, restore, bundle)")
+        .description("Benchmark core workspace operations. Read-only by default (metadata, health, verify, diff) - pass --ops to include mutating ones (snapshot, switch, restore, bundleExport, bundleImport), which write files and/or change your live git/ssh/docker/kubernetes/cloud-CLI identity")
         .option("--runs <n>", "number of runs per operation (default: 1)", "1")
-        .option("--ops <list>", "comma-separated list of operations to run")
+        .option("--ops <list>", "comma-separated list of operations to run (default: metadata,health,verify,diff - the read-only ones). Include snapshot/switch/restore/bundleExport/bundleImport explicitly to also benchmark those (mutating)")
         .option("--json", "output as JSON")
         .action(withErrorHandling(async function (name) {
             const opts = this.opts();

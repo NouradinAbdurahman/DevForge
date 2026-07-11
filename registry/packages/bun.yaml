@@ -4,21 +4,27 @@ description: A fast all-in-one JavaScript runtime, bundler, and package manager
 category: package-managers
 platforms: [macos, linux]
 architectures: [intel, apple-silicon, linux]
-install: { method: shell, command: "curl -fsSL https://bun.sh/install | bash" }
+install:
+  method: shell
+  command: curl -fsSL https://bun.sh/install | bash
 dependencies: []
+conflicts: []
 validate: bun --version
-versionCommand: "bun --version"
-repair: "bun upgrade"
-update: "bun upgrade"
-uninstall: { method: shell, command: "rm -rf \"$HOME/.bun\"" }
+versionCommand: bun --version
+repair: bun upgrade
+update: bun upgrade
+uninstall:
+  method: shell
+  command: rm -rf "$HOME/.bun"
 post_install: []
-homepage: "https://bun.sh"
-repository: "https://github.com/oven-sh/bun"
+recommendedAlternatives:
+  - node
+homepage: https://bun.sh
+repository: https://github.com/oven-sh/bun
 license: MIT
-documentation: "https://bun.sh/docs"
+documentation: https://bun.sh/docs
 maintainer: DevForgeKit Registry
 tags: [package-manager, javascript, runtime]
 aliases: [bunjs]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives: [node]
+lastVerified: '2026-07-05'

@@ -21,8 +21,20 @@ import {
     loadGraph,
     clearGraphCache
 } from "../core/devGraph.js";
+import { table, section } from "../lib/ui.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling } from "../core/errors.js";
+import chalk from "chalk";
+
+function distributionTable(entries) {
+    return table(
+        entries.map(([label, count]) => ({ label, count })),
+        [
+            { key: "label", label: "" },
+            { key: "count", label: "COUNT" }
+        ]
+    );
+}
 
 // addRefreshOption(cmd) - every subcommand reads the graph via
 // buildGraphCached() (a 30-minute TTL cache - see devGraph.js), so this
@@ -36,7 +48,6 @@ export function registerGraphCommand(program) {
     const graph = program
         .command("graph")
         .description("Development Environment Graph - visualize and analyze your entire dev ecosystem")
-        .alias("env")
         .alias("deps");
 
     // ─── open (default = build + display) ────────────────────────────
@@ -96,18 +107,28 @@ export function registerGraphCommand(program) {
                 return;
             }
 
-            logger.section("Graph Search Results");
             if (results.length === 0) {
                 logger.info("No nodes found");
                 return;
             }
 
-            for (const node of results) {
-                const installed = node.properties?.installed ? "✓" : " ";
-                console.log(`\n  [${installed}] ${node.name} (${node.type})`);
-                if (node.properties?.description) console.log(`      ${node.properties.description}`);
-            }
-            console.log(`\n  ${results.length} node(s)`);
+            console.log(section(`Graph Search Results (${results.length})`, [
+                table(
+                    results.map((node) => ({
+                        installed: node.properties?.installed ? chalk.green("✓") : chalk.dim("-"),
+                        name: node.name,
+                        type: node.type,
+                        description: node.properties?.description || ""
+                    })),
+                    [
+                        { key: "installed", label: "" },
+                        { key: "name", label: "NAME" },
+                        { key: "type", label: "TYPE" },
+                        { key: "description", label: "DESCRIPTION", maxWidth: 40 }
+                    ]
+                )
+            ]));
+            logger.info("Next: devforgekit graph explain <name>, or devforgekit graph impact <name>");
         }));
 
     // ─── explain ─────────────────────────────────────────────────────
@@ -167,12 +188,21 @@ export function registerGraphCommand(program) {
             const g = await buildGraphCached({ refresh: this.opts().refresh });
             const result = verifyGraph(g);
 
-            logger.section("Graph Verification");
-            for (const r of result.results) {
-                const symbol = r.status === "PASS" ? "✓" : "!";
-                console.log(`\n  ${symbol} ${r.check}: ${r.status}${r.count !== undefined ? ` (${r.count})` : ""}${r.edge ? ` - ${r.edge}` : ""}`);
-            }
-            console.log(`\n  Overall: ${result.health} (${result.warningCount} warning(s))`);
+            console.log(section("Graph Verification", [
+                table(
+                    result.results.map((r) => ({
+                        status: r.status === "PASS" ? chalk.green("✓") : chalk.yellow("!"),
+                        check: r.check,
+                        result: `${r.status}${r.count !== undefined ? ` (${r.count})` : ""}${r.edge ? ` - ${r.edge}` : ""}`
+                    })),
+                    [
+                        { key: "status", label: "" },
+                        { key: "check", label: "CHECK" },
+                        { key: "result", label: "RESULT", maxWidth: 45 }
+                    ]
+                )
+            ]));
+            logger.info(`Overall: ${result.health} (${result.warningCount} warning(s))`);
         }));
 
     // ─── stats ───────────────────────────────────────────────────────
@@ -189,52 +219,44 @@ export function registerGraphCommand(program) {
                 return;
             }
 
-            logger.section("Graph Statistics");
-            console.log(`\n  Total nodes: ${g.stats.totalNodes}`);
-            console.log(`  Total edges: ${g.stats.totalEdges}`);
-            console.log(`  Installed: ${g.stats.installedCount}`);
-            console.log(`  Missing: ${g.stats.missingCount}`);
-            console.log(`  Average depth: ${g.stats.averageDepth}`);
-            console.log(`  Max depth: ${g.stats.maxDepth}`);
-            console.log(`  Orphans: ${g.stats.orphanCount}`);
-            console.log(`  Conflicts: ${g.stats.conflictCount}`);
-            console.log(`  Cycles: ${g.stats.cycleCount}`);
+            console.log(section("Graph Statistics", [
+                `Total nodes: ${g.stats.totalNodes}`,
+                `Total edges: ${g.stats.totalEdges}`,
+                `Installed: ${g.stats.installedCount}`,
+                `Missing: ${g.stats.missingCount}`,
+                `Average depth: ${g.stats.averageDepth}`,
+                `Max depth: ${g.stats.maxDepth}`,
+                `Orphans: ${g.stats.orphanCount}`,
+                `Conflicts: ${g.stats.conflictCount}`,
+                `Cycles: ${g.stats.cycleCount}`
+            ]));
 
-            console.log(`\n  Nodes by type:`);
-            for (const [type, count] of Object.entries(g.stats.nodesByType)) {
-                console.log(`    ${type}: ${count}`);
-            }
+            console.log(`\n${chalk.bold("Nodes by type")}`);
+            console.log(distributionTable(Object.entries(g.stats.nodesByType)));
 
-            console.log(`\n  Edges by type:`);
-            for (const [type, count] of Object.entries(g.stats.edgesByType)) {
-                console.log(`    ${type}: ${count}`);
-            }
+            console.log(`\n${chalk.bold("Edges by type")}`);
+            console.log(distributionTable(Object.entries(g.stats.edgesByType)));
 
             if (Object.keys(g.stats.byCategory).length > 0) {
-                console.log(`\n  Category distribution:`);
-                for (const [category, count] of Object.entries(g.stats.byCategory)) {
-                    console.log(`    ${category}: ${count}`);
-                }
+                console.log(`\n${chalk.bold("Category distribution")}`);
+                console.log(distributionTable(Object.entries(g.stats.byCategory)));
             }
 
             if (Object.keys(g.stats.byPlatform).length > 0) {
-                console.log(`\n  Platform distribution:`);
-                for (const [platform, count] of Object.entries(g.stats.byPlatform)) {
-                    console.log(`    ${platform}: ${count}`);
-                }
+                console.log(`\n${chalk.bold("Platform distribution")}`);
+                console.log(distributionTable(Object.entries(g.stats.byPlatform)));
             }
 
             if (Object.keys(g.stats.byArchitecture).length > 0) {
-                console.log(`\n  Architecture distribution:`);
-                for (const [arch, count] of Object.entries(g.stats.byArchitecture)) {
-                    console.log(`    ${arch}: ${count}`);
-                }
+                console.log(`\n${chalk.bold("Architecture distribution")}`);
+                console.log(distributionTable(Object.entries(g.stats.byArchitecture)));
             }
 
             if (g.stats.mostDependedNode) {
                 const node = g.nodes.find((n) => n.id === g.stats.mostDependedNode);
                 console.log(`\n  Most depended-upon: ${node?.name || g.stats.mostDependedNode} (${g.stats.mostDependedCount} dependents)`);
             }
+            logger.info("Next: devforgekit graph search <query>, or devforgekit graph impact <name>");
         }));
 
     // ─── path ────────────────────────────────────────────────────────

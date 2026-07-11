@@ -1,0 +1,116 @@
+name: DevForgeKit End-to-End Lifecycle
+
+# Real (not mocked) full-lifecycle test of the Node CLI, run on all three
+# real GitHub-hosted runner OSes: install a real cross-platform-complete
+# package -> validate -> doctor -> environment generation -> repair scan
+# -> a full workspace create/verify/health/delete cycle -> uninstall ->
+# verify cleanup. This is the integration-test layer cli.yml's 1,200+
+# unit tests deliberately don't cover - it exercises the real compiled
+# CLI binary as a subprocess (real commander.js routing, real argv
+# parsing, real cross-command wiring), not exported functions called
+# directly in-process. Runs against an isolated $HOME on the ephemeral
+# CI runner - real installs are safe here the same way
+# registry-smoke.yml's macOS-only install/uninstall smoke test already
+# is; this workflow is what extends that same real-install precedent to
+# Linux and Windows.
+#
+# Scope note: this does NOT run bootstrap.sh (macOS/Homebrew-only by
+# design - see CLAUDE.md's bash 3.2 / Layer 1 section) - it exercises the
+# Node CLI (Layer 2) directly via `node bin/devforgekit.js`, which is
+# the layer Registry Completion (v3.0) made genuinely cross-platform.
+# The test package (prettier) is npm-based and has real, verified
+# platformInstall entries for macOS/Linux/Windows - not a guess.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cli/**"
+      - "registry/**"
+      - ".github/workflows/e2e.yml"
+  pull_request:
+    paths:
+      - "cli/**"
+      - "registry/**"
+      - ".github/workflows/e2e.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lifecycle:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "lts/*"
+
+      - name: Install CLI dependencies
+        run: npm ci
+        working-directory: cli
+
+      - name: Full lifecycle - install, validate, doctor, environment, repair, workspace, uninstall
+        shell: bash
+        working-directory: cli
+        run: |
+          set -e
+          export HOME="${RUNNER_TEMP}/dfk-e2e-home"
+          mkdir -p "$HOME"
+          export DEVFORGEKIT_NO_TUI=1
+
+          PKG=prettier
+
+          echo "::group::install $PKG"
+          node bin/devforgekit.js component install "$PKG"
+          echo "::endgroup::"
+
+          echo "::group::validate $PKG (must succeed - just installed)"
+          node bin/devforgekit.js component validate "$PKG"
+          echo "::endgroup::"
+
+          echo "::group::doctor"
+          # --skip-compatibility: GitHub-hosted runner images ship
+          # pre-installed with dozens of unrelated tools (docker, git,
+          # python, cloud CLIs, ...) that this lifecycle test never
+          # touched. The Compatibility Engine correctly flags any of them
+          # whose registry entry doesn't yet declare this platform
+          # (Linux/Windows registry coverage is still partial - see
+          # registry/research-queue.md) as UNSUPPORTED, which is real and
+          # correct on a real machine, but isn't what this test checks -
+          # it verifies the install/validate/doctor/env/repair/workspace/
+          # uninstall lifecycle itself works, not a clean bill of health
+          # for whatever software happens to preexist on the runner image.
+          node bin/devforgekit.js doctor --skip-bash --skip-compatibility --json > /dev/null
+          echo "::endgroup::"
+
+          echo "::group::environment: regenerate + doctor"
+          node bin/devforgekit.js env regenerate
+          node bin/devforgekit.js env doctor --json > /dev/null
+          echo "::endgroup::"
+
+          echo "::group::repair scan"
+          node bin/devforgekit.js repair scan --json > /dev/null
+          echo "::endgroup::"
+
+          echo "::group::workspace create -> verify -> health -> delete"
+          node bin/devforgekit.js workspace create e2e-test --description "E2E lifecycle test workspace"
+          node bin/devforgekit.js workspace verify e2e-test
+          node bin/devforgekit.js workspace health e2e-test
+          node bin/devforgekit.js workspace delete e2e-test --force
+          echo "::endgroup::"
+
+          echo "::group::uninstall $PKG + verify cleanup"
+          node bin/devforgekit.js component uninstall "$PKG"
+          if node bin/devforgekit.js component validate "$PKG" 2>/dev/null; then
+            echo "::error::$PKG still validates as installed after uninstall"
+            exit 1
+          fi
+          echo "$PKG correctly reports not-installed after uninstall"
+          echo "::endgroup::"

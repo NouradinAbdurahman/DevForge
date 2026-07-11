@@ -53,17 +53,22 @@ export function hasBlock(filePath, id) {
     return readBlock(filePath, id) !== null;
 }
 
-// writeBlock(filePath, id, lines, { header, backup }) -> void. Removes
-// any previous block with this id, then appends a fresh one built from
-// `lines` (array of strings). `header` is an optional array of comment
-// lines placed right after the begin marker (e.g. "managed by, do not
-// hand-edit" - see path_manager_fix's wording). Creates the file (and
-// its parent directory) if missing. `backup: true` copies the file to
-// `<file>.devforgekit-backup` the first time DevForgeKit ever touches a
-// pre-existing file (mirrors common.sh's fs_safe_copy backup behavior) -
-// skipped on every later call, since by then the file already carries a
-// DevForgeKit block.
-export function writeBlock(filePath, id, lines, { header = [], backup = false } = {}) {
+// writeBlock(filePath, id, lines, { header, backup, mode }) -> void.
+// Removes any previous block with this id, then appends a fresh one
+// built from `lines` (array of strings). `header` is an optional array
+// of comment lines placed right after the begin marker (e.g. "managed
+// by, do not hand-edit" - see path_manager_fix's wording). Creates the
+// file (and its parent directory) if missing. `backup: true` copies the
+// file to `<file>.devforgekit-backup` the first time DevForgeKit ever
+// touches a pre-existing file (mirrors common.sh's fs_safe_copy backup
+// behavior) - skipped on every later call, since by then the file
+// already carries a DevForgeKit block. `mode`, when given, is passed to
+// writeFileSync itself so a sensitive target (ssh.js's ~/.ssh/config)
+// gets the restrictive mode atomically at creation - a caller-side
+// chmodSync afterward (still worth keeping, for a pre-existing file at
+// some other mode) leaves a brief window where the file exists at the
+// process's default umask first.
+export function writeBlock(filePath, id, lines, { header = [], backup = false, mode } = {}) {
     mkdirSync(path.dirname(filePath), { recursive: true });
     const existed = existsSync(filePath);
     const current = existed ? readFileSync(filePath, "utf8") : "";
@@ -75,7 +80,7 @@ export function writeBlock(filePath, id, lines, { header = [], backup = false } 
     const stripped = stripBlock(current, id);
     const base = stripped.length > 0 && !stripped.endsWith("\n") ? `${stripped}\n` : stripped;
     const block = [beginMarker(id), ...header, ...lines, endMarker(id)].join("\n");
-    writeFileSync(filePath, `${base}${block}\n`);
+    writeFileSync(filePath, `${base}${block}\n`, mode ? { mode } : undefined);
 }
 
 // removeBlock(filePath, id) -> true if a block was actually found and

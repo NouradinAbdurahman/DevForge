@@ -2,17 +2,13 @@ schemaVersion: 1
 name: nerdctl
 description: A Docker-compatible CLI for containerd
 category: containers
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: nerdctl
 dependencies: []
+conflicts: []
 validate: nerdctl --version
 versionCommand: nerdctl --version
 repair: brew reinstall nerdctl
@@ -26,15 +22,11 @@ repository: https://github.com/containerd/nerdctl
 license: Apache-2.0
 documentation: https://github.com/containerd/nerdctl/blob/main/docs/README.md
 maintainer: DevForgeKit Registry
-tags:
-  - containers
-  - devops
-aliases:
-  - nerdctl-containerd
+tags: [containers, devops]
+aliases: [nerdctl-containerd]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: nerdctl
-

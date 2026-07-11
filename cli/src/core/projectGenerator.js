@@ -36,6 +36,44 @@ function assertTargetIsFree(dir) {
     }
 }
 
+// RESERVED_NAMES (Project Generator Excellence, v2.1.2 Phase 8
+// validation): Windows' reserved device names are the one genuinely
+// cross-platform landmine here - a project named "con" or "nul" creates
+// files that can never be checked out or opened on Windows at all
+// (not "won't build," literally cannot exist on the filesystem), which
+// would otherwise surface as a baffling error only once someone clones
+// the repo on Windows, far removed from the moment the name was chosen.
+const RESERVED_NAMES = new Set([
+    "con", "prn", "aux", "nul",
+    "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9",
+    "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9",
+    "node_modules", ".git"
+]);
+
+// validateProjectName(name) -> throws a DevForgeError with a clear
+// reason, or returns normally. Enforced unconditionally at the top of
+// runProjectGenerator (below) - not just by the interactive `devforgekit
+// new` command that originally owned this check - because `name` also
+// reaches every generator's scaffold() shell-command interpolation
+// (e.g. spring-boot.js's fully-unquoted curl params) from two other
+// callers that never validated it themselves: `ai generate` (an AI
+// provider's JSON response - untrusted network/model output) and the
+// TUI's GeneratorPage (a raw, unvalidated TextField). Restricting to
+// this character set closes that gap at the one place every caller
+// already funnels through, rather than requiring each call site to
+// remember to validate independently.
+export function validateProjectName(name) {
+    if (!/^[a-zA-Z0-9._-]+$/.test(name)) {
+        throw new DevForgeError(`Invalid project name '${name}' - use only letters, numbers, dots, dashes, and underscores.`, { exitCode: 2 });
+    }
+    if (RESERVED_NAMES.has(name.toLowerCase())) {
+        throw new DevForgeError(`'${name}' is a reserved name (Windows device name or tooling directory) and would break on some platforms - choose a different name.`, { exitCode: 2 });
+    }
+    if (name.startsWith(".") || name.startsWith("-")) {
+        throw new DevForgeError(`Invalid project name '${name}' - can't start with '.' or '-'.`, { exitCode: 2 });
+    }
+}
+
 // ensureToolAvailable(generator) - checked once, right before a
 // generator that needs an external scaffolding CLI runs it, so the
 // error is "flutter is not installed - run: devforgekit component
@@ -85,6 +123,7 @@ async function checkStackCompatibility(generator, assumeYes) {
 //   5. `git init` (skippable per generator, e.g. one whose scaffold CLI
 //      already initializes its own repo)
 export async function runProjectGenerator(generator, { name, parentDir, options = {}, assumeYes = false }) {
+    validateProjectName(name);
     const dir = path.join(parentDir, name);
     assertTargetIsFree(dir);
 

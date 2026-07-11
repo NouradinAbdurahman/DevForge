@@ -2,23 +2,41 @@ schemaVersion: 1
 name: mkdocs
 description: A fast, simple static site generator for project documentation
 category: documentation
-platforms: [macos, linux]
-architectures: [intel, apple-silicon, linux]
-install: { method: pip, id: mkdocs }
-dependencies: [python]
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
+install:
+  method: pip
+  id: mkdocs
+dependencies:
+  - python
+conflicts: []
 validate: mkdocs --version
-versionCommand: "mkdocs --version"
-repair: "pip install --upgrade mkdocs"
-update: "pip install --upgrade mkdocs"
-uninstall: { method: pip, id: mkdocs }
+versionCommand: mkdocs --version
+repair: pip install --upgrade mkdocs
+update: pip install --upgrade mkdocs
+uninstall:
+  method: pip
+  id: mkdocs
 post_install: []
-homepage: "https://www.mkdocs.org"
-repository: "https://github.com/mkdocs/mkdocs"
+recommendedAlternatives:
+  - sphinx
+  - hugo
+homepage: https://www.mkdocs.org
+repository: https://github.com/mkdocs/mkdocs
 license: BSD-2-Clause
-documentation: "https://www.mkdocs.org/getting-started/"
+documentation: https://www.mkdocs.org/getting-started/
 maintainer: DevForgeKit Registry
 tags: [documentation, static-site]
 aliases: [mkdocs-docs]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives: [sphinx, hugo]
+lastVerified: '2026-07-05'
+platformInstall:
+  macos:
+    method: pip
+    id: mkdocs
+  linux:
+    method: pip
+    id: mkdocs
+  windows:
+    method: pip
+    id: mkdocs

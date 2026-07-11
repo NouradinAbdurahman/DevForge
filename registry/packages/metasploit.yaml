@@ -2,17 +2,13 @@ schemaVersion: 1
 name: metasploit
 description: A penetration testing framework for developing and executing exploit code against a target
 category: security
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: metasploit
 dependencies: []
+conflicts: []
 validate: msfconsole --version
 versionCommand: msfconsole --version
 repair: brew reinstall metasploit
@@ -21,24 +17,19 @@ uninstall:
   method: brew-formula
   id: metasploit
 post_install: []
+recommendedAlternatives:
+  - burp-suite
+  - nikto
 homepage: https://www.metasploit.com
 repository: https://github.com/rapid7/metasploit-framework
 license: BSD-3-Clause
 documentation: https://docs.rapid7.com/metasploit/
 maintainer: DevForgeKit Registry
-tags:
-  - security
-  - penetration-testing
-aliases:
-  - msf
-  - msfconsole
+tags: [security, penetration-testing]
+aliases: [msf, msfconsole]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - burp-suite
-  - nikto
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: metasploit
-

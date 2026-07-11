@@ -2,19 +2,13 @@ schemaVersion: 1
 name: volta
 description: A JavaScript toolchain manager (Node, npm, yarn versions per-project)
 category: package-managers
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: volta
 dependencies: []
+conflicts: []
 validate: volta --version
 versionCommand: volta --version
 repair: brew reinstall volta
@@ -23,21 +17,17 @@ uninstall:
   method: brew-formula
   id: volta
 post_install: []
+recommendedAlternatives:
+  - asdf
 homepage: https://volta.sh
 repository: https://github.com/volta-cli/volta
 license: BSD-2-Clause
 documentation: https://docs.volta.sh/guide/
 maintainer: DevForgeKit Registry
-tags:
-  - package-manager
-  - javascript
-  - node
-aliases:
-  - volta-node
+tags: [package-manager, javascript, node]
+aliases: [volta-node]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - asdf
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -45,4 +35,3 @@ platformInstall:
   linux:
     method: apt
     id: volta
-

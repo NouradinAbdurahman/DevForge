@@ -13,6 +13,7 @@ import { runShellCommand } from "./shell.js";
 import { pluginEvents } from "./events.js";
 import { getVersion } from "../version.js";
 import { logger } from "./logger.js";
+import { isPluginTrusted } from "./pluginTrust.js";
 
 // See core/registry.js for why this needs the draft-2020-12 Ajv build.
 const ajv = new Ajv2020({ allErrors: true });
@@ -97,7 +98,7 @@ export function discoverPlugins(roots = discoveryRoots()) {
 
 const DEFAULT_HOOK_TIMEOUT_MS = 30000;
 
-// registerPluginCommands(program) - adds one commander subcommand per
+// registerPluginCommands(program, roots?) - adds one commander subcommand per
 // valid plugin's `commands[]` entries, running the referenced script
 // with inherited stdio under a timeout (the "sandbox" - real resource/
 // time isolation, not a security boundary; see core/shell.js). Invalid/
@@ -110,11 +111,14 @@ const DEFAULT_HOOK_TIMEOUT_MS = 30000;
 // policy already applied to invalid manifests and event hooks below.
 // `plugin run <name> <command>` still reaches every command directly by
 // plugin name, so a shadowed command is never truly unreachable.
-export function registerPluginCommands(program) {
-    for (const plugin of discoverPlugins()) {
+export function registerPluginCommands(program, roots) {
+    for (const plugin of discoverPlugins(roots)) {
         if (!plugin.valid) {
             logger.debug(`Skipping plugin '${plugin.name}': ${plugin.reason}`);
             continue;
+        }
+        if ((plugin.manifest.commands || []).length > 0 && !isPluginTrusted(plugin.name, plugin.dir)) {
+            logger.warn(`Plugin '${plugin.name}' was not installed via 'devforgekit plugin install' (no signature review on record) - review its code at ${plugin.dir} before running its commands.`);
         }
         for (const hook of plugin.manifest.commands || []) {
             if (program.commands.some((c) => c.name() === hook.name)) {
@@ -133,14 +137,29 @@ export function registerPluginCommands(program) {
     }
 }
 
-// registerPluginEventHooks() - subscribes every valid plugin's `events[]`
+// registerPluginEventHooks(roots?) - subscribes every valid plugin's `events[]`
 // entries to the shared pluginEvents bus (core/events.js). A hook
 // script's failure is logged as a warning, never thrown - one broken
 // plugin hook must not take down whatever core operation triggered the
 // event.
-export function registerPluginEventHooks() {
-    for (const plugin of discoverPlugins()) {
+//
+// Unlike commands (only ever run when the user explicitly types their
+// name), an event hook fires automatically and unattended on a real
+// internal action (e.g. every install.afterInstall) - the same signing
+// system that gates `plugin install` has to actually mean something
+// here, or a plugin manually copied/synced into place (bypassing
+// `plugin install` entirely) gets unattended code execution with zero
+// review, ever. A plugin that hasn't been through installPlugin()'s
+// accept step (or isn't part of this repo's own bundled examples) has
+// its event hooks skipped entirely - not wired to the bus at all - with
+// one clear warning, rather than silently running.
+export function registerPluginEventHooks(roots) {
+    for (const plugin of discoverPlugins(roots)) {
         if (!plugin.valid) continue;
+        if ((plugin.manifest.events || []).length > 0 && !isPluginTrusted(plugin.name, plugin.dir)) {
+            logger.warn(`Plugin '${plugin.name}' declares automatic event hooks but was not installed via 'devforgekit plugin install' - skipping its hooks (they will not run) until it's reviewed. Run 'devforgekit plugin install ${plugin.dir}' to review and accept it.`);
+            continue;
+        }
         for (const hook of plugin.manifest.events || []) {
             pluginEvents.on(hook.event, async (payload) => {
                 const runPath = path.join(plugin.dir, hook.run);

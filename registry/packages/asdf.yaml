@@ -2,19 +2,13 @@ schemaVersion: 1
 name: asdf
 description: A universal version manager for multiple language runtimes
 category: package-managers
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: asdf
 dependencies: []
+conflicts: []
 validate: asdf --version
 versionCommand: asdf --version
 repair: brew reinstall asdf
@@ -23,21 +17,18 @@ uninstall:
   method: brew-formula
   id: asdf
 post_install: []
+recommendedAlternatives:
+  - volta
+  - sdkman
 homepage: https://asdf-vm.com
 repository: https://github.com/asdf-vm/asdf
 license: MIT
 documentation: https://asdf-vm.com/guide/getting-started.html
 maintainer: DevForgeKit Registry
-tags:
-  - package-manager
-  - version-manager
-aliases:
-  - asdf-vm
+tags: [package-manager, version-manager]
+aliases: [asdf-vm]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - volta
-  - sdkman
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -45,4 +36,3 @@ platformInstall:
   linux:
     method: apt
     id: asdf
-

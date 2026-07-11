@@ -2,17 +2,13 @@ schemaVersion: 1
 name: elixir
 description: The Elixir programming language (runs on the Erlang VM)
 category: languages
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: elixir
 dependencies: []
+conflicts: []
 validate: elixir --version
 versionCommand: elixir --version
 repair: brew reinstall elixir
@@ -26,16 +22,11 @@ repository: https://github.com/elixir-lang/elixir
 license: Apache-2.0
 documentation: https://elixir-lang.org/docs.html
 maintainer: DevForgeKit Registry
-tags:
-  - language
-  - functional
-  - erlang
-aliases:
-  - ex
+tags: [language, functional, erlang]
+aliases: [ex]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: elixir
-

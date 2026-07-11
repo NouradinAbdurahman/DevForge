@@ -2,17 +2,13 @@ schemaVersion: 1
 name: lua
 description: The Lua scripting language
 category: languages
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: lua
 dependencies: []
+conflicts: []
 validate: lua -v
 versionCommand: lua -v
 repair: brew reinstall lua
@@ -21,24 +17,19 @@ uninstall:
   method: brew-formula
   id: lua
 post_install: []
+recommendedAlternatives:
+  - python
+  - ruby
 homepage: https://www.lua.org
 repository: https://github.com/lua/lua
 license: MIT
 documentation: https://www.lua.org/docs.html
 maintainer: DevForgeKit Registry
-tags:
-  - language
-  - scripting
-  - embeddable
-aliases:
-  - lua-lang
+tags: [language, scripting, embeddable]
+aliases: [lua-lang]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - python
-  - ruby
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: lua
-

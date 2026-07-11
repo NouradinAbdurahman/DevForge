@@ -2,19 +2,13 @@ schemaVersion: 1
 name: sqlite
 description: SQLite - a self-contained, serverless SQL database engine
 category: databases
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: sqlite
 dependencies: []
+conflicts: []
 validate: sqlite3 --version
 versionCommand: sqlite3 --version
 repair: brew reinstall sqlite
@@ -23,23 +17,19 @@ uninstall:
   method: brew-formula
   id: sqlite
 post_install: []
+recommendedAlternatives:
+  - postgres
+  - mysql
+  - duckdb
 homepage: https://www.sqlite.org
 repository: https://github.com/sqlite/sqlite
 license: blessing
 documentation: https://www.sqlite.org/docs.html
 maintainer: DevForgeKit Registry
-tags:
-  - database
-  - relational
-  - embedded
-aliases:
-  - sqlite3
+tags: [database, relational, embedded]
+aliases: [sqlite3]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - postgres
-  - mysql
-  - duckdb
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -47,4 +37,3 @@ platformInstall:
   linux:
     method: apt
     id: sqlite3
-

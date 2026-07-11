@@ -2,15 +2,13 @@ schemaVersion: 1
 name: burp-suite
 description: A web application security testing toolkit (Community Edition)
 category: security
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: burp-suite
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/Burp Suite Community Edition.app'
 versionCommand: ls /Applications | grep Burp
 repair: brew reinstall --cask burp-suite
@@ -19,24 +17,19 @@ uninstall:
   method: brew-cask
   id: burp-suite
 post_install: []
+recommendedAlternatives:
+  - metasploit
+  - nikto
 homepage: https://portswigger.net/burp
 repository: https://portswigger.net/burp
 license: proprietary
 documentation: https://portswigger.net/burp/documentation
 maintainer: DevForgeKit Registry
-tags:
-  - security
-  - web
-  - penetration-testing
-aliases:
-  - burp
+tags: [security, web, penetration-testing]
+aliases: [burp]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - metasploit
-  - nikto
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: burp-suite
-

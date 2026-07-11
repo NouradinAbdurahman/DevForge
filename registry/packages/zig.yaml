@@ -2,17 +2,13 @@ schemaVersion: 1
 name: zig
 description: The Zig programming language
 category: languages
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: zig
 dependencies: []
+conflicts: []
 validate: zig version
 versionCommand: zig version
 repair: brew reinstall zig
@@ -21,23 +17,19 @@ uninstall:
   method: brew-formula
   id: zig
 post_install: []
+recommendedAlternatives:
+  - rust
+  - go
 homepage: https://ziglang.org
 repository: https://github.com/ziglang/zig
 license: MIT
 documentation: https://ziglang.org/documentation/master/
 maintainer: DevForgeKit Registry
-tags:
-  - language
-  - systems
-aliases:
-  - zig-lang
+tags: [language, systems]
+aliases: [zig-lang]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - rust
-  - go
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: zig
-

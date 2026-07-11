@@ -2,20 +2,13 @@ schemaVersion: 1
 name: shellcheck
 description: A static analysis tool for shell scripts
 category: code-quality
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: shellcheck
 dependencies: []
+conflicts: []
 validate: shellcheck --version
 versionCommand: shellcheck --version
 repair: brew reinstall shellcheck
@@ -29,14 +22,10 @@ repository: https://github.com/koalaman/shellcheck
 license: GPL-3.0
 documentation: https://github.com/koalaman/shellcheck/wiki
 maintainer: DevForgeKit Registry
-tags:
-  - code-quality
-  - shell
-  - linter
-aliases:
-  - shellcheck-lint
+tags: [code-quality, shell, linter]
+aliases: [shellcheck-lint]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -47,4 +36,3 @@ platformInstall:
   windows:
     method: winget
     id: koalaman.shellcheck
-

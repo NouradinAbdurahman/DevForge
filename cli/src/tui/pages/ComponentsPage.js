@@ -130,7 +130,7 @@ export function ComponentsPage({ isActive }) {
         h(Panel, { title: `Components (${items.length}/${packages.length})`, theme, isActive, flexGrow: 1 },
             typingFilter
                 ? h(FilterBar, { query: filterText, onChange: setFilterText, isOpen: typingFilter, isActive: Boolean(isActive) && typingFilter, theme })
-                : h(Text, { color: theme.textMuted }, `/ to filter${filterText ? `: "${filterText}"` : ""}   ‹ ${mode} ›`),
+                : h(Text, { color: theme.textMuted }, `/ to filter${filterText ? `: "${filterText}"` : ""}   ‹ ${mode} ›${installed === null ? "   checking installed status..." : ""}`),
             h(SelectList, {
                 items, isActive: isActive && !typingFilter, height: 14, theme,
                 emptyText: filterText ? `No components match "${filterText}".` : "No components in this filter.",

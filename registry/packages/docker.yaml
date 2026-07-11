@@ -7,31 +7,66 @@ architectures: [intel, apple-silicon, x64, arm64]
 variants:
   - id: docker-desktop
     label: Docker Desktop (official, GUI + CLI)
-    install: { method: brew-cask, id: docker }
+    install:
+      method: brew-cask
+      id: docker
     platformInstall:
-      macos: { method: brew-cask, id: docker }
-      windows: { method: winget, id: Docker.DockerDesktop }
+      macos:
+        method: brew-cask
+        id: docker
+      windows:
+        method: winget
+        id: Docker.DockerDesktop
+      linux:
+        unsupported: true
+        reason: Docker Desktop for Linux has no single-command Homebrew/apt/dnf/pacman install (it ships as a manually-downloaded .deb/.rpm from docker.com) - use the docker-engine variant instead for a real package-manager-driven install.
   - id: colima
     label: Colima (lightweight, open-source, CLI-only)
-    install: { method: brew-formula, id: colima }
+    install:
+      method: brew-formula
+      id: colima
+    platformInstall:
+      windows:
+        unsupported: true
+        reason: Colima is built on Lima, which only supports macOS and Linux hosts - there is no Windows port.
   - id: docker-engine
     label: Docker Engine (Linux, CLI-only)
-    install: { method: apt, id: docker-ce }
+    install:
+      method: apt
+      id: docker-ce
+    platformInstall:
+      linux:
+        - method: apt
+          id: docker-ce
+        - method: dnf
+          id: docker-ce
+        - method: pacman
+          id: docker
+      macos:
+        unsupported: true
+        reason: Docker Engine (dockerd) requires the Linux kernel's native cgroups/namespaces - it cannot run directly on macOS. Use the docker-desktop variant, which runs a Linux VM under the hood.
+      windows:
+        unsupported: true
+        reason: Docker Engine on Windows requires WSL2 as a Linux host, not a direct winget/choco/scoop install - use the docker-desktop variant, which manages the WSL2 backend automatically.
 dependencies: []
+conflicts: []
 validate: docker info
 versionCommand: docker --version
 repair: brew reinstall --cask docker
-update: "brew upgrade --cask docker"
-uninstall: { method: brew-cask, id: docker }
+update: brew upgrade --cask docker
+uninstall:
+  method: brew-cask
+  id: docker
 post_install:
-  - "open -a Docker"
-recommendedAlternatives: [podman]
-homepage: "https://www.docker.com"
-repository: "https://github.com/docker/cli"
+  - open -a Docker
+recommendedAlternatives:
+  - podman
+homepage: https://www.docker.com
+repository: https://github.com/docker/cli
 license: Apache-2.0
-documentation: "https://docs.docker.com"
+documentation: https://docs.docker.com
 maintainer: DevForgeKit Registry
 tags: [containers, devops, virtualization]
 aliases: [docker-desktop]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'

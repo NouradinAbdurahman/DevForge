@@ -2,15 +2,13 @@ schemaVersion: 1
 name: warp
 description: A modern, AI-enabled terminal emulator
 category: terminals
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: warp
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/Warp.app'
 versionCommand: ls /Applications | grep Warp
 repair: brew reinstall --cask warp
@@ -19,23 +17,19 @@ uninstall:
   method: brew-cask
   id: warp
 post_install: []
+recommendedAlternatives:
+  - iterm2
+  - alacritty
 homepage: https://www.warp.dev
 repository: https://github.com/warpdotdev/Warp
 license: proprietary
 documentation: https://docs.warp.dev/
 maintainer: DevForgeKit Registry
-tags:
-  - terminal
-  - ai
-aliases:
-  - warp-terminal
+tags: [terminal, ai]
+aliases: [warp-terminal]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - iterm2
-  - alacritty
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: warp
-

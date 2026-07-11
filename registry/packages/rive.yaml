@@ -2,15 +2,13 @@ schemaVersion: 1
 name: rive
 description: A real-time interactive design and animation tool
 category: design
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: rive
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/Rive.app'
 versionCommand: rive --version
 repair: brew reinstall --cask rive
@@ -24,16 +22,11 @@ repository: https://github.com/rive-app/rive
 license: proprietary
 documentation: https://rive.app/docs
 maintainer: DevForgeKit Registry
-tags:
-  - design
-  - animation
-  - motion-design
-aliases:
-  - rive-flutter
+tags: [design, animation, motion-design]
+aliases: [rive-flutter]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: rive
-

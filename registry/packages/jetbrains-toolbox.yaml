@@ -2,15 +2,13 @@ schemaVersion: 1
 name: jetbrains-toolbox
 description: Manage and update all JetBrains IDEs (IntelliJ, PyCharm, WebStorm, ...) from one app
 category: editors
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: jetbrains-toolbox
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/JetBrains Toolbox.app'
 versionCommand: ls /Applications | grep 'JetBrains Toolbox'
 repair: brew reinstall --cask jetbrains-toolbox
@@ -24,16 +22,11 @@ repository: https://github.com/JetBrains/jetbrains-toolbox
 license: proprietary
 documentation: https://www.jetbrains.com/help/toolbox-app/
 maintainer: DevForgeKit Registry
-tags:
-  - editor
-  - ide
-  - jetbrains
-aliases:
-  - toolbox
+tags: [editor, ide, jetbrains]
+aliases: [toolbox]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: jetbrains-toolbox
-

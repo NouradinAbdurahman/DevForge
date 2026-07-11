@@ -6,7 +6,9 @@ import path from "node:path";
 import {
     createPlugin, testPlugin, buildPlugin, packagePlugin, publishPlugin, installPlugin
 } from "../src/core/pluginSdk.js";
-import { discoverPlugins } from "../src/core/plugins.js";
+import { discoverPlugins, registerPluginEventHooks, registerPluginCommands } from "../src/core/plugins.js";
+import { isPluginTrusted } from "../src/core/pluginTrust.js";
+import { pluginEvents } from "../src/core/events.js";
 
 // A real, local, no-network integration test: every step is exercised
 // for real (real tar, real SHA-256, real Ed25519 signature, real
@@ -85,6 +87,69 @@ test("full plugin lifecycle: create -> test -> build -> package -> install", asy
             assert.ok(discovered, "expected the installed plugin to be discoverable");
             assert.equal(discovered.valid, true);
         } finally {
+            rmSync(workDir, { recursive: true, force: true });
+        }
+    });
+});
+
+test("installPlugin records trust, so registerPluginEventHooks wires its hooks; a manually-copied plugin of the same content is trusted too, but tampering after install is not", async () => {
+    await withTempHome(async (tempHome) => {
+        const workDir = mkdtempSync(path.join(tmpdir(), "devforgekit-plugin-trust-"));
+        try {
+            const pluginDir = createPlugin("trust-test", workDir);
+            const { archivePath } = await packagePlugin(pluginDir);
+            const { installedDir } = await installPlugin(archivePath);
+
+            assert.equal(isPluginTrusted("trust-test", installedDir), true);
+
+            const before = pluginEvents.listenerCount("install.afterInstall");
+            registerPluginEventHooks([path.join(tempHome, ".devforgekit", "plugins")]);
+            const afterTrusted = pluginEvents.listenerCount("install.afterInstall");
+            assert.equal(afterTrusted, before + 1, "a trusted plugin's event hook must be wired to the bus");
+
+            // Tampering with the installed plugin's content after the fact
+            // (e.g. hand-editing the hook script) must invalidate trust -
+            // the whole point is that content, not just the name, is what
+            // was reviewed.
+            const fs = await import("node:fs");
+            fs.appendFileSync(path.join(installedDir, "hooks", "after-install.sh"), "\n# tampered\n");
+            assert.equal(isPluginTrusted("trust-test", installedDir), false);
+
+            pluginEvents.removeAllListeners("install.afterInstall");
+            registerPluginEventHooks([path.join(tempHome, ".devforgekit", "plugins")]);
+            assert.equal(pluginEvents.listenerCount("install.afterInstall"), 0, "a tampered plugin's event hook must not be wired");
+        } finally {
+            pluginEvents.removeAllListeners("install.afterInstall");
+            rmSync(workDir, { recursive: true, force: true });
+        }
+    });
+});
+
+test("a plugin discovered but never installed via 'plugin install' has its event hooks skipped, but its commands still register (with a warning)", async () => {
+    await withTempHome(async (tempHome) => {
+        const workDir = mkdtempSync(path.join(tmpdir(), "devforgekit-plugin-untrusted-"));
+        try {
+            // Simulate bypassing `plugin install` entirely: hand-copy a
+            // scaffolded plugin straight into the discovery root, the way
+            // a synced dotfiles repo or a manual `cp` would.
+            const pluginDir = createPlugin("untrusted-test", workDir);
+            const destRoot = path.join(tempHome, ".devforgekit", "plugins");
+            const fs = await import("node:fs");
+            fs.mkdirSync(destRoot, { recursive: true });
+            fs.cpSync(pluginDir, path.join(destRoot, "untrusted-test"), { recursive: true });
+
+            assert.equal(isPluginTrusted("untrusted-test", path.join(destRoot, "untrusted-test")), false);
+
+            const before = pluginEvents.listenerCount("install.afterInstall");
+            registerPluginEventHooks([destRoot]);
+            assert.equal(pluginEvents.listenerCount("install.afterInstall"), before, "an unreviewed plugin's event hook must never be wired");
+
+            const { Command } = await import("commander");
+            const program = new Command();
+            registerPluginCommands(program, [destRoot]);
+            assert.ok(program.commands.some((c) => c.name() === "hello"), "commands still register - only explicit, user-invoked execution, unlike unattended event hooks");
+        } finally {
+            pluginEvents.removeAllListeners("install.afterInstall");
             rmSync(workDir, { recursive: true, force: true });
         }
     });

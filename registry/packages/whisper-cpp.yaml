@@ -2,17 +2,13 @@ schemaVersion: 1
 name: whisper-cpp
 description: Local speech-to-text transcription using OpenAI's Whisper model
 category: ai
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: whisper-cpp
 dependencies: []
+conflicts: []
 validate: whisper-cli --help
 versionCommand: whisper-cli --version
 repair: brew reinstall whisper-cpp
@@ -26,16 +22,11 @@ repository: https://github.com/ggml-org/whisper.cpp
 license: MIT
 documentation: https://github.com/ggml-org/whisper.cpp
 maintainer: DevForgeKit Registry
-tags:
-  - ai
-  - speech-to-text
-  - local-llm
-aliases:
-  - whisper.cpp
+tags: [ai, speech-to-text, local-llm]
+aliases: [whisper.cpp]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: whisper-cpp
-

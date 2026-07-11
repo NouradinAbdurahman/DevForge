@@ -80,7 +80,7 @@ export function applyWorkspaceShell(workspace, { resolvedEnv } = {}) {
         "# Do not hand-edit - overwritten on every switch/save. Sourced by the shell-init",
         "# hook installed in your shell rc file (see 'devforgekit workspace shell-init')."
     ];
-    writeFileSync(file, `${header.join("\n")}\n\n${lines.join("\n")}\n`);
+    writeFileSync(file, `${header.join("\n")}\n\n${lines.join("\n")}\n`, { mode: 0o600 });
     chmodSync(file, 0o600);
     return file;
 }
@@ -92,7 +92,7 @@ export function applyWorkspaceShell(workspace, { resolvedEnv } = {}) {
 export function clearWorkspaceShell() {
     const file = workspaceShellFile();
     mkdirSync(path.dirname(file), { recursive: true });
-    writeFileSync(file, "# No active DevForgeKit workspace.\n");
+    writeFileSync(file, "# No active DevForgeKit workspace.\n", { mode: 0o600 });
     chmodSync(file, 0o600);
 }
 

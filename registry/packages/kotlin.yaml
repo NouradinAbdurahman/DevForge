@@ -2,18 +2,14 @@ schemaVersion: 1
 name: kotlin
 description: The Kotlin programming language
 category: languages
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: kotlin
 dependencies:
   - java
+conflicts: []
 validate: kotlin -version
 versionCommand: kotlin -version
 repair: brew reinstall kotlin
@@ -22,24 +18,19 @@ uninstall:
   method: brew-formula
   id: kotlin
 post_install: []
+recommendedAlternatives:
+  - scala
+  - java
 homepage: https://kotlinlang.org
 repository: https://github.com/JetBrains/kotlin
 license: Apache-2.0
 documentation: https://kotlinlang.org/docs/home.html
 maintainer: DevForgeKit Registry
-tags:
-  - language
-  - jvm
-  - mobile
-aliases:
-  - kt
+tags: [language, jvm, mobile]
+aliases: [kt]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - scala
-  - java
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: kotlin
-

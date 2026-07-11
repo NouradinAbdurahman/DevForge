@@ -2,17 +2,13 @@ schemaVersion: 1
 name: binwalk
 description: A tool for analyzing and extracting firmware images
 category: reverse-engineering
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: binwalk
 dependencies: []
+conflicts: []
 validate: binwalk --help
 versionCommand: binwalk --version
 repair: brew reinstall binwalk
@@ -26,16 +22,11 @@ repository: https://github.com/ReFirmLabs/binwalk
 license: MIT
 documentation: https://github.com/ReFirmLabs/binwalk/wiki
 maintainer: DevForgeKit Registry
-tags:
-  - reverse-engineering
-  - security
-  - firmware
-aliases:
-  - binwalk3
+tags: [reverse-engineering, security, firmware]
+aliases: [binwalk3]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: binwalk
-

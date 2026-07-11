@@ -14,8 +14,10 @@ import {
     explainSnapshot,
     formatBytes
 } from "../core/snapshot.js";
+import { table, section } from "../lib/ui.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling, usageError } from "../core/errors.js";
+import chalk from "chalk";
 
 export function registerSnapshotCommand(program) {
     const snapshot = program
@@ -73,17 +75,23 @@ export function registerSnapshotCommand(program) {
                 return;
             }
 
-            logger.section("Environment Snapshots");
-            console.log("\n  ID                              Machine              Created                 Size");
-            console.log("  " + "-".repeat(100));
-            for (const s of snapshots) {
-                const id = (s.id || "").slice(0, 32).padEnd(32);
-                const machine = `${s.machine}`.slice(0, 20).padEnd(20);
-                const created = (s.createdAt ? s.createdAt.slice(0, 19).replace("T", " ") : "unknown").padEnd(22);
-                const size = formatBytes(s.size).padStart(8);
-                console.log(`  ${id}  ${machine}  ${created}  ${size}`);
-            }
-            console.log(`\n  ${snapshots.length} snapshot(s)`);
+            console.log(section(`Environment Snapshots (${snapshots.length})`, [
+                table(
+                    snapshots.map((s) => ({
+                        id: s.id,
+                        machine: s.machine,
+                        created: s.createdAt ? s.createdAt.slice(0, 19).replace("T", " ") : "unknown",
+                        size: formatBytes(s.size)
+                    })),
+                    [
+                        { key: "id", label: "ID", maxWidth: 32 },
+                        { key: "machine", label: "MACHINE", maxWidth: 20 },
+                        { key: "created", label: "CREATED" },
+                        { key: "size", label: "SIZE" }
+                    ]
+                )
+            ]));
+            logger.info("Next: devforgekit snapshot inspect <archive>, or devforgekit snapshot restore <archive>");
         }));
 
     // ─── inspect ─────────────────────────────────────────────────────
@@ -172,16 +180,17 @@ export function registerSnapshotCommand(program) {
         .action(withErrorHandling(async (oldArchive, newArchive) => {
             const diff = await diffSnapshots(path.resolve(oldArchive), path.resolve(newArchive));
 
-            logger.section("Snapshot Diff");
-            console.log(`\n  Old: ${diff.createdAt.old} (${diff.machine.old?.hostname || "unknown"})`);
-            console.log(`  New: ${diff.createdAt.new} (${diff.machine.new?.hostname || "unknown"})`);
-            console.log(`  DevForgeKit: ${diff.devforgekitVersion.old} → ${diff.devforgekitVersion.new}`);
+            console.log(section("Snapshot Diff", [
+                `Old: ${diff.createdAt.old} (${diff.machine.old?.hostname || "unknown"})`,
+                `New: ${diff.createdAt.new} (${diff.machine.new?.hostname || "unknown"})`,
+                `DevForgeKit: ${diff.devforgekitVersion.old} → ${diff.devforgekitVersion.new}`
+            ]));
 
             function printDiff(label, d) {
                 if (d.added.length === 0 && d.removed.length === 0) return;
-                console.log(`\n  ${label}:`);
-                for (const item of d.added) console.log(`    + ${item}`);
-                for (const item of d.removed) console.log(`    - ${item}`);
+                console.log(`\n  ${chalk.bold(label)}:`);
+                for (const item of d.added) console.log(`    ${chalk.green(`+ ${item}`)}`);
+                for (const item of d.removed) console.log(`    ${chalk.red(`- ${item}`)}`);
             }
 
             printDiff("Packages", diff.packages);

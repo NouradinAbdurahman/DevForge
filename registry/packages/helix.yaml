@@ -2,17 +2,13 @@ schemaVersion: 1
 name: helix
 description: A modal, post-modern text editor
 category: editors
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: helix
 dependencies: []
+conflicts: []
 validate: hx --version
 versionCommand: hx --version
 repair: brew reinstall helix
@@ -21,24 +17,19 @@ uninstall:
   method: brew-formula
   id: helix
 post_install: []
+recommendedAlternatives:
+  - neovim
+  - micro
 homepage: https://helix-editor.com
 repository: https://github.com/helix-editor/helix
 license: MPL-2.0
 documentation: https://docs.helix-editor.com
 maintainer: DevForgeKit Registry
-tags:
-  - editor
-  - terminal
-  - modal
-aliases:
-  - hx
+tags: [editor, terminal, modal]
+aliases: [hx]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - neovim
-  - micro
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: helix
-

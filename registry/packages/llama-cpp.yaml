@@ -2,17 +2,13 @@ schemaVersion: 1
 name: llama-cpp
 description: Local large language model inference in C/C++
 category: ai
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: llama.cpp
 dependencies: []
+conflicts: []
 validate: llama-cli --version
 versionCommand: llama-cli --version
 repair: brew reinstall llama.cpp
@@ -21,22 +17,18 @@ uninstall:
   method: brew-formula
   id: llama.cpp
 post_install: []
+recommendedAlternatives:
+  - ollama
 homepage: https://github.com/ggml-org/llama.cpp
 repository: https://github.com/ggml-org/llama.cpp
 license: MIT
 documentation: https://github.com/ggml-org/llama.cpp/tree/master/docs
 maintainer: DevForgeKit Registry
-tags:
-  - ai
-  - local-llm
-aliases:
-  - llama.cpp
+tags: [ai, local-llm]
+aliases: [llama.cpp]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - ollama
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: llama.cpp
-

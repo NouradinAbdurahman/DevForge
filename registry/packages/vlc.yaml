@@ -2,15 +2,13 @@ schemaVersion: 1
 name: vlc
 description: A free and open-source cross-platform multimedia player
 category: media
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: vlc
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/VLC.app'
 versionCommand: vlc --version
 repair: brew reinstall --cask vlc
@@ -19,23 +17,18 @@ uninstall:
   method: brew-cask
   id: vlc
 post_install: []
+recommendedAlternatives:
+  - ffmpeg
 homepage: https://www.videolan.org/vlc
 repository: https://github.com/videolan/vlc
 license: GPL-2.0
 documentation: https://wiki.videolan.org/Documentation/
 maintainer: DevForgeKit Registry
-tags:
-  - media
-  - video
-  - player
-aliases:
-  - vlc-media
+tags: [media, video, player]
+aliases: [vlc-media]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - ffmpeg
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: vlc
-

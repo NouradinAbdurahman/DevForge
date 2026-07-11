@@ -2,15 +2,13 @@ schemaVersion: 1
 name: godot
 description: A free and open-source 2D and 3D game engine
 category: game-development
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: godot
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/Godot.app'
 versionCommand: godot --version
 repair: brew reinstall --cask godot
@@ -19,22 +17,18 @@ uninstall:
   method: brew-cask
   id: godot
 post_install: []
+recommendedAlternatives:
+  - unity-hub
 homepage: https://godotengine.org
 repository: https://github.com/godotengine/godot
 license: MIT
 documentation: https://docs.godotengine.org
 maintainer: DevForgeKit Registry
-tags:
-  - game-development
-  - engine
-aliases:
-  - godot-engine
+tags: [game-development, engine]
+aliases: [godot-engine]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - unity-hub
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: godot
-

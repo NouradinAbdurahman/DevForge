@@ -2,15 +2,13 @@ schemaVersion: 1
 name: insomnia
 description: A collaborative API client for REST, GraphQL, and gRPC
 category: api-development
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: insomnia
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/Insomnia.app'
 versionCommand: ls /Applications | grep Insomnia
 repair: brew reinstall --cask insomnia
@@ -19,24 +17,19 @@ uninstall:
   method: brew-cask
   id: insomnia
 post_install: []
+recommendedAlternatives:
+  - postman
+  - newman
 homepage: https://insomnia.rest
 repository: https://github.com/Kong/insomnia
 license: Apache-2.0
 documentation: https://docs.insomnia.rest
 maintainer: DevForgeKit Registry
-tags:
-  - api-development
-  - api
-  - testing
-aliases:
-  - insomnia-api
+tags: [api-development, api, testing]
+aliases: [insomnia-api]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - postman
-  - newman
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: insomnia
-

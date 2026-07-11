@@ -10,18 +10,20 @@
 // for anything that's genuinely still macOS/Homebrew-only, so a shared
 // system calling an unsupported method on a non-macOS platform fails
 // with a clear, actionable message instead of a raw ENOENT from a
-// missing `brew` binary. `MacOSPlatform` (macos.js) is the only fully
-// implemented adapter today; `LinuxPlatform`/`WindowsPlatform`
-// (linux.js/windows.js) exist so the shape is real and testable, but
-// deliberately do not implement package-manager operations yet - see
-// those files' own comments. Per the CLAUDE.md/architecture rule this
-// enforces: only bootstrap/install/service management (Layer 1's
+// missing `brew` binary. `MacOSPlatform` (macos.js) was the first fully
+// implemented adapter; `LinuxPlatform`/`WindowsPlatform` (linux.js/
+// windows.js, v2.2.3) implement the same package-manager operations
+// against apt/dnf/pacman and winget/choco/scoop respectively, detected
+// at runtime - see those files' own comments for what's still genuinely
+// unimplemented (e.g. `upgradeCommand()` throws when no supported
+// manager is detected on the host). Per the CLAUDE.md/architecture rule
+// this enforces: only bootstrap/install/service management (Layer 1's
 // scripts/*.sh, forever bash+Homebrew) stays platform-specific by
 // design; everything under cli/src/core (Layer 2) routes through here.
 import os from "node:os";
 import path from "node:path";
 import { homeDir } from "../paths.js";
-import { PlatformNotSupportedError } from "./errors.js";
+import { PlatformNotSupportedError, assertSafePackageId } from "./errors.js";
 
 export class Platform {
     // Subclasses must override; the base throwing here means a bug that
@@ -51,6 +53,14 @@ export class Platform {
 
     defaultShell() {
         return "bash";
+    }
+
+    // shells() -> the shells worth generating environment configuration
+    // for on this platform (Environment Configuration Engine,
+    // core/environment/ - the Platform link in its EnvironmentEngine ->
+    // Platform -> Shell -> Writer chain). Ordered: defaultShell() first.
+    shells() {
+        return [this.defaultShell()];
     }
 
     // shellConfigFile(shell) -> the rc file a given shell reads on
@@ -97,6 +107,9 @@ export class Platform {
     // method directly; brew-specific methods and anything unrecognized
     // are handled by the caller/subclass (see MacOSPlatform.installCommand).
     installCommand(step, action) {
+        if (["npm", "pip", "cargo", "mise", "go"].includes(step.method)) {
+            assertSafePackageId(step.id, `${step.method} package id`);
+        }
         switch (step.method) {
             case "npm":
                 return action === "uninstall" ? `npm uninstall -g ${step.id}` : `npm install -g ${step.id}`;
@@ -106,6 +119,20 @@ export class Platform {
                 return action === "uninstall" ? `cargo uninstall ${step.id}` : `cargo install ${step.id}`;
             case "mise":
                 return action === "uninstall" ? `mise uninstall ${step.id}` : `mise use -g ${step.id}`;
+            case "go": {
+                // `go install <module>@version` is the only supported way
+                // to install a Go binary globally - there's no `go
+                // uninstall`, so the community-standard removal is
+                // deleting the built binary from GOPATH/bin directly
+                // (falls back to the conventional $HOME/go when GOPATH
+                // isn't set, matching `go env`'s own documented default).
+                const target = step.id.includes("@") ? step.id : `${step.id}@latest`;
+                if (action === "uninstall") {
+                    const binName = step.id.split("/").pop();
+                    return `rm -f "$(go env GOPATH 2>/dev/null || echo "$HOME/go")/bin/${binName}"`;
+                }
+                return `go install ${target}`;
+            }
             case "shell":
                 return step.command;
             case "brew-formula":

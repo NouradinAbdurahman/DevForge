@@ -9,6 +9,7 @@ import path from "node:path";
 import { homeDir } from "../paths.js";
 import { captureShellCommand } from "../shell.js";
 import { Platform } from "./base.js";
+import { assertSafePackageId } from "./errors.js";
 
 export class MacOSPlatform extends Platform {
     get id() {
@@ -21,6 +22,12 @@ export class MacOSPlatform extends Platform {
 
     defaultShell() {
         return "zsh";
+    }
+
+    // zsh is macOS's default login shell since Catalina; bash is still
+    // generated for scripts/users that explicitly run it.
+    shells() {
+        return ["zsh", "bash"];
     }
 
     binSearchDirs() {
@@ -47,6 +54,10 @@ export class MacOSPlatform extends Platform {
     }
 
     installCommand(step, action) {
+        if (step.method === "brew-formula" || step.method === "brew-cask") {
+            assertSafePackageId(step.id, `${step.method} package id`);
+            if (step.tap) assertSafePackageId(step.tap, "brew tap");
+        }
         const tapPrefix = step.tap ? `brew tap ${step.tap} && ` : "";
         if (step.method === "brew-formula") {
             return tapPrefix + (action === "uninstall" ? `brew uninstall ${step.id}` : `brew install ${step.id}`);
@@ -100,6 +111,7 @@ export class MacOSPlatform extends Platform {
     }
 
     upgradeCommand(name) {
+        assertSafePackageId(name, "package name");
         return `brew upgrade ${name}`;
     }
 }

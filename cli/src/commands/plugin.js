@@ -17,8 +17,16 @@ import {
     diagnosePlugins, formatDiagnostics
 } from "../core/pluginValidation.js";
 import { ensureSigningKey, trustKey } from "../core/signing.js";
+import { table, section } from "../lib/ui.js";
+import { didYouMeanMessage } from "../lib/suggest.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling, usageError } from "../core/errors.js";
+import chalk from "chalk";
+
+function unknownPluginError(name) {
+    const suggestion = didYouMeanMessage(name, discoverPlugins().map((p) => p.name));
+    return usageError(`Unknown plugin '${name}'.${suggestion ? ` ${suggestion}` : ""} Run 'devforgekit plugin list' to see available plugins.`);
+}
 
 export function registerPluginCommand(program) {
     const plugin = program
@@ -28,21 +36,39 @@ export function registerPluginCommand(program) {
     plugin
         .command("list")
         .description("List every discovered plugin, including invalid/incompatible ones")
-        .action(withErrorHandling(async () => {
+        .option("--json", "output as JSON")
+        .action(withErrorHandling(async function () {
             const plugins = discoverPlugins();
+            if (this.opts().json) {
+                console.log(JSON.stringify(plugins, null, 2));
+                return;
+            }
             if (plugins.length === 0) {
                 logger.info("No plugins found.");
                 return;
             }
-            logger.section("DevForgeKit Plugins");
-            for (const p of plugins) {
-                if (p.valid) {
-                    const commands = (p.manifest.commands || []).map((c) => c.name).join(", ") || "none";
-                    console.log(`  ${p.name}@${p.manifest.version} - ${p.manifest.description} (commands: ${commands})`);
-                } else {
-                    console.log(`  ${p.name} - INVALID (${p.reason})`);
+            const rows = plugins.map((p) => p.valid
+                ? {
+                    name: p.name,
+                    version: p.manifest.version,
+                    status: chalk.green("valid"),
+                    commands: (p.manifest.commands || []).map((c) => c.name).join(", ") || "none"
                 }
-            }
+                : {
+                    name: p.name,
+                    version: "-",
+                    status: chalk.red(`invalid (${p.reason})`),
+                    commands: "-"
+                });
+            console.log(section(`DevForgeKit Plugins (${plugins.length})`, [
+                table(rows, [
+                    { key: "name", label: "NAME" },
+                    { key: "version", label: "VERSION" },
+                    { key: "status", label: "STATUS", maxWidth: 45 },
+                    { key: "commands", label: "COMMANDS", maxWidth: 30 }
+                ])
+            ]));
+            logger.info("Next: devforgekit plugin info <name>, or devforgekit plugin run <name>");
         }));
 
     plugin
@@ -51,7 +77,7 @@ export function registerPluginCommand(program) {
         .action(withErrorHandling(async (name) => {
             const found = discoverPlugins().find((p) => p.name === name);
             if (!found) {
-                throw usageError(`Unknown plugin '${name}'. Run 'devforgekit plugin list' to see available plugins.`);
+                throw unknownPluginError(name);
             }
             console.log(JSON.stringify(found.manifest, null, 2));
             if (!found.valid) {
@@ -65,7 +91,7 @@ export function registerPluginCommand(program) {
         .action(withErrorHandling(async (name, commandName) => {
             const found = discoverPlugins().find((p) => p.name === name);
             if (!found) {
-                throw usageError(`Unknown plugin '${name}'. Run 'devforgekit plugin list' to see available plugins.`);
+                throw unknownPluginError(name);
             }
             if (!found.valid) {
                 throw usageError(`Plugin '${name}' cannot run: ${found.reason}`);
@@ -201,7 +227,10 @@ export function registerPluginCommand(program) {
             // If it's a plugin name, resolve to its directory
             if (!existsSync(arg)) {
                 const found = discoverPlugins().find((p) => p.name === arg);
-                if (!found) throw usageError(`Unknown plugin '${arg}' or directory not found.`);
+                if (!found) {
+                    const suggestion = didYouMeanMessage(arg, discoverPlugins().map((p) => p.name));
+                    throw usageError(`Unknown plugin '${arg}' or directory not found.${suggestion ? ` ${suggestion}` : ""}`);
+                }
                 dir = found.dir;
             }
             const result = scorePlugin(dir);

@@ -2,18 +2,14 @@ schemaVersion: 1
 name: git-delta
 description: A syntax-highlighting pager for git, diff, and grep output
 category: utilities
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: git-delta
 dependencies:
   - git
+conflicts: []
 validate: delta --version
 versionCommand: delta --version
 repair: brew reinstall git-delta
@@ -22,23 +18,18 @@ uninstall:
   method: brew-formula
   id: git-delta
 post_install: []
+recommendedAlternatives:
+  - difftastic
 homepage: https://github.com/dandavison/delta
 repository: https://github.com/dandavison/delta
 license: MIT
 documentation: https://github.com/dandavison/delta#readme
 maintainer: DevForgeKit Registry
-tags:
-  - git
-  - diff
-  - cli
-aliases:
-  - delta
+tags: [git, diff, cli]
+aliases: [delta]
 stability: stable
-lastVerified: "2026-07-06"
-recommendedAlternatives:
-  - difftastic
+lastVerified: '2026-07-06'
 platformInstall:
   macos:
     method: brew-formula
     id: git-delta
-

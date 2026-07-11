@@ -2,15 +2,13 @@ schemaVersion: 1
 name: kitty
 description: A fast, feature-rich, GPU-based terminal emulator
 category: terminals
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: kitty
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/kitty.app'
 versionCommand: kitty --version
 repair: brew reinstall --cask kitty
@@ -19,24 +17,20 @@ uninstall:
   method: brew-cask
   id: kitty
 post_install: []
+recommendedAlternatives:
+  - alacritty
+  - wezterm
+  - iterm2
 homepage: https://sw.kovidgoyal.net/kitty
 repository: https://github.com/kovidgoyal/kitty
 license: GPL-3.0
 documentation: https://sw.kovidgoyal.net/kitty/
 maintainer: DevForgeKit Registry
-tags:
-  - terminal
-  - gpu-accelerated
-aliases:
-  - kitty-term
+tags: [terminal, gpu-accelerated]
+aliases: [kitty-term]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - alacritty
-  - wezterm
-  - iterm2
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: kitty
-

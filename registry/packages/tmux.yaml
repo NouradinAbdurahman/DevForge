@@ -2,20 +2,13 @@ schemaVersion: 1
 name: tmux
 description: A terminal multiplexer
 category: terminals
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: tmux
 dependencies: []
+conflicts: []
 validate: tmux -V
 versionCommand: tmux -V
 repair: brew reinstall tmux
@@ -29,13 +22,10 @@ repository: https://github.com/tmux/tmux
 license: ISC
 documentation: https://github.com/tmux/tmux/wiki
 maintainer: DevForgeKit Registry
-tags:
-  - terminal
-  - multiplexer
-aliases:
-  - tmux-terminal
+tags: [terminal, multiplexer]
+aliases: [tmux-terminal]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -46,4 +36,3 @@ platformInstall:
   windows:
     method: winget
     id: tmux.tmux
-

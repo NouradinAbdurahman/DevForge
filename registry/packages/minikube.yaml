@@ -2,18 +2,14 @@ schemaVersion: 1
 name: minikube
 description: Run a single-node Kubernetes cluster locally
 category: containers
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: minikube
 dependencies:
   - docker
+conflicts: []
 validate: minikube version
 versionCommand: minikube version
 repair: brew reinstall minikube
@@ -22,23 +18,18 @@ uninstall:
   method: brew-formula
   id: minikube
 post_install: []
+recommendedAlternatives:
+  - kind
 homepage: https://minikube.sigs.k8s.io
 repository: https://github.com/kubernetes/minikube
 license: Apache-2.0
 documentation: https://minikube.sigs.k8s.io/docs/
 maintainer: DevForgeKit Registry
-tags:
-  - containers
-  - kubernetes
-  - local-development
-aliases:
-  - minikube-k8s
+tags: [containers, kubernetes, local-development]
+aliases: [minikube-k8s]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - kind
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: minikube
-

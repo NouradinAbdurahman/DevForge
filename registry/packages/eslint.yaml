@@ -2,22 +2,38 @@ schemaVersion: 1
 name: eslint
 description: A pluggable linter for JavaScript and TypeScript
 category: code-quality
-platforms: [macos, linux]
-architectures: [intel, apple-silicon, linux]
-install: { method: npm, id: eslint }
-dependencies: [node]
-validate: "eslint --version"
-versionCommand: "eslint --version"
-repair: "npm install -g eslint@latest"
-update: "npm install -g eslint@latest"
-uninstall: { method: npm, id: eslint }
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
+install:
+  method: npm
+  id: eslint
+dependencies:
+  - node
+conflicts: []
+validate: eslint --version
+versionCommand: eslint --version
+repair: npm install -g eslint@latest
+update: npm install -g eslint@latest
+uninstall:
+  method: npm
+  id: eslint
 post_install: []
-homepage: "https://eslint.org"
-repository: "https://github.com/eslint/eslint"
+homepage: https://eslint.org
+repository: https://github.com/eslint/eslint
 license: MIT
-documentation: "https://eslint.org/docs/latest/"
+documentation: https://eslint.org/docs/latest/
 maintainer: DevForgeKit Registry
 tags: [code-quality, javascript, linter]
 aliases: [eslint-cli]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
+platformInstall:
+  macos:
+    method: npm
+    id: eslint
+  linux:
+    method: npm
+    id: eslint
+  windows:
+    method: npm
+    id: eslint

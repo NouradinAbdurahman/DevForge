@@ -1,7 +1,7 @@
 schemaVersion: 1
 name: ml-engineer
 description: A machine learning experimentation environment - Python, Ollama, Docker, and PostgreSQL for data storage - installed, configured, and verified in one command
-icon: "🧠"
+icon: 🧠
 tags: [ai, machine-learning, data-science]
 collections: [machine-learning, data-science]
 components: [git, vscode]

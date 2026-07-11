@@ -2,23 +2,40 @@ schemaVersion: 1
 name: esptool
 description: A command-line tool for flashing and communicating with ESP32/ESP8266 chips
 category: embedded
-platforms: [macos, linux]
-architectures: [intel, apple-silicon, linux]
-install: { method: pip, id: esptool }
-dependencies: [python]
-validate: "esptool.py version"
-versionCommand: "esptool.py version"
-repair: "pip install --upgrade esptool"
-update: "pip install --upgrade esptool"
-uninstall: { method: pip, id: esptool }
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
+install:
+  method: pip
+  id: esptool
+dependencies:
+  - python
+conflicts: []
+validate: esptool.py version
+versionCommand: esptool.py version
+repair: pip install --upgrade esptool
+update: pip install --upgrade esptool
+uninstall:
+  method: pip
+  id: esptool
 post_install: []
-homepage: "https://docs.espressif.com/projects/esptool"
-repository: "https://github.com/espressif/esptool"
+recommendedAlternatives:
+  - platformio
+homepage: https://docs.espressif.com/projects/esptool
+repository: https://github.com/espressif/esptool
 license: GPL-2.0
-documentation: "https://docs.espressif.com/projects/esptool"
+documentation: https://docs.espressif.com/projects/esptool
 maintainer: DevForgeKit Registry
 tags: [embedded, iot]
 aliases: [esptool-py]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives: [platformio]
+lastVerified: '2026-07-05'
+platformInstall:
+  macos:
+    method: pip
+    id: esptool
+  linux:
+    method: pip
+    id: esptool
+  windows:
+    method: pip
+    id: esptool

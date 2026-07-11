@@ -2,19 +2,13 @@ schemaVersion: 1
 name: vagrant
 description: A tool for building and managing virtual machine environments
 category: devops
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, x64, arm64]
 install:
   method: brew-cask
   id: vagrant
 dependencies: []
+conflicts: []
 validate: vagrant --version
 versionCommand: vagrant --version
 repair: brew reinstall --cask vagrant
@@ -23,22 +17,18 @@ uninstall:
   method: brew-cask
   id: vagrant
 post_install: []
+recommendedAlternatives:
+  - docker
+  - colima
 homepage: https://www.vagrantup.com
 repository: https://github.com/hashicorp/vagrant
 license: BUSL-1.1
 documentation: https://developer.hashicorp.com/vagrant/docs
 maintainer: DevForgeKit Registry
-tags:
-  - devops
-  - virtualization
-  - hashicorp
-aliases:
-  - vagrant-hashicorp
+tags: [devops, virtualization, hashicorp]
+aliases: [vagrant-hashicorp]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - docker
-  - colima
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
@@ -49,4 +39,3 @@ platformInstall:
   windows:
     method: winget
     id: Hashicorp.Vagrant
-

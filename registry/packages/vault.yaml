@@ -2,18 +2,14 @@ schemaVersion: 1
 name: vault
 description: HashiCorp's secrets management and encryption tool
 category: devops
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: hashicorp/tap/vault
   tap: hashicorp/tap
 dependencies: []
+conflicts: []
 validate: vault version
 versionCommand: vault version
 repair: brew reinstall hashicorp/tap/vault
@@ -23,26 +19,20 @@ uninstall:
   id: hashicorp/tap/vault
   tap: hashicorp/tap
 post_install: []
+recommendedAlternatives:
+  - consul
+  - nomad
 homepage: https://www.vaultproject.io
 repository: https://github.com/hashicorp/vault
 license: BUSL-1.1
 documentation: https://developer.hashicorp.com/vault/docs
 maintainer: DevForgeKit Registry
-tags:
-  - devops
-  - security
-  - secrets
-  - hashicorp
-aliases:
-  - vault-hashicorp
+tags: [devops, security, secrets, hashicorp]
+aliases: [vault-hashicorp]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - consul
-  - nomad
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: hashicorp/tap/vault
     tap: hashicorp/tap
-

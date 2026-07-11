@@ -4,21 +4,28 @@ description: The Rust programming language, installed via the official rustup to
 category: languages
 platforms: [macos, linux]
 architectures: [intel, apple-silicon, linux]
-install: { method: shell, command: "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y" }
+install:
+  method: shell
+  command: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 dependencies: []
+conflicts: []
 validate: rustc --version
-versionCommand: "rustc --version"
+versionCommand: rustc --version
 repair: rustup update
 update: rustup update
-uninstall: { method: shell, command: "rustup self uninstall -y" }
+uninstall:
+  method: shell
+  command: rustup self uninstall -y
 post_install: []
-homepage: "https://www.rust-lang.org"
-repository: "https://github.com/rust-lang/rust"
+recommendedAlternatives:
+  - go
+  - zig
+homepage: https://www.rust-lang.org
+repository: https://github.com/rust-lang/rust
 license: MIT
-documentation: "https://doc.rust-lang.org/book/"
+documentation: https://doc.rust-lang.org/book/
 maintainer: DevForgeKit Registry
 tags: [language, systems]
 aliases: [rustup, rustc]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives: [go, zig]
+lastVerified: '2026-07-05'

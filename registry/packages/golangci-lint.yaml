@@ -2,18 +2,14 @@ schemaVersion: 1
 name: golangci-lint
 description: A fast Go linters aggregator
 category: code-quality
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: golangci-lint
 dependencies:
   - go
+conflicts: []
 validate: golangci-lint --version
 versionCommand: golangci-lint --version
 repair: brew reinstall golangci-lint
@@ -27,16 +23,11 @@ repository: https://github.com/golangci/golangci-lint
 license: GPL-3.0
 documentation: https://golangci-lint.run
 maintainer: DevForgeKit Registry
-tags:
-  - code-quality
-  - go
-  - linter
-aliases:
-  - golint
+tags: [code-quality, go, linter]
+aliases: [golint]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: golangci-lint
-

@@ -2,11 +2,8 @@ schemaVersion: 1
 name: mariadb
 description: MariaDB - a community-developed fork of MySQL
 category: databases
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-formula
   id: mariadb
@@ -22,24 +19,19 @@ uninstall:
   id: mariadb
 post_install:
   - brew services start mariadb
+recommendedAlternatives:
+  - mysql
+  - postgres
 homepage: https://mariadb.org
 repository: https://github.com/MariaDB/server
 license: GPL-2.0
 documentation: https://mariadb.com/kb/en/documentation/
 maintainer: DevForgeKit Registry
-tags:
-  - database
-  - relational
-  - sql
-aliases:
-  - mariadb-server
+tags: [database, relational, sql]
+aliases: [mariadb-server]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - mysql
-  - postgres
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: mariadb
-

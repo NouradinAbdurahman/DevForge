@@ -2,15 +2,13 @@ schemaVersion: 1
 name: meslo-lg-nerd-font
 description: The Meslo LG monospace font, patched with Nerd Font icons
 category: fonts
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: font-meslo-lg-nerd-font
 dependencies: []
+conflicts: []
 validate: test -n "$(find /Library/Fonts "$HOME/Library/Fonts" -iname '*MesloLGS*' -print -quit 2>/dev/null)"
 versionCommand: ls ~/Library/Fonts | grep -i 'MesloLGS'
 repair: brew reinstall --cask font-meslo-lg-nerd-font
@@ -24,16 +22,11 @@ repository: https://github.com/ryanoasis/nerd-fonts
 license: OFL-1.1
 documentation: https://github.com/ryanoasis/nerd-fonts#font-installation
 maintainer: DevForgeKit Registry
-tags:
-  - font
-  - monospace
-  - nerd-font
-aliases:
-  - meslo-nerd
+tags: [font, monospace, nerd-font]
+aliases: [meslo-nerd]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: font-meslo-lg-nerd-font
-

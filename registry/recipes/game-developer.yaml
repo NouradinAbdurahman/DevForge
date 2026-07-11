@@ -1,7 +1,7 @@
 schemaVersion: 1
 name: game-developer
 description: A 2D/3D game development environment - Godot, Unity Hub, and Blender for asset creation - installed, configured, and verified in one command
-icon: "🎮"
+icon: 🎮
 tags: [game-development, graphics]
 collections: [game-development]
 components: [blender, cmake]

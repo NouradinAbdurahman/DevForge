@@ -2,19 +2,13 @@ schemaVersion: 1
 name: nmap
 description: A network discovery and security auditing tool
 category: security
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: nmap
 dependencies: []
+conflicts: []
 validate: nmap --version
 versionCommand: nmap --version
 repair: brew reinstall nmap
@@ -28,14 +22,10 @@ repository: https://github.com/nmap/nmap
 license: NPSL
 documentation: https://nmap.org/book/
 maintainer: DevForgeKit Registry
-tags:
-  - security
-  - networking
-  - scanning
-aliases:
-  - nmap-scanner
+tags: [security, networking, scanning]
+aliases: [nmap-scanner]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -43,4 +33,3 @@ platformInstall:
   linux:
     method: apt
     id: nmap
-
