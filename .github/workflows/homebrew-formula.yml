@@ -1,0 +1,85 @@
+name: Homebrew Formula Validation
+
+# Verifies Formula/devforgekit.rb actually installs and works, not just
+# that the Ruby parses. Modern Homebrew refuses to install a bare local
+# .rb file ("Homebrew requires formulae to be in a tap") - confirmed
+# live, not assumed - so this creates a real local tap (brew tap-new),
+# same as a maintainer would when preparing a homebrew-devforgekit tap
+# PR, installs from it, runs the formula's own `test do` block, and
+# checks the launcher actually works. Runner is ephemeral, so there's no
+# real system state to preserve/restore here (unlike testing this
+# locally on a dev machine that already has devforgekit on PATH).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Formula/**"
+      - "completions/**"
+      - ".github/workflows/homebrew-formula.yml"
+  pull_request:
+    paths:
+      - "Formula/**"
+      - "completions/**"
+      - ".github/workflows/homebrew-formula.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  formula-test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: brew style (lint the formula)
+        run: brew style Formula/devforgekit.rb
+
+      - name: Create a local test tap
+        run: |
+          set -e
+          brew tap-new local/devforgekit-test --no-git
+          tap_dir="$(brew --repo local/devforgekit-test)"
+          cp Formula/devforgekit.rb "$tap_dir/Formula/devforgekit.rb"
+
+      - name: brew audit (requires a tap-resolved name, not a bare path - confirmed live)
+        run: brew audit --formula local/devforgekit-test/devforgekit
+
+      - name: Install from the test tap
+        run: brew install --build-from-source --verbose local/devforgekit-test/devforgekit
+
+      - name: Run the formula's own test block
+        run: brew test local/devforgekit-test/devforgekit --verbose
+
+      - name: Verify the linked binary actually works
+        run: |
+          set -e
+          export DEVFORGEKIT_NO_TUI=1
+          export HOME="${RUNNER_TEMP}/dfk-brew-home"
+          mkdir -p "$HOME"
+
+          version_output="$(devforgekit --version)"
+          expected="$(cat VERSION)"
+          echo "reported: $version_output (tag-referenced version, may lag the working tree's VERSION until the formula is bumped)"
+
+          devforgekit --help >/dev/null
+          devforgekit doctor --skip-bash --skip-compatibility --json > /dev/null
+          devforgekit new --list >/dev/null
+
+      - name: Verify shell completions installed (only once the formula's tag includes completions/ - see Formula/devforgekit.rb)
+        run: |
+          keg="$(brew --cellar devforgekit)/$(brew list --versions devforgekit | awk '{print $2}')"
+          if [[ -f "$keg/libexec/completions/devforgekit.bash" ]]; then
+            test -f "$(brew --prefix)/etc/bash_completion.d/devforgekit.bash" || { echo "::error::bash completion not installed despite being present in the keg"; exit 1; }
+            test -f "$(brew --prefix)/share/zsh/site-functions/_devforgekit" || { echo "::error::zsh completion not installed despite being present in the keg"; exit 1; }
+            test -f "$(brew --prefix)/share/fish/vendor_completions.d/devforgekit.fish" || { echo "::error::fish completion not installed despite being present in the keg"; exit 1; }
+          else
+            echo "completions/ not present in the tagged release this formula currently points at - skip (expected until the next version bump)"
+          fi
+
+      - name: Clean up
+        if: always()
+        run: |
+          brew uninstall devforgekit 2>/dev/null || true
+          brew untap local/devforgekit-test 2>/dev/null || true
