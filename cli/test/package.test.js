@@ -658,7 +658,12 @@ test("getInstalledPackageNames() resolves in bounded time against the real regis
     const names = await getInstalledPackageNames();
     const elapsedMs = Date.now() - start;
     assert.ok(Array.isArray(names));
-    assert.ok(elapsedMs < 60_000, `expected bounded-concurrency validation to finish well under 60s, took ${elapsedMs}ms`);
+    // 120s, not 60s: measured locally at well under 60s, but a real CI
+    // runner (shared, resource-constrained) measured ~2.5x slower than
+    // this dev machine on the sibling analyzePackages() test below -
+    // this bound needs the same real-world headroom, not just a
+    // comfortable-looking number picked from local timing alone.
+    assert.ok(elapsedMs < 120_000, `expected bounded-concurrency validation to finish well under 120s, took ${elapsedMs}ms`);
 });
 
 test("analyzePackages() completes in bounded time and returns a well-formed analysis", async () => {
@@ -670,5 +675,12 @@ test("analyzePackages() completes in bounded time and returns a well-formed anal
     assert.ok(Array.isArray(analysis.orphans));
     assert.ok(Array.isArray(analysis.duplicates));
     assert.ok(Array.isArray(analysis.outdated));
-    assert.ok(elapsedMs < 150_000, `expected bounded-concurrency profile building to finish well under 150s, took ${elapsedMs}ms`);
+    // 300s, not 150s: this exact test measured 34-61s locally but
+    // 154.7s on a real GitHub Actions runner (confirmed via a live CI
+    // failure, not guessed) - shared CI runners are meaningfully slower
+    // than a dev machine for a workload this shell-out-heavy. 300s still
+    // gives ~2x margin over the observed CI time while remaining far
+    // short of what a true regression to unbounded sequential
+    // processing would take.
+    assert.ok(elapsedMs < 300_000, `expected bounded-concurrency profile building to finish well under 300s, took ${elapsedMs}ms`);
 });

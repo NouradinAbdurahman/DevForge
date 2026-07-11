@@ -544,7 +544,10 @@ test("verifyRepairs returns verification results with health score, in bounded t
         const start = Date.now();
         const result = await verifyRepairs();
         const elapsedMs = Date.now() - start;
-        assert.ok(elapsedMs < 60_000, `expected bounded-concurrency verification to finish well under 60s, took ${elapsedMs}ms`);
+        // 120s, not 60s: a real GitHub Actions run measured this same
+        // shell-out-heavy workload class at ~2.5x slower than local for
+        // the sibling analyzePackages() test - matching that margin here.
+        assert.ok(elapsedMs < 120_000, `expected bounded-concurrency verification to finish well under 120s, took ${elapsedMs}ms`);
 
         assert.ok(result.results);
         assert.ok(Array.isArray(result.results));
