@@ -27,12 +27,36 @@ async function renderApp(props = {}) {
     const instance = render(h(App, props));
     // ink-testing-library's fake stdout reports 100 columns but has no
     // `rows` property (defaults to 24 in our hook). Set rows high enough
-    // for any page's per-page minimum, then emit resize after effects
-    // have registered the listener (useEffect runs async after paint).
+    // for any page's per-page minimum, then emit resize.
     instance.stdout.rows = 40;
-    await delay(10); // let useEffect register the resize listener
-    instance.stdout.emit("resize");
-    await delay(250); // let resize debounce (120ms) + re-render settle
+    // A single emit is unreliable, confirmed by direct instrumentation:
+    // `stdout.listenerCount("resize")` is already 1 immediately after
+    // render() (Ink's own internal resize handling), which masks that
+    // useTerminalSize's *own* useEffect - the one this app actually
+    // depends on - hasn't registered its listener yet. Node's
+    // EventEmitter doesn't queue an event for a listener that
+    // subscribes after it fires, so an emit before that effect flushes
+    // is silently lost and the app never learns the terminal was ever
+    // resized.
+    //
+    // Gating the retry on "does the *current* page still show too
+    // small" (an earlier version of this fix) is unreliable too: the
+    // default initial page (the dashboard) has a low enough row
+    // minimum that it never shows "too small" even at the stale
+    // default of 24 rows, so that check can return "ready" instantly
+    // without the resize to 40 having actually landed at all - only
+    // surfacing later, confirmed live, when a test navigates to a page
+    // with a higher minimum (e.g. Environment Graph, 26 rows) and
+    // *that* page shows "too small" using the never-actually-updated
+    // stale size. Unconditionally re-emitting a fixed number of times
+    // is safe (commit() below already no-ops when the size hasn't
+    // changed) and doesn't depend on which page happens to be showing.
+    for (let i = 0; i < 10; i++) {
+        instance.stdout.emit("resize");
+        await delay(30);
+    }
+    // One more settle window for the last emit's debounce (120ms) to commit.
+    await delay(150);
     return instance;
 }
 
