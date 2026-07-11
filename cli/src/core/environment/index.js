@@ -166,11 +166,24 @@ export function reloadGuidance(model, { envPath = process.env.PATH || "", home =
 // `env list` render: tracked state (with per-package observed facts),
 // the merged model, and validation results (PASS/WARNING/FAIL per
 // check) against the real filesystem/shell state.
-export async function getEnvironmentReport({ shell = getPlatform().defaultShell(), verify = true } = {}) {
+//
+// Defaulting straight to getPlatform().defaultShell() used to be a real
+// bug on Windows: defaultShell() honestly reports "powershell" (that IS
+// the real default shell there), but no writer implements it yet -
+// validateEnvironment() would then unconditionally call
+// renderShellFile("powershell", ...) and throw
+// EnvironmentUnsupportedShellError, turning a plain `env doctor` into a
+// hard crash instead of the graceful "no writer yet, skipping" warning
+// shellsToGenerate() already gives every other unimplemented-shell path
+// in this engine. Falls back to null (validateEnvironment skips the
+// shell-specific checks entirely) rather than guessing at an
+// implemented shell the platform doesn't actually use.
+export async function getEnvironmentReport({ shell, verify = true } = {}) {
+    const resolvedShell = shell !== undefined ? shell : (isShellImplemented(getPlatform().defaultShell()) ? getPlatform().defaultShell() : null);
     const state = loadEnvironmentState();
     const model = buildEnvironmentModel(state);
-    const results = await validateEnvironment(model, { shell, state: verify ? state : undefined });
-    return { state, model, results, shell };
+    const results = await validateEnvironment(model, { shell: resolvedShell, state: verify ? state : undefined });
+    return { state, model, results, shell: resolvedShell };
 }
 
 // restoreEnvironment(id) -> restores a snapshot's tracked state and

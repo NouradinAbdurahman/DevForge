@@ -37,11 +37,25 @@ function resultMark(status) {
     return chalk.red("✗");
 }
 
+// resolveShellOption(shell) -> the shell to validate/report against, or
+// null to skip shell-specific checks entirely. An explicit --shell that
+// isn't implemented is a real usage error (the user asked for something
+// that doesn't exist - say so clearly). With no --shell given, this
+// used to always fall back to getPlatform().defaultShell() even when
+// that shell has no writer (real bug: on Windows, defaultShell()
+// honestly returns "powershell", which has no writer yet, and env
+// doctor/list/regenerate would throw EnvironmentUnsupportedShellError
+// instead of the graceful "no writer yet, skipping" every other
+// unimplemented-shell path in this engine already gives).
 function resolveShellOption(shell) {
-    if (shell && !SUPPORTED_SHELLS.includes(shell)) {
-        throw usageError(`Unsupported shell '${shell}' - supported: ${SUPPORTED_SHELLS.join(", ")}`);
+    if (shell) {
+        if (!SUPPORTED_SHELLS.includes(shell)) {
+            throw usageError(`Unsupported shell '${shell}' - supported: ${SUPPORTED_SHELLS.join(", ")}`);
+        }
+        return shell;
     }
-    return shell || getPlatform().defaultShell();
+    const platformDefault = getPlatform().defaultShell();
+    return SUPPORTED_SHELLS.includes(platformDefault) ? platformDefault : null;
 }
 
 // perPackageHealth(results) -> [{ name, score, reasons }] from the

@@ -600,6 +600,41 @@ test("getEnvironmentReport() reports a healthy synchronized shell state right af
     });
 });
 
+// Regression test for a real bug found in CI (Windows lifecycle E2E job):
+// getEnvironmentReport() used to default an omitted `shell` straight to
+// getPlatform().defaultShell() - on Windows that honestly returns
+// "powershell", which has no writer implemented yet
+// (core/environment/writers/index.js). validateEnvironment() would then
+// unconditionally call renderShellFile("powershell", ...) and throw
+// EnvironmentUnsupportedShellError, turning a plain `env doctor`/`env
+// list` into a hard crash on Windows instead of the graceful "no writer
+// yet, skipping" every other unimplemented-shell code path in this
+// engine already gives (see shellsToGenerate() above regenerate). An
+// explicit request for an unimplemented shell must still fail clearly -
+// only the *default* resolution needed to degrade gracefully.
+test("getEnvironmentReport() with no shell specified degrades gracefully on a platform whose default shell has no writer yet (Windows), instead of throwing", async () => {
+    await withTempHome(async () => {
+        const { setPlatformForTesting, resetPlatformForTesting, WindowsPlatform } = await import("../src/core/platform/index.js");
+        setPlatformForTesting(new WindowsPlatform());
+        try {
+            const report = await getEnvironmentReport({});
+            assert.equal(report.shell, null, "no writer exists for Windows' default shell (powershell), so it must resolve to null, not crash");
+            assert.ok(Array.isArray(report.results));
+        } finally {
+            resetPlatformForTesting();
+        }
+    });
+});
+
+test("getEnvironmentReport() still throws clearly for an explicitly-requested unimplemented shell (not silently ignored)", async () => {
+    await withTempHome(async () => {
+        await assert.rejects(
+            () => validateEnvironment(buildEnvironmentModel(loadEnvironmentState()), { shell: "powershell" }),
+            EnvironmentUnsupportedShellError
+        );
+    });
+});
+
 // ─── conflicts.js ────────────────────────────────────────────────────
 
 test("findBinaryConflicts() reports multiple deduplicated locations with the first one active", async () => {
