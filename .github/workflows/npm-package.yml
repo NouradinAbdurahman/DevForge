@@ -76,9 +76,20 @@ jobs:
         shell: bash
         run: |
           set -e
+          # Capture tar's listing once into a variable instead of piping
+          # into `grep -q` per file: `grep -q` exits as soon as it finds
+          # a match, which sends `tar` SIGPIPE on its still-open stdout -
+          # under `pipefail` (this shell's default here) the pipeline
+          # then reports tar's SIGPIPE exit code instead of grep's
+          # successful match, so a present file gets misreported as
+          # missing. Confirmed live: failed on ubuntu-latest, passed on
+          # macos-latest for the exact same tarball, purely from this
+          # platform-dependent SIGPIPE/pipefail race - not a real
+          # packaging difference.
+          file_list="$(tar -tzf devforgekit-*.tgz)"
           missing=0
           for f in package/VERSION package/CHANGELOG.md package/devforgekit package/bootstrap.sh package/scripts/npm-postinstall.sh package/cli/bin/devforgekit.js package/cli/package.json package/cli/package-lock.json package/.zshrc package/.gitconfig package/Brewfile package/mise.toml; do
-            if ! tar -tzf devforgekit-*.tgz | grep -qx "$f"; then
+            if ! grep -qx "$f" <<< "$file_list"; then
               echo "::error::$f is missing from the packed tarball"
               missing=1
             fi
