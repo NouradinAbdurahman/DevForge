@@ -2,17 +2,13 @@ schemaVersion: 1
 name: doctl
 description: The official DigitalOcean command-line interface
 category: cloud
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: doctl
 dependencies: []
+conflicts: []
 validate: doctl version
 versionCommand: doctl version
 repair: brew reinstall doctl
@@ -21,23 +17,19 @@ uninstall:
   method: brew-formula
   id: doctl
 post_install: []
+recommendedAlternatives:
+  - aws-cli
+  - gcloud
 homepage: https://docs.digitalocean.com/reference/doctl
 repository: https://github.com/digitalocean/doctl
 license: Apache-2.0
 documentation: https://docs.digitalocean.com/reference/doctl
 maintainer: DevForgeKit Registry
-tags:
-  - cloud
-  - digitalocean
-aliases:
-  - digitalocean-cli
+tags: [cloud, digitalocean]
+aliases: [digitalocean-cli]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - aws-cli
-  - gcloud
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: doctl
-

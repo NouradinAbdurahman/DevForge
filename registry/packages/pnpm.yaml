@@ -2,21 +2,14 @@ schemaVersion: 1
 name: pnpm
 description: A fast, disk space-efficient package manager for JavaScript
 category: package-managers
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: pnpm
 dependencies:
   - node
+conflicts: []
 validate: pnpm --version
 versionCommand: pnpm --version
 repair: brew reinstall pnpm
@@ -25,22 +18,18 @@ uninstall:
   method: brew-formula
   id: pnpm
 post_install: []
+recommendedAlternatives:
+  - npm
+  - yarn
 homepage: https://pnpm.io
 repository: https://github.com/pnpm/pnpm
 license: MIT
 documentation: https://pnpm.io/installation
 maintainer: DevForgeKit Registry
-tags:
-  - package-manager
-  - javascript
-  - node
-aliases:
-  - pnpm-cli
+tags: [package-manager, javascript, node]
+aliases: [pnpm-cli]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - npm
-  - yarn
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -51,4 +40,3 @@ platformInstall:
   windows:
     method: winget
     id: pnpm.pnpm
-

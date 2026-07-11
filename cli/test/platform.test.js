@@ -13,6 +13,17 @@ import {
     WindowsPlatform,
     PlatformNotSupportedError
 } from "../src/core/platform/index.js";
+import { DevForgeError } from "../src/core/errors.js";
+
+// A malicious package id crafted to break out of the unquoted shell
+// string every installCommand()/upgradeCommand() interpolates step.id/
+// name into (core/shell.js's runShellCommand always shells out). Real
+// package-manager identifiers never contain spaces or shell
+// metacharacters - assertSafePackageId (core/platform/errors.js) refuses
+// anything that doesn't look like one, closing the injection class
+// outright instead of trying to escape it for both POSIX shells and
+// cmd.exe.
+const INJECTION_PAYLOAD = `evil" ; touch /tmp/pwned ; echo "`;
 
 test("getPlatform() returns a real adapter matching the running OS by default", () => {
     resetPlatformForTesting();
@@ -70,6 +81,22 @@ test("MacOSPlatform: installCommand builds brew-formula/brew-cask/npm/pip/cargo/
     assert.equal(platform.installCommand({ method: "shell", command: "echo hi" }, "install"), "echo hi");
 });
 
+test("go install method: appends @latest when the id has no version pin, and uninstall removes the built binary from GOPATH/bin", () => {
+    const platform = new MacOSPlatform();
+    assert.equal(
+        platform.installCommand({ method: "go", id: "github.com/jesseduffield/lazygit" }, "install"),
+        "go install github.com/jesseduffield/lazygit@latest"
+    );
+    assert.equal(
+        platform.installCommand({ method: "go", id: "github.com/jesseduffield/lazygit@v0.44.1" }, "install"),
+        "go install github.com/jesseduffield/lazygit@v0.44.1"
+    );
+    assert.equal(
+        platform.installCommand({ method: "go", id: "github.com/jesseduffield/lazygit" }, "uninstall"),
+        'rm -f "$(go env GOPATH 2>/dev/null || echo "$HOME/go")/bin/lazygit"'
+    );
+});
+
 test("MacOSPlatform: installCommand throws PlatformNotSupportedError for an unknown method", () => {
     const platform = new MacOSPlatform();
     assert.throws(() => platform.installCommand({ method: "choco", id: "x" }, "install"), PlatformNotSupportedError);
@@ -78,6 +105,19 @@ test("MacOSPlatform: installCommand throws PlatformNotSupportedError for an unkn
 test("upgradeCommand() builds `brew upgrade <name>` on macOS", () => {
     const platform = new MacOSPlatform();
     assert.equal(platform.upgradeCommand("wget"), "brew upgrade wget");
+});
+
+test("MacOSPlatform: installCommand/upgradeCommand refuse a package id/tap/name containing shell metacharacters", () => {
+    const platform = new MacOSPlatform();
+    assert.throws(() => platform.installCommand({ method: "brew-formula", id: INJECTION_PAYLOAD }, "install"), DevForgeError);
+    assert.throws(() => platform.installCommand({ method: "brew-cask", id: INJECTION_PAYLOAD }, "install"), DevForgeError);
+    assert.throws(() => platform.installCommand({ method: "brew-formula", id: "wget", tap: INJECTION_PAYLOAD }, "install"), DevForgeError);
+    assert.throws(() => platform.installCommand({ method: "npm", id: INJECTION_PAYLOAD }, "install"), DevForgeError);
+    assert.throws(() => platform.installCommand({ method: "go", id: INJECTION_PAYLOAD }, "install"), DevForgeError);
+    assert.throws(() => platform.upgradeCommand(INJECTION_PAYLOAD), DevForgeError);
+    // Real package ids with legitimate special characters must still work.
+    assert.equal(platform.installCommand({ method: "npm", id: "@angular/cli" }, "install"), "npm install -g @angular/cli");
+    assert.equal(platform.installCommand({ method: "pip", id: "huggingface_hub[cli]" }, "install"), "pip install huggingface_hub[cli]");
 });
 
 test("LinuxPlatform: identity, default shell, package manager detection", () => {
@@ -94,6 +134,14 @@ test("LinuxPlatform: OS-agnostic install methods still work (npm/pip/cargo/mise/
     const platform = new LinuxPlatform();
     assert.equal(platform.installCommand({ method: "npm", id: "pnpm" }, "install"), "npm install -g pnpm");
     assert.equal(platform.installCommand({ method: "shell", command: "echo hi" }, "install"), "echo hi");
+});
+
+test("LinuxPlatform: installCommand/upgradeCommand refuse an apt/dnf/pacman package id containing shell metacharacters", () => {
+    const platform = new LinuxPlatform();
+    assert.throws(() => platform.installCommand({ method: "apt", id: INJECTION_PAYLOAD }, "install"), DevForgeError);
+    assert.throws(() => platform.installCommand({ method: "dnf", id: INJECTION_PAYLOAD }, "install"), DevForgeError);
+    assert.throws(() => platform.installCommand({ method: "pacman", id: INJECTION_PAYLOAD }, "install"), DevForgeError);
+    assert.throws(() => platform.upgradeCommand(INJECTION_PAYLOAD), DevForgeError);
 });
 
 test("LinuxPlatform: apt/dnf/pacman install commands are built correctly", () => {
@@ -181,6 +229,14 @@ test("WindowsPlatform: brew-formula/brew-cask/apt/dnf/pacman throw PlatformNotSu
     assert.throws(() => platform.installCommand({ method: "apt", id: "x" }, "install"), PlatformNotSupportedError);
     assert.throws(() => platform.installCommand({ method: "dnf", id: "x" }, "install"), PlatformNotSupportedError);
     assert.throws(() => platform.installCommand({ method: "pacman", id: "x" }, "install"), PlatformNotSupportedError);
+});
+
+test("WindowsPlatform: installCommand/upgradeCommand refuse a winget/choco/scoop package id containing shell metacharacters", () => {
+    const platform = new WindowsPlatform();
+    assert.throws(() => platform.installCommand({ method: "winget", id: INJECTION_PAYLOAD }, "install"), DevForgeError);
+    assert.throws(() => platform.installCommand({ method: "choco", id: INJECTION_PAYLOAD }, "install"), DevForgeError);
+    assert.throws(() => platform.installCommand({ method: "scoop", id: INJECTION_PAYLOAD }, "install"), DevForgeError);
+    assert.throws(() => platform.upgradeCommand(INJECTION_PAYLOAD), DevForgeError);
 });
 
 test("WindowsPlatform: shellConfigFile resolves a PowerShell profile path", () => {
@@ -271,6 +327,52 @@ test("installer resolveInstallStep uses platformInstall on Windows", async () =>
     }
 });
 
+// The async shell-out methods below (packagePrefix/outdatedPackages/
+// upgradeCommand/osVersion) have no injected existsSync/captureShellCommand
+// override - detectPackageManager() is a private module-level function in
+// linux.js/windows.js, not part of the public contract. Run against this
+// Mac test host (guaranteed to have no apt/dnf/pacman/winget/choco/scoop
+// binaries at their real Linux/Windows paths, and no /etc/os-release or
+// /proc/version), these exercise the real "no package manager detected"
+// fallback path end to end - previously asserted nowhere (see the Phase 3
+// cross-platform audit). Verifying the apt/dnf/pacman/winget/choco/scoop
+// command-building branches themselves needs a real Linux/Windows host.
+
+test("LinuxPlatform: packagePrefix()/outdatedPackages() degrade to null/[] rather than throwing with no package manager detected", async () => {
+    const platform = new LinuxPlatform();
+    assert.equal(await platform.packagePrefix("wget"), null);
+    assert.deepEqual(await platform.outdatedPackages(), []);
+});
+
+test("LinuxPlatform: upgradeCommand() throws PlatformNotSupportedError with no package manager detected", () => {
+    const platform = new LinuxPlatform();
+    assert.throws(() => platform.upgradeCommand("wget"), PlatformNotSupportedError);
+});
+
+test("LinuxPlatform: osVersion()/packageManagerCacheDir()/wsl are honest (null/false) off a real Linux host", async () => {
+    const platform = new LinuxPlatform();
+    assert.equal(await platform.osVersion(), null);
+    assert.equal(platform.packageManagerCacheDir(), null);
+    assert.equal(platform.wsl, false);
+});
+
+test("WindowsPlatform: packagePrefix()/outdatedPackages() degrade to null/[] rather than throwing with no package manager detected", async () => {
+    const platform = new WindowsPlatform();
+    assert.equal(await platform.packagePrefix("git"), null);
+    assert.deepEqual(await platform.outdatedPackages(), []);
+});
+
+test("WindowsPlatform: upgradeCommand() throws PlatformNotSupportedError with no package manager detected", () => {
+    const platform = new WindowsPlatform();
+    assert.throws(() => platform.upgradeCommand("git"), PlatformNotSupportedError);
+});
+
+test("WindowsPlatform: osVersion()/packageManagerCacheDir() are honest (null) off a real Windows host", async () => {
+    const platform = new WindowsPlatform();
+    assert.equal(await platform.osVersion(), null);
+    assert.equal(platform.packageManagerCacheDir(), null);
+});
+
 test("installer resolveInstallStep falls back to top-level install when no platformInstall match", async () => {
     const { resolveInstallStep } = await import("../src/core/installer.js");
     setPlatformForTesting(new LinuxPlatform());
@@ -285,3 +387,124 @@ test("installer resolveInstallStep falls back to top-level install when no platf
         resetPlatformForTesting();
     }
 });
+
+// Registry Completion (v3.0): a Linux platformInstall entry can be an
+// array of installSteps (one per package manager - apt/dnf/pacman) so a
+// single manifest serves an apt user AND a dnf user correctly, instead
+// of hardcoding one distro family. This dev machine's LinuxPlatform
+// detects no real apt/dnf/pacman binary (it's a Mac), so
+// packageManagerId() returns null and resolution falls back to the
+// array's first entry - the one behavior actually verifiable without a
+// real Linux host; picking the *matching* entry when one IS detected is
+// exercised by pickPlatformEntry's own logic (entry.method === pmId),
+// not re-derivable here without mocking detectPackageManager().
+test("installer resolveInstallStep: an array platformInstall entry resolves to its first entry when no package manager is detected", async () => {
+    const { resolveInstallStep } = await import("../src/core/installer.js");
+    setPlatformForTesting(new LinuxPlatform());
+    try {
+        const pkg = {
+            name: "multi-pm-pkg",
+            install: { method: "brew-formula", id: "multi-pm-pkg" },
+            platformInstall: {
+                linux: [
+                    { method: "apt", id: "multi-pm-pkg" },
+                    { method: "dnf", id: "multi-pm-pkg" },
+                    { method: "pacman", id: "multi-pm-pkg" }
+                ]
+            }
+        };
+        const step = resolveInstallStep(pkg);
+        assert.equal(step.method, "apt");
+    } finally {
+        resetPlatformForTesting();
+    }
+});
+
+test("installer resolveInstallStep: an explicit { unsupported, reason } platformInstall entry throws PlatformNotSupportedError with the real authored reason", async () => {
+    const { resolveInstallStep } = await import("../src/core/installer.js");
+    setPlatformForTesting(new LinuxPlatform());
+    try {
+        const pkg = {
+            name: "macos-only-pkg",
+            install: { method: "brew-cask", id: "macos-only-pkg" },
+            platformInstall: {
+                linux: { unsupported: true, reason: "no Linux port exists as of 2026" }
+            }
+        };
+        assert.throws(
+            () => resolveInstallStep(pkg),
+            (err) => err instanceof PlatformNotSupportedError && err.message.includes("no Linux port exists as of 2026")
+        );
+    } finally {
+        resetPlatformForTesting();
+    }
+});
+
+// Item 7 (Registry Completion v3.0 "Release Candidate Hardening" prep):
+// repair()/update() run pkg.repair/pkg.update as opaque, pre-formatted
+// shell strings (unlike install()/uninstall(), which validate their
+// step's method against the live platform via commandForStep()) - so an
+// explicit { unsupported, reason } platformInstall declaration needs its
+// own check in both, verified here. Before this fix, a package
+// unsupported on the current platform would have run its (macOS-shaped)
+// repair/update string as a raw shell command and failed with a garbled
+// "brew: command not found" instead of a clear, actionable error - and
+// worse, for `update` specifically, would have actually attempted to
+// run whatever shell command was there rather than refusing outright.
+test("installer repair()/update(): an explicit { unsupported, reason } platformInstall declaration throws BEFORE ever running the shell command", async () => {
+    const { repair, update } = await import("../src/core/installer.js");
+    setPlatformForTesting(new LinuxPlatform());
+    try {
+        const pkg = {
+            name: "macos-only-pkg",
+            install: { method: "brew-cask", id: "macos-only-pkg" },
+            // A command that would loudly fail/misbehave if it were ever
+            // actually run - proof the function returns before this point.
+            repair: "false 'this should never execute'",
+            update: "false 'this should never execute'",
+            platformInstall: {
+                linux: { unsupported: true, reason: "GUI-only macOS app, no Linux build exists" }
+            }
+        };
+        await assert.rejects(
+            () => repair(pkg),
+            (err) => err instanceof PlatformNotSupportedError && err.message.includes("GUI-only macOS app, no Linux build exists")
+        );
+        await assert.rejects(
+            () => update(pkg),
+            (err) => err instanceof PlatformNotSupportedError && err.message.includes("GUI-only macOS app, no Linux build exists")
+        );
+    } finally {
+        resetPlatformForTesting();
+    }
+});
+
+test("installer repair()/update(): a package with no unsupported declaration for the current platform runs its command normally", async () => {
+    const { repair, update } = await import("../src/core/installer.js");
+    setPlatformForTesting(new LinuxPlatform());
+    try {
+        const pkg = {
+            name: "cross-platform-pkg",
+            install: { method: "shell", command: "true" },
+            repair: "true",
+            update: "true",
+            platformInstall: {
+                linux: { method: "apt", id: "cross-platform-pkg" }
+            }
+        };
+        const repairCode = await repair(pkg);
+        const updateCode = await update(pkg);
+        assert.equal(repairCode, 0);
+        assert.equal(updateCode, 0);
+    } finally {
+        resetPlatformForTesting();
+    }
+});
+
+// Unsupported *package managers* (item 7's other half) - already
+// covered by the "LinuxPlatform/WindowsPlatform: brew-formula/brew-cask/
+// apt/dnf/pacman throw PlatformNotSupportedError" tests earlier in this
+// file (installCommand() rejects a step whose method doesn't belong to
+// the current platform family, regardless of which installer.js
+// function dispatched it - install/uninstall both route through
+// commandForStep() -> getPlatform().installCommand()).

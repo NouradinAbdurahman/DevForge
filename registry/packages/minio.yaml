@@ -2,17 +2,13 @@ schemaVersion: 1
 name: minio
 description: A high-performance, S3-compatible object storage server
 category: databases
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: minio
 dependencies: []
+conflicts: []
 validate: minio --version
 versionCommand: mc --version
 repair: brew reinstall minio
@@ -21,24 +17,18 @@ uninstall:
   method: brew-formula
   id: minio
 post_install: []
+recommendedAlternatives:
+  - aws-cli
 homepage: https://min.io
 repository: https://github.com/minio/minio
 license: AGPL-3.0
 documentation: https://min.io/docs/minio/linux/index.html
 maintainer: DevForgeKit Registry
-tags:
-  - database
-  - object-storage
-  - s3
-aliases:
-  - mc
-  - minio-client
+tags: [database, object-storage, s3]
+aliases: [mc, minio-client]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - aws-cli
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: minio
-

@@ -4,6 +4,7 @@ import path from "node:path";
 import { writeFileSync } from "node:fs";
 import {
     scanIssues,
+    scanCliInstallIssues,
     planRepairs,
     executeRepairs,
     verifyRepairs,
@@ -31,8 +32,22 @@ import {
     RISK_LEVELS,
     RISK_LABELS
 } from "../core/repair.js";
+import { table, section } from "../lib/ui.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling } from "../core/errors.js";
+import chalk from "chalk";
+
+const SEVERITY_COLOR = {
+    CRITICAL: chalk.red,
+    FATAL: chalk.red,
+    WARNING: chalk.yellow,
+    INFO: chalk.dim
+};
+
+function severityCell(severity) {
+    const color = SEVERITY_COLOR[severity] || chalk.dim;
+    return color(severity);
+}
 
 export function registerRepairCommand(program) {
     const repair = program
@@ -61,6 +76,63 @@ export function registerRepairCommand(program) {
             }
         }));
 
+    // ─── install ─────────────────────────────────────────────────────
+    // A narrow, fast alternative to `repair run` (which scans all 13
+    // subsystems): scans only the CLI-install category - the global
+    // symlink, cli/node_modules, and any Homebrew packages the last
+    // bootstrap.sh run recorded as failed - and repairs just those. What
+    // bootstrap.sh's own failure summary and `devforgekit uninstall`
+    // point users to when something's broken, without waiting on a full
+    // environment sweep.
+    repair
+        .command("install")
+        .description("Check and repair the DevForgeKit CLI's own install (global symlink, cli deps, failed packages from the last bootstrap.sh run)")
+        .option("-y, --yes", "skip all confirmation prompts")
+        .option("--dry-run", "preview what would be repaired without making changes")
+        .option("--json", "output result as JSON")
+        .action(withErrorHandling(async function () {
+            const opts = this.opts();
+            const issues = await scanCliInstallIssues();
+
+            if (issues.length === 0) {
+                if (opts.json) {
+                    console.log(JSON.stringify({ issues: [], fixed: 0, failed: 0 }, null, 2));
+                } else {
+                    logger.success("DevForgeKit's own install is healthy - nothing to repair.");
+                }
+                return;
+            }
+
+            const plan = planRepairs(issues);
+
+            if (opts.dryRun) {
+                const preview = dryRunPlan(plan);
+                if (opts.json) {
+                    console.log(JSON.stringify(preview, null, 2));
+                    return;
+                }
+                logger.section("Repair Install - Dry Run");
+                for (const p of preview.preview) {
+                    console.log(`  ${p.index}. [${p.severity}] ${p.title}`);
+                    console.log(`     ${p.description}`);
+                }
+                return;
+            }
+
+            const { fixed, failed } = await executeRepairs(plan, { assumeYes: opts.yes || false });
+
+            if (opts.json) {
+                console.log(JSON.stringify({ issues, fixed, failed }, null, 2));
+                return;
+            }
+
+            if (failed === 0) {
+                logger.success(`Repaired ${fixed} issue(s). DevForgeKit's install is healthy.`);
+            } else {
+                logger.warn(`Repaired ${fixed} issue(s), ${failed} could not be fixed automatically - see above.`);
+            }
+        }));
+
     // ─── scan ────────────────────────────────────────────────────────
     repair
         .command("scan")
@@ -85,17 +157,30 @@ export function registerRepairCommand(program) {
                 return;
             }
 
-            logger.section("Detected Issues");
-            for (const issue of issues) {
-                const symbol = issue.severity === "CRITICAL" || issue.severity === "FATAL" ? "✗" :
-                    issue.severity === "WARNING" ? "!" : "i";
-                console.log(`\n  ${symbol} [${issue.severity}] ${issue.title || issue.description}`);
-                console.log(`    Category: ${issue.categoryLabel || issue.category} | Subsystem: ${issue.subsystem} | Risk: ${issue.riskLabel || "unknown"}`);
-                console.log(`    Impact: ${issue.impact}`);
-                console.log(`    Fix: ${issue.fix}`);
-                console.log(`    Time: ${issue.estimatedTime}`);
-            }
-            console.log(`\n  ${issues.length} issue(s) total`);
+            const critical = issues.filter((i) => i.severity === "CRITICAL" || i.severity === "FATAL").length;
+            const warning = issues.filter((i) => i.severity === "WARNING").length;
+            const info = issues.length - critical - warning;
+
+            console.log(section(`Detected Issues (${issues.length})`, [
+                table(
+                    issues.map((issue) => ({
+                        severity: severityCell(issue.severity),
+                        issue: issue.title || issue.description,
+                        category: issue.categoryLabel || issue.category,
+                        risk: issue.riskLabel || "unknown",
+                        time: issue.estimatedTime
+                    })),
+                    [
+                        { key: "severity", label: "SEVERITY" },
+                        { key: "issue", label: "ISSUE", maxWidth: 45 },
+                        { key: "category", label: "CATEGORY" },
+                        { key: "risk", label: "RISK" },
+                        { key: "time", label: "TIME" }
+                    ]
+                )
+            ]));
+            console.log(`\n  ${chalk.red(`${critical} critical`)}, ${chalk.yellow(`${warning} warning`)}, ${chalk.dim(`${info} informational`)}`);
+            logger.info("Next: devforgekit repair plan, or devforgekit repair run");
         }));
 
     // ─── plan ────────────────────────────────────────────────────────
@@ -122,41 +207,66 @@ export function registerRepairCommand(program) {
 
             if (opts.dryRun) {
                 const preview = dryRunPlan(plan);
-                logger.section("Dry Run Preview");
-                console.log(`\n  Repairs: ${preview.totalRepairs} (plus ${preview.totalInfo} informational)`);
-                console.log(`  Estimated time: ${preview.estimatedTime}`);
-                console.log(`  Risk level: ${preview.riskLevel}`);
-                if (preview.requiresRestart) console.log("  Restart required: yes");
-                if (preview.filesAffected.length > 0) console.log(`  Files affected: ${preview.filesAffected.join(", ")}`);
-                if (preview.packagesAffected.length > 0) console.log(`  Packages affected: ${preview.packagesAffected.join(", ")}`);
-                console.log("\n  Repair Order:");
-                for (const p of preview.preview) {
-                    console.log(`  ${p.index}. [${p.severity}] ${p.title}`);
-                    console.log(`     Action: ${p.actionType} | Risk: ${p.risk}`);
-                    console.log(`     ${p.description}`);
-                }
+                const summaryLines = [
+                    `Repairs: ${preview.totalRepairs} (plus ${preview.totalInfo} informational)`,
+                    `Estimated time: ${preview.estimatedTime}`,
+                    `Risk level: ${preview.riskLevel}`
+                ];
+                if (preview.requiresRestart) summaryLines.push("Restart required: yes");
+                if (preview.filesAffected.length > 0) summaryLines.push(`Files affected: ${preview.filesAffected.join(", ")}`);
+                if (preview.packagesAffected.length > 0) summaryLines.push(`Packages affected: ${preview.packagesAffected.join(", ")}`);
+                console.log(section("Dry Run Preview", summaryLines));
+                console.log(table(
+                    preview.preview.map((p) => ({
+                        index: p.index,
+                        severity: severityCell(p.severity),
+                        title: p.title,
+                        action: p.actionType,
+                        risk: p.risk
+                    })),
+                    [
+                        { key: "index", label: "#" },
+                        { key: "severity", label: "SEVERITY" },
+                        { key: "title", label: "TITLE", maxWidth: 45 },
+                        { key: "action", label: "ACTION" },
+                        { key: "risk", label: "RISK" }
+                    ]
+                ));
                 return;
             }
 
-            logger.section("Repair Plan");
-            console.log(`\n  ${plan.totalRepairs} repair(s) + ${plan.totalInfo} informational`);
-            console.log(`  Estimated time: ${plan.estimatedTime}`);
-            console.log(`  Risk level: ${plan.riskLabel}`);
-            if (plan.requiresRestart) console.log("  Restart required: yes");
-            console.log("\n  Repair Order:");
-            for (let i = 0; i < plan.issues.length; i++) {
-                const issue = plan.issues[i];
-                console.log(`  ${i + 1}. [${issue.severity}] ${issue.description}`);
-                console.log(`     Fix: ${issue.fix} (Risk: ${issue.riskLabel})`);
-            }
+            const summaryLines = [
+                `${plan.totalRepairs} repair(s) + ${plan.totalInfo} informational`,
+                `Estimated time: ${plan.estimatedTime}`,
+                `Risk level: ${plan.riskLabel}`
+            ];
+            if (plan.requiresRestart) summaryLines.push("Restart required: yes");
+            console.log(section("Repair Plan", summaryLines));
+            console.log(table(
+                plan.issues.map((issue, i) => ({
+                    index: i + 1,
+                    severity: severityCell(issue.severity),
+                    description: issue.description,
+                    fix: issue.fix,
+                    risk: issue.riskLabel
+                })),
+                [
+                    { key: "index", label: "#" },
+                    { key: "severity", label: "SEVERITY" },
+                    { key: "description", label: "ISSUE", maxWidth: 40 },
+                    { key: "fix", label: "FIX", maxWidth: 30 },
+                    { key: "risk", label: "RISK" }
+                ]
+            ));
 
             if (plan.informational.length > 0) {
-                console.log("\n  Informational (no auto-repair):");
+                console.log(`\n${chalk.bold("Informational (no auto-repair)")}`);
                 for (const info of plan.informational) {
                     console.log(`  • ${info.description}`);
                     console.log(`    Suggestion: ${info.fix}`);
                 }
             }
+            logger.info("Next: devforgekit repair run, or devforgekit repair run --dry-run");
         }));
 
     // ─── explain ─────────────────────────────────────────────────────
@@ -252,18 +362,25 @@ export function registerRepairCommand(program) {
             const opts = this.opts();
             if (opts.preview) {
                 const preview = previewRollback(repairId);
-                logger.section(`Rollback Preview: ${repairId}`);
-                console.log(`\n  Created: ${preview.createdAt}`);
-                console.log(`  Snapshot: ${preview.hasSnapshot ? preview.rollbackSnapshotId : "none"}`);
-                console.log(`  Repairs reversible: ${preview.repairsReversible}`);
-                console.log(`  Repairs irreversible: ${preview.repairsIrreversible}`);
+                console.log(section(`Rollback Preview: ${repairId}`, [
+                    `Created: ${preview.createdAt}`,
+                    `Snapshot: ${preview.hasSnapshot ? preview.rollbackSnapshotId : "none"}`,
+                    `Repairs reversible: ${preview.repairsReversible}`,
+                    `Repairs irreversible: ${preview.repairsIrreversible}`
+                ]));
                 if (preview.fileBackups.length > 0) {
-                    console.log(`\n  Files to restore:`);
-                    for (const fb of preview.fileBackups) {
-                        const status = fb.backupExists ? "✓" : "✗";
-                        console.log(`  ${status} ${fb.originalPath}`);
-                        console.log(`      Issue: ${fb.issue}`);
-                    }
+                    console.log(table(
+                        preview.fileBackups.map((fb) => ({
+                            status: fb.backupExists ? chalk.green("✓") : chalk.red("✗"),
+                            path: fb.originalPath,
+                            issue: fb.issue
+                        })),
+                        [
+                            { key: "status", label: "" },
+                            { key: "path", label: "FILE", maxWidth: 40 },
+                            { key: "issue", label: "ISSUE", maxWidth: 35 }
+                        ]
+                    ));
                 }
                 return;
             }
@@ -280,18 +397,25 @@ export function registerRepairCommand(program) {
                 logger.info("No rollback points available.");
                 return;
             }
-            logger.section("Available Rollback Points");
-            console.log("\n  ID                              Fixed  Failed  Snapshot  Date");
-            console.log("  " + "-".repeat(90));
-            for (const p of points) {
-                const id = (p.id || "").slice(0, 32).padEnd(32);
-                const fixed = String(p.fixed).padStart(5);
-                const failed = String(p.failed).padStart(7);
-                const snapshot = (p.rollbackSnapshotId ? "yes" : "no").padEnd(8);
-                const date = p.createdAt ? p.createdAt.slice(0, 19).replace("T", " ") : "unknown";
-                console.log(`  ${id}  ${fixed}  ${failed}  ${snapshot}  ${date}`);
-            }
-            console.log(`\n  ${points.length} rollback point(s)`);
+            console.log(section(`Available Rollback Points (${points.length})`, [
+                table(
+                    points.map((p) => ({
+                        id: p.id,
+                        fixed: p.fixed,
+                        failed: p.failed,
+                        snapshot: p.rollbackSnapshotId ? "yes" : "no",
+                        date: p.createdAt ? p.createdAt.slice(0, 19).replace("T", " ") : "unknown"
+                    })),
+                    [
+                        { key: "id", label: "ID", maxWidth: 32 },
+                        { key: "fixed", label: "FIXED" },
+                        { key: "failed", label: "FAILED" },
+                        { key: "snapshot", label: "SNAPSHOT" },
+                        { key: "date", label: "DATE" }
+                    ]
+                )
+            ]));
+            logger.info("Next: devforgekit repair rollback-repair <repairId>");
         }));
 
     // ─── history ─────────────────────────────────────────────────────
@@ -334,20 +458,29 @@ export function registerRepairCommand(program) {
                 return;
             }
 
-            logger.section("Repair History");
-            console.log("\n  ID                              Issues  Fixed  Failed  Risk    Quality  Date");
-            console.log("  " + "-".repeat(105));
-            for (const h of history) {
-                const id = (h.id || "").slice(0, 32).padEnd(32);
-                const issues = String(h.issueCount).padStart(6);
-                const fixed = String(h.fixed).padStart(5);
-                const failed = String(h.failed).padStart(7);
-                const risk = (h.riskLabel || h.riskLevel || "unknown").padEnd(6);
-                const quality = h.qualityScore ? `${h.qualityScore.score}/100 (${h.qualityScore.grade})`.padEnd(8) : "n/a".padEnd(8);
-                const date = h.createdAt ? h.createdAt.slice(0, 19).replace("T", " ") : "unknown";
-                console.log(`  ${id}  ${issues}  ${fixed}  ${failed}  ${risk}  ${quality}  ${date}`);
-            }
-            console.log(`\n  ${history.length} record(s)`);
+            console.log(section(`Repair History (${history.length})`, [
+                table(
+                    history.map((h) => ({
+                        id: h.id,
+                        issues: h.issueCount,
+                        fixed: h.fixed,
+                        failed: h.failed,
+                        risk: h.riskLabel || h.riskLevel || "unknown",
+                        quality: h.qualityScore ? `${h.qualityScore.score}/100 (${h.qualityScore.grade})` : "n/a",
+                        date: h.createdAt ? h.createdAt.slice(0, 19).replace("T", " ") : "unknown"
+                    })),
+                    [
+                        { key: "id", label: "ID", maxWidth: 32 },
+                        { key: "issues", label: "ISSUES" },
+                        { key: "fixed", label: "FIXED" },
+                        { key: "failed", label: "FAILED" },
+                        { key: "risk", label: "RISK" },
+                        { key: "quality", label: "QUALITY" },
+                        { key: "date", label: "DATE" }
+                    ]
+                )
+            ]));
+            logger.info("Next: devforgekit repair export <id>, or devforgekit repair rollback-repair <id>");
         }));
 
     // ─── export ──────────────────────────────────────────────────────

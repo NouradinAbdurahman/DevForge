@@ -2,17 +2,13 @@ schemaVersion: 1
 name: hyperfine
 description: A command-line benchmarking tool
 category: utilities
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: hyperfine
 dependencies: []
+conflicts: []
 validate: hyperfine --version
 versionCommand: hyperfine --version
 repair: brew reinstall hyperfine
@@ -26,16 +22,11 @@ repository: https://github.com/sharkdp/hyperfine
 license: MIT
 documentation: https://github.com/sharkdp/hyperfine
 maintainer: DevForgeKit Registry
-tags:
-  - utility
-  - benchmarking
-  - cli
-aliases:
-  - hyperfine-bench
+tags: [utility, benchmarking, cli]
+aliases: [hyperfine-bench]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: hyperfine
-

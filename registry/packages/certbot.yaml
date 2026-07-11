@@ -2,17 +2,13 @@ schemaVersion: 1
 name: certbot
 description: A client for the Let's Encrypt certificate authority
 category: web
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: certbot
 dependencies: []
+conflicts: []
 validate: certbot --version
 versionCommand: certbot --version
 repair: brew reinstall certbot
@@ -21,23 +17,18 @@ uninstall:
   method: brew-formula
   id: certbot
 post_install: []
+recommendedAlternatives:
+  - mkcert
 homepage: https://certbot.eff.org
 repository: https://github.com/certbot/certbot
 license: Apache-2.0
 documentation: https://eff-certbot.readthedocs.io
 maintainer: DevForgeKit Registry
-tags:
-  - web
-  - security
-  - tls
-aliases:
-  - letsencrypt
+tags: [web, security, tls]
+aliases: [letsencrypt]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - mkcert
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: certbot
-

@@ -19,6 +19,8 @@ import { existsSync, readFileSync, readdirSync, rmSync, mkdtempSync } from "node
 import { tmpdir } from "node:os";
 import crypto from "node:crypto";
 import { runShellCommand, shellQuote } from "../shell.js";
+import { assertSafeTarArchive } from "../archiveSafety.js";
+import { describeWorkspaceShellRisks } from "./bundle.js";
 import { migrateWorkspace, CURRENT_SCHEMA_VERSION } from "./schema.js";
 import { workspaceExists } from "./store.js";
 import { loadProfiles, loadCollections, loadRecipes, loadPackages } from "../registry.js";
@@ -451,6 +453,8 @@ export async function previewBundleImport(archivePath, { newName } = {}) {
         throw new Error(`No such file: ${archivePath}`);
     }
 
+    await assertSafeTarArchive(archivePath);
+
     const extractDir = mkdtempSync(`${tmpdir()}/devforgekit-bundle-preview-`);
     try {
         const code = await runShellCommand(`tar -xzf ${shellQuote(archivePath)} -C ${shellQuote(extractDir)}`, { silent: true });
@@ -499,6 +503,7 @@ export async function previewBundleImport(archivePath, { newName } = {}) {
 
         // Preview repairs (without applying)
         const repairs = previewRepairs(doc);
+        const shellRisks = describeWorkspaceShellRisks(doc);
 
         return {
             name: finalName,
@@ -507,6 +512,7 @@ export async function previewBundleImport(archivePath, { newName } = {}) {
             compatible,
             bundleMeta,
             repairs,
+            shellRisks,
             checksum,
             conflicts,
             description: doc.description,
@@ -596,6 +602,14 @@ export function formatBundlePreview(preview) {
         lines.push("Auto-repairs that would be applied:");
         for (const r of preview.repairs) {
             lines.push(`  • ${r}`);
+        }
+    }
+
+    if (preview.shellRisks && preview.shellRisks.length > 0) {
+        lines.push("");
+        lines.push("⚠ This bundle injects shell code/PATH on 'workspace switch' - review before importing:");
+        for (const risk of preview.shellRisks) {
+            lines.push(`  • ${risk}`);
         }
     }
 

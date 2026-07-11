@@ -1,0 +1,16 @@
+# Recommended profile - everyday development tooling beyond the minimal
+# CLI essentials, without heavier stack-specific tooling (no Flutter/
+# Android - see the flutter profile; no databases - see the backend
+# profile). Node/Python/Java runtimes are installed via mise.toml for
+# every profile regardless of Brewfile choice - see mise.toml and
+# restore_mise in scripts/common.sh.
+brew "git"
+brew "gh"
+brew "git-lfs"
+brew "mise"
+brew "jq"
+cask "docker"
+vscode "esbenp.prettier-vscode"
+vscode "dbaeumer.vscode-eslint"
+vscode "eamodio.gitlens"
+vscode "ms-azuretools.vscode-docker"

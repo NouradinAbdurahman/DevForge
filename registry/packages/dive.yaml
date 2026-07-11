@@ -2,18 +2,14 @@ schemaVersion: 1
 name: dive
 description: A tool for exploring a Docker image's layers and finding ways to shrink it
 category: containers
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: dive
 dependencies:
   - docker
+conflicts: []
 validate: dive --version
 versionCommand: dive --version
 repair: brew reinstall dive
@@ -27,16 +23,11 @@ repository: https://github.com/wagoodman/dive
 license: MIT
 documentation: https://github.com/wagoodman/dive#readme
 maintainer: DevForgeKit Registry
-tags:
-  - docker
-  - containers
-  - cli
-aliases:
-  - dive-docker
+tags: [docker, containers, cli]
+aliases: [dive-docker]
 stability: stable
-lastVerified: "2026-07-06"
+lastVerified: '2026-07-06'
 platformInstall:
   macos:
     method: brew-formula
     id: dive
-

@@ -30,6 +30,7 @@ import { select, multiselect, confirm, text } from "../lib/prompts.js";
 import { userConfigDir } from "../core/paths.js";
 import { scanCompatibility } from "../core/compatibility/engine.js";
 import { checkCompatibilityBeforeInstall } from "./recipe.js";
+import { table, section } from "../lib/ui.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling, usageError } from "../core/errors.js";
 
@@ -70,17 +71,26 @@ export function registerProfileCommand(program) {
         .description("List bootstrap profiles and environment profiles")
         .action(withErrorHandling(async () => {
             await runScript("scripts/profile.sh", ["list"]);
-            logger.section("Environment profiles (registry-driven, see 'profile install <name>')");
             const profiles = loadProfiles();
             if (profiles.length === 0) {
-                logger.info("No environment profiles found.");
+                logger.info("\nNo environment profiles found.");
                 return;
             }
+            const rows = [];
             for (const p of profiles) {
                 const components = expandProfile(p);
                 const compatibility = await scanCompatibility(components);
-                console.log(`  ${p.name} - ${p.description} (${components.length} components, compatibility ${compatibility.score}% - ${compatibility.verdict})`);
+                rows.push({ name: p.name, description: p.description, components: components.length, compatibility: `${compatibility.score}% ${compatibility.verdict}` });
             }
+            console.log(`\n${section("Environment profiles (registry-driven)", [
+                table(rows, [
+                    { key: "name", label: "NAME" },
+                    { key: "description", label: "DESCRIPTION", maxWidth: 35 },
+                    { key: "components", label: "COMPONENTS" },
+                    { key: "compatibility", label: "COMPATIBILITY" }
+                ])
+            ])}`);
+            logger.info("Next: devforgekit profile show <name>, or devforgekit profile install <name>");
         }));
 
     profile

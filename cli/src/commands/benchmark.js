@@ -21,8 +21,10 @@ import {
     generateRichReport,
     BENCHMARK_METADATA
 } from "../core/benchmark.js";
+import { table, section } from "../lib/ui.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling, usageError } from "../core/errors.js";
+import chalk from "chalk";
 
 export function registerBenchmarkCommand(program) {
     const benchmark = program
@@ -105,46 +107,54 @@ export function registerBenchmarkCommand(program) {
                 return;
             }
 
-            logger.section("Benchmark Comparison");
-            console.log(`\n  Old: ${comparison.old.createdAt} - ${comparison.old.overallScore}/100 (${comparison.old.overallGrade}) on ${comparison.old.machine}`);
-            console.log(`  New: ${comparison.new.createdAt} - ${comparison.new.overallScore}/100 (${comparison.new.overallGrade}) on ${comparison.new.machine}`);
-
+            const summaryLines = [
+                `Old: ${comparison.old.createdAt} - ${comparison.old.overallScore}/100 (${comparison.old.overallGrade}) on ${comparison.old.machine}`,
+                `New: ${comparison.new.createdAt} - ${comparison.new.overallScore}/100 (${comparison.new.overallGrade}) on ${comparison.new.machine}`
+            ];
             if (comparison.overallDelta !== null) {
                 const sign = comparison.overallDelta > 0 ? "+" : "";
                 const status = comparison.overallDelta > 0 ? "improved" : comparison.overallDelta < 0 ? "regressed" : "unchanged";
-                console.log(`\n  Overall: ${comparison.old.overallScore} → ${comparison.new.overallScore} (${sign}${comparison.overallDelta}, ${status})`);
+                summaryLines.push(`Overall: ${comparison.old.overallScore} → ${comparison.new.overallScore} (${sign}${comparison.overallDelta}, ${status})`);
             }
-
-            // Phase 4: Summary
             if (comparison.summary) {
-                console.log(`\n  Summary: ${comparison.summary.improved} improved, ${comparison.summary.regressed} regressed, ${comparison.summary.unchanged} unchanged, ${comparison.summary.significant} significant`);
+                summaryLines.push(`Summary: ${comparison.summary.improved} improved, ${comparison.summary.regressed} regressed, ${comparison.summary.unchanged} unchanged, ${comparison.summary.significant} significant`);
             }
+            console.log(section("Benchmark Comparison", summaryLines));
 
-            console.log("\n  Category Breakdown:");
-            console.log("  " + "-".repeat(70));
+            const statusColor = { improved: chalk.green, regressed: chalk.red, unchanged: chalk.dim };
+            console.log(table(
+                comparison.categories.map((cat) => {
+                    const symbol = cat.status === "improved" ? "↑" : cat.status === "regressed" ? "↓" : cat.status === "unchanged" ? "=" : "?";
+                    const color = statusColor[cat.status] || chalk.dim;
+                    const deltaStr = cat.delta != null ? (cat.delta > 0 ? `+${cat.delta}` : String(cat.delta)) : "N/A";
+                    return {
+                        status: color(symbol),
+                        category: `${cat.label || cat.category}${cat.significant ? " *" : ""}`,
+                        old: cat.oldScore != null ? String(cat.oldScore) : "N/A",
+                        new: cat.newScore != null ? String(cat.newScore) : "N/A",
+                        delta: color(deltaStr)
+                    };
+                }),
+                [
+                    { key: "status", label: "" },
+                    { key: "category", label: "CATEGORY", maxWidth: 25 },
+                    { key: "old", label: "OLD" },
+                    { key: "new", label: "NEW" },
+                    { key: "delta", label: "DELTA" }
+                ]
+            ));
+
             for (const cat of comparison.categories) {
-                const oldStr = cat.oldScore != null ? String(cat.oldScore) : "N/A";
-                const newStr = cat.newScore != null ? String(cat.newScore) : "N/A";
-                const deltaStr = cat.delta != null ? (cat.delta > 0 ? `+${cat.delta}` : String(cat.delta)) : "N/A";
-                const symbol = cat.status === "improved" ? "↑" : cat.status === "regressed" ? "↓" : cat.status === "unchanged" ? "=" : "?";
-                const sigStr = cat.significant ? " *" : "";
-                console.log(`  ${symbol} ${(cat.label || cat.category).padEnd(20)}  ${oldStr.padStart(5)} → ${newStr.padStart(5)}  (${deltaStr})${sigStr}`);
-                if (cat.significant && cat.likelyCause) {
-                    console.log(`    Likely cause: ${cat.likelyCause}`);
-                }
-                if (cat.significant && cat.recommendation) {
-                    console.log(`    Recommendation: ${cat.recommendation}`);
-                }
-                // Measurement-level deltas
-                if (cat.measurementDeltas && cat.measurementDeltas.length > 0) {
-                    for (const m of cat.measurementDeltas) {
-                        const mSym = m.faster ? "↑" : "↓";
-                        const mPctStr = m.pct > 0 ? `+${m.pct}%` : `${m.pct}%`;
-                        console.log(`    ${mSym} ${m.measurement}: ${m.oldMs}ms → ${m.newMs}ms (${mPctStr})`);
-                    }
+                if (!cat.significant) continue;
+                if (cat.likelyCause) console.log(`\n  ${chalk.bold(cat.label || cat.category)} - Likely cause: ${cat.likelyCause}`);
+                if (cat.recommendation) console.log(`    Recommendation: ${cat.recommendation}`);
+                for (const m of cat.measurementDeltas || []) {
+                    const mSym = m.faster ? "↑" : "↓";
+                    const mPctStr = m.pct > 0 ? `+${m.pct}%` : `${m.pct}%`;
+                    console.log(`    ${mSym} ${m.measurement}: ${m.oldMs}ms → ${m.newMs}ms (${mPctStr})`);
                 }
             }
-            console.log(`\n  * = significant change (≥${10}% threshold)`);
+            console.log(`\n  * = significant change (≥10% threshold)`);
         }));
 
     // ─── history ─────────────────────────────────────────────────────
@@ -184,18 +194,25 @@ export function registerBenchmarkCommand(program) {
                 return;
             }
 
-            logger.section("Benchmark History");
-            console.log("\n  ID                              Profile     Score  Grade  Date");
-            console.log("  " + "-".repeat(85));
-            for (const h of history) {
-                const id = (h.id || "").slice(0, 32).padEnd(32);
-                const profile = (h.profile || "").padEnd(10);
-                const score = String(h.overallScore ?? 0).padStart(5);
-                const grade = (h.overallGrade || "F").padEnd(5);
-                const date = h.createdAt ? h.createdAt.slice(0, 19).replace("T", " ") : "unknown";
-                console.log(`  ${id}  ${profile}  ${score}  ${grade}  ${date}`);
-            }
-            console.log(`\n  ${history.length} result(s)`);
+            console.log(section(`Benchmark History (${history.length})`, [
+                table(
+                    history.map((h) => ({
+                        id: h.id,
+                        profile: h.profile,
+                        score: h.overallScore ?? 0,
+                        grade: h.overallGrade || "F",
+                        date: h.createdAt ? h.createdAt.slice(0, 19).replace("T", " ") : "unknown"
+                    })),
+                    [
+                        { key: "id", label: "ID", maxWidth: 32 },
+                        { key: "profile", label: "PROFILE" },
+                        { key: "score", label: "SCORE" },
+                        { key: "grade", label: "GRADE" },
+                        { key: "date", label: "DATE" }
+                    ]
+                )
+            ]));
+            logger.info("Next: devforgekit benchmark report <id>, or devforgekit benchmark compare");
         }));
 
     // ─── export ──────────────────────────────────────────────────────

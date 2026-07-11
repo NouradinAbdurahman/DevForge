@@ -2,15 +2,13 @@ schemaVersion: 1
 name: brave
 description: A privacy-focused, Chromium-based web browser
 category: browsers
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: brave-browser
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/Brave Browser.app'
 versionCommand: ls /Applications | grep Brave
 repair: brew reinstall --cask brave-browser
@@ -19,24 +17,20 @@ uninstall:
   method: brew-cask
   id: brave-browser
 post_install: []
+recommendedAlternatives:
+  - firefox
+  - chrome
+  - edge
 homepage: https://brave.com
 repository: https://github.com/brave/brave-browser
 license: MPL-2.0
 documentation: https://support.brave.com
 maintainer: DevForgeKit Registry
-tags:
-  - browser
-  - privacy
-aliases:
-  - brave-browser
+tags: [browser, privacy]
+aliases: [brave-browser]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - firefox
-  - chrome
-  - edge
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: brave-browser
-

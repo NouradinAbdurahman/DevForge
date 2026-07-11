@@ -86,7 +86,8 @@ export async function applyWorkspaceSsh(workspace, { onOutput } = {}) {
         const lines = identities.flatMap((identity) => buildHostBlock(identity));
         writeBlock(configPath, blockId(workspace.name), lines, {
             header: [`# Workspace '${workspace.name}' - managed by 'devforgekit workspace switch/save'. Do not hand-edit; changes are lost on the next apply.`],
-            backup: true
+            backup: true,
+            mode: 0o600
         });
     } else {
         removeBlock(configPath, blockId(workspace.name));

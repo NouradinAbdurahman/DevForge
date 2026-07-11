@@ -2,15 +2,13 @@ schemaVersion: 1
 name: cascadia-code
 description: Microsoft's monospace font for Windows Terminal and developers
 category: fonts
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: font-cascadia-code
 dependencies: []
+conflicts: []
 validate: test -n "$(find /Library/Fonts "$HOME/Library/Fonts" -iname '*CascadiaCode*' -print -quit 2>/dev/null)"
 versionCommand: ls ~/Library/Fonts | grep -i cascadia
 repair: brew reinstall --cask font-cascadia-code
@@ -24,15 +22,11 @@ repository: https://github.com/microsoft/cascadia-code
 license: OFL-1.1
 documentation: https://github.com/microsoft/cascadia-code#readme
 maintainer: DevForgeKit Registry
-tags:
-  - font
-  - monospace
-aliases:
-  - cascadia
+tags: [font, monospace]
+aliases: [cascadia]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: font-cascadia-code
-

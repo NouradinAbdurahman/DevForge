@@ -10,7 +10,7 @@ import os from "node:os";
 import { homeDir } from "../paths.js";
 import { captureShellCommand } from "../shell.js";
 import { Platform } from "./base.js";
-import { PlatformNotSupportedError } from "./errors.js";
+import { PlatformNotSupportedError, assertSafePackageId } from "./errors.js";
 
 function detectPackageManager() {
     // winget is in WindowsApps dir, choco in ProgramData, scoop in user home
@@ -35,6 +35,15 @@ export class WindowsPlatform extends Platform {
 
     defaultShell() {
         return "powershell";
+    }
+
+    // Named even though the Environment Configuration Engine's
+    // PowerShell writer isn't implemented yet - the engine skips
+    // unimplemented writers with a warning (see
+    // core/environment/writers/index.js), so this stays honest while
+    // keeping the platform contract complete.
+    shells() {
+        return ["powershell"];
     }
 
     // shellConfigFile() - PowerShell's per-user profile script, the
@@ -83,6 +92,9 @@ export class WindowsPlatform extends Platform {
     }
 
     installCommand(step, action) {
+        if (["winget", "choco", "scoop"].includes(step.method)) {
+            assertSafePackageId(step.id, `${step.method} package id`);
+        }
         switch (step.method) {
             case "winget":
                 return action === "uninstall"
@@ -159,6 +171,7 @@ export class WindowsPlatform extends Platform {
     }
 
     upgradeCommand(name) {
+        assertSafePackageId(name, "package name");
         const pm = detectPackageManager();
         if (pm === "winget") return `winget upgrade --id ${name} --accept-package-agreements --accept-source-agreements`;
         if (pm === "choco") return `choco upgrade ${name} -y`;

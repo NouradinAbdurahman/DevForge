@@ -18,6 +18,7 @@ import {
     getInstalledPackageNames
 } from "../core/packageIntel.js";
 import { getPackage } from "../core/registry.js";
+import { table, section } from "../lib/ui.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling } from "../core/errors.js";
 
@@ -46,7 +47,16 @@ export function registerPackageCommand(program) {
 
             if (opts.json) {
                 console.log(JSON.stringify(analysis, null, 2));
+                return;
             }
+
+            console.log(section("Package Intelligence Summary", [
+                `Packages:   ${analysis.summary.total} (${formatBytes(analysis.summary.totalSizeBytes || 0)})`,
+                `Orphans:    ${analysis.summary.orphanCount}`,
+                `Duplicates: ${analysis.summary.duplicateCount}`,
+                `Outdated:   ${analysis.summary.outdatedCount}`
+            ]));
+            logger.info("Next: devforgekit package orphan, devforgekit package duplicates, or devforgekit package outdated");
         }));
 
     // ─── info ────────────────────────────────────────────────────────
@@ -416,19 +426,26 @@ export function registerPackageCommand(program) {
                 return;
             }
 
-            logger.section("Analysis History");
-            console.log("\n  Date                          Packages  Size      Orphans  Duplicates  Outdated");
-            console.log("  " + "-".repeat(95));
-            for (const h of history) {
-                const date = h.createdAt ? h.createdAt.slice(0, 19).replace("T", " ") : "unknown";
-                const total = String(h.total).padStart(8);
-                const size = formatBytes(h.totalSizeBytes || 0).padStart(8);
-                const orphans = String(h.orphanCount).padStart(8);
-                const dupes = String(h.duplicateCount).padStart(11);
-                const outdated = String(h.outdatedCount).padStart(9);
-                console.log(`  ${date}  ${total}  ${size}  ${orphans}  ${dupes}  ${outdated}`);
-            }
-            console.log(`\n  ${history.length} record(s)`);
+            console.log(section(`Analysis History (${history.length})`, [
+                table(
+                    history.map((h) => ({
+                        date: h.createdAt ? h.createdAt.slice(0, 19).replace("T", " ") : "unknown",
+                        total: h.total,
+                        size: formatBytes(h.totalSizeBytes || 0),
+                        orphans: h.orphanCount,
+                        duplicates: h.duplicateCount,
+                        outdated: h.outdatedCount
+                    })),
+                    [
+                        { key: "date", label: "DATE" },
+                        { key: "total", label: "PACKAGES" },
+                        { key: "size", label: "SIZE" },
+                        { key: "orphans", label: "ORPHANS" },
+                        { key: "duplicates", label: "DUPLICATES" },
+                        { key: "outdated", label: "OUTDATED" }
+                    ]
+                )
+            ]));
         }));
 
     // ─── export ──────────────────────────────────────────────────────

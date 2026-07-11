@@ -2,17 +2,13 @@ schemaVersion: 1
 name: uv
 description: An extremely fast Python package and project manager
 category: package-managers
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: uv
 dependencies: []
+conflicts: []
 validate: uv --version
 versionCommand: uv --version
 repair: brew reinstall uv
@@ -21,24 +17,20 @@ uninstall:
   method: brew-formula
   id: uv
 post_install: []
+recommendedAlternatives:
+  - poetry
+  - pipx
+  - pip
 homepage: https://docs.astral.sh/uv
 repository: https://github.com/astral-sh/uv
 license: MIT
 documentation: https://docs.astral.sh/uv/
 maintainer: DevForgeKit Registry
-tags:
-  - package-manager
-  - python
-aliases:
-  - uv-python
+tags: [package-manager, python]
+aliases: [uv-python]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - poetry
-  - pipx
-  - pip
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: uv
-

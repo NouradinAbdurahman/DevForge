@@ -2,20 +2,13 @@ schemaVersion: 1
 name: ruby
 description: The Ruby programming language (newer than the version macOS ships)
 category: languages
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: ruby
 dependencies: []
+conflicts: []
 validate: ruby --version
 versionCommand: ruby --version
 repair: brew reinstall ruby
@@ -29,13 +22,10 @@ repository: https://github.com/ruby/ruby
 license: Ruby
 documentation: https://www.ruby-lang.org/en/documentation/
 maintainer: DevForgeKit Registry
-tags:
-  - language
-  - scripting
-aliases:
-  - rb
+tags: [language, scripting]
+aliases: [rb]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -46,4 +36,3 @@ platformInstall:
   windows:
     method: winget
     id: RubyInstallerTeam.Ruby
-

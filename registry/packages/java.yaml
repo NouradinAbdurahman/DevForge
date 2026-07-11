@@ -2,17 +2,13 @@ schemaVersion: 1
 name: java
 description: OpenJDK - the open-source Java Development Kit
 category: languages
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: openjdk
 dependencies: []
+conflicts: []
 validate: java --version
 versionCommand: java --version
 repair: brew reinstall openjdk
@@ -26,16 +22,17 @@ repository: https://github.com/openjdk/jdk
 license: GPL-2.0-with-classpath-exception
 documentation: https://openjdk.org
 maintainer: DevForgeKit Registry
-tags:
-  - language
-  - jvm
-aliases:
-  - jdk
-  - openjdk
+tags: [language, jvm]
+aliases: [jdk, openjdk]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: openjdk
-
+environment:
+  path:
+    - $(brew --prefix openjdk)/bin
+  variables:
+    JAVA_HOME:
+      command: echo $(brew --prefix openjdk)/libexec/openjdk.jdk/Contents/Home

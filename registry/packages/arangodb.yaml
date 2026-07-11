@@ -2,15 +2,13 @@ schemaVersion: 1
 name: arangodb
 description: A multi-model database supporting graph, document, and key-value data
 category: databases
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: arangodb
 dependencies: []
+conflicts: []
 validate: arangod --version
 versionCommand: arangod --version
 repair: brew reinstall --cask arangodb
@@ -19,25 +17,19 @@ uninstall:
   method: brew-cask
   id: arangodb
 post_install: []
+recommendedAlternatives:
+  - mongodb
+  - neo4j
 homepage: https://arangodb.com
 repository: https://github.com/arangodb/arangodb
 license: BUSL-1.1
 documentation: https://docs.arangodb.com
 maintainer: DevForgeKit Registry
-tags:
-  - database
-  - graph
-  - document
-  - multi-model
-aliases:
-  - arango
+tags: [database, graph, document, multi-model]
+aliases: [arango]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - mongodb
-  - neo4j
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: arangodb
-

@@ -2,17 +2,13 @@ schemaVersion: 1
 name: gnupg
 description: A complete implementation of the OpenPGP standard for encryption/signing
 category: package-signing
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: gnupg
 dependencies: []
+conflicts: []
 validate: gpg --version
 versionCommand: gpg --version
 repair: brew reinstall gnupg
@@ -21,24 +17,19 @@ uninstall:
   method: brew-formula
   id: gnupg
 post_install: []
+recommendedAlternatives:
+  - age
+  - openssl
 homepage: https://gnupg.org
 repository: https://dev.gnupg.org/source/gnupg
 license: GPL-3.0
 documentation: https://gnupg.org/documentation/
 maintainer: DevForgeKit Registry
-tags:
-  - security
-  - signing
-  - encryption
-aliases:
-  - gpg
+tags: [security, signing, encryption]
+aliases: [gpg]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - age
-  - openssl
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: gnupg
-

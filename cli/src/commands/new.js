@@ -7,43 +7,16 @@
 import path from "node:path";
 import { existsSync } from "node:fs";
 import { GENERATORS, getGenerator } from "../generators/index.js";
-import { runProjectGenerator } from "../core/projectGenerator.js";
+import { runProjectGenerator, validateProjectName } from "../core/projectGenerator.js";
 import { loadPackages } from "../core/registry.js";
 import { scoreGenerator } from "../core/generatorQuality.js";
 import { getActiveWorkspace, saveWorkspace } from "../core/workspace/store.js";
 import { select, text } from "../lib/prompts.js";
+import { table, section, healthColor } from "../lib/ui.js";
+import { didYouMeanMessage } from "../lib/suggest.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling, usageError } from "../core/errors.js";
-
-// RESERVED_NAMES (Project Generator Excellence, v2.1.2 Phase 8
-// validation): Windows' reserved device names are the one genuinely
-// cross-platform landmine here - a project named "con" or "nul" creates
-// files that can never be checked out or opened on Windows at all
-// (not "won't build," literally cannot exist on the filesystem), which
-// would otherwise surface as a baffling error only once someone clones
-// the repo on Windows, far removed from the moment the name was chosen.
-const RESERVED_NAMES = new Set([
-    "con", "prn", "aux", "nul",
-    "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9",
-    "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9",
-    "node_modules", ".git"
-]);
-
-// validateProjectName(name) -> throws a usageError with a clear reason,
-// or returns normally. Separate from the syntax regex check (which only
-// catches illegal characters) - this catches names that are
-// *syntactically* fine but would break something real.
-function validateProjectName(name) {
-    if (!/^[a-zA-Z0-9._-]+$/.test(name)) {
-        throw usageError(`Invalid project name '${name}' - use only letters, numbers, dots, dashes, and underscores.`);
-    }
-    if (RESERVED_NAMES.has(name.toLowerCase())) {
-        throw usageError(`'${name}' is a reserved name (Windows device name or tooling directory) and would break on some platforms - choose a different name.`);
-    }
-    if (name.startsWith(".") || name.startsWith("-")) {
-        throw usageError(`Invalid project name '${name}' - can't start with '.' or '-'.`);
-    }
-}
+import chalk from "chalk";
 
 const LICENSE_CHOICES = [
     { title: "MIT", value: "mit" },
@@ -76,22 +49,42 @@ function recordProjectHistory(stack, name, dir) {
 // as a separate, easy-to-miss command, so "which stacks are the most
 // complete" is visible at the exact moment someone is choosing one.
 async function printStackList() {
-    logger.section("Supported stacks (devforgekit new <stack> [name])");
-    const width = Math.max(...GENERATORS.map((g) => g.id.length));
     const scores = await Promise.all(GENERATORS.map((g) => scoreGenerator(g)));
-    GENERATORS.forEach((g, i) => {
-        console.log(`  ${g.id.padEnd(width)}  ${g.label} - ${g.description} (Quality: ${scores[i].score}%)`);
-    });
+    console.log(section(`Supported stacks (${GENERATORS.length})`, [
+        table(
+            GENERATORS.map((g, i) => ({
+                stack: g.id,
+                description: g.description,
+                quality: healthColor(scores[i].score)(`${scores[i].score}%`)
+            })),
+            [
+                { key: "stack", label: "STACK" },
+                { key: "description", label: "DESCRIPTION", maxWidth: 45 },
+                { key: "quality", label: "QUALITY" }
+            ]
+        )
+    ]));
+    logger.info("Next: devforgekit new <stack> [name], or devforgekit new <stack> --quality");
 }
 
 // printQualityBreakdown(generator) - `devforgekit new <stack> --quality`:
 // the full per-category breakdown behind that one inline number above.
 async function printQualityBreakdown(generator) {
     const scored = await scoreGenerator(generator);
-    logger.section(`${generator.label} Generator Quality Score: ${scored.score}%`);
-    for (const b of scored.breakdown) {
-        console.log(`  ${b.category.padEnd(18)} ${b.passCount}/${b.total} (${b.score}%)`);
-    }
+    console.log(section(`${generator.label} Generator Quality Score: ${scored.score}%`, [
+        table(
+            scored.breakdown.map((b) => ({
+                category: b.category,
+                passed: `${b.passCount}/${b.total}`,
+                score: healthColor(b.score)(`${b.score}%`)
+            })),
+            [
+                { key: "category", label: "CATEGORY" },
+                { key: "passed", label: "PASSED" },
+                { key: "score", label: "SCORE" }
+            ]
+        )
+    ]));
 }
 
 // printRecommends(generator) - Stack Intelligence (Project Generator
@@ -105,12 +98,17 @@ async function printQualityBreakdown(generator) {
 function printRecommends(generator) {
     if (!generator.recommends?.length) return;
     const packages = loadPackages();
-    logger.section(`Recommended with ${generator.label}`);
-    for (const id of generator.recommends) {
-        const pkg = packages.find((p) => p.name === id);
-        if (!pkg) continue;
-        console.log(`  ${pkg.name.padEnd(16)}  ${pkg.description}`);
-    }
+    const rows = generator.recommends
+        .map((id) => packages.find((p) => p.name === id))
+        .filter(Boolean)
+        .map((pkg) => ({ name: pkg.name, description: pkg.description }));
+    if (rows.length === 0) return;
+    console.log(section(`Recommended with ${generator.label}`, [
+        table(rows, [
+            { key: "name", label: "PACKAGE" },
+            { key: "description", label: "DESCRIPTION", maxWidth: 55 }
+        ])
+    ]));
 }
 
 export function registerNewCommand(program) {
@@ -154,7 +152,8 @@ export function registerNewCommand(program) {
 
             const generator = getGenerator(stackId);
             if (!generator) {
-                throw usageError(`Unknown stack '${stackId}'. Run 'devforgekit new --list' to see available stacks.`);
+                const suggestion = didYouMeanMessage(stackId, GENERATORS.map((g) => g.id));
+                throw usageError(`Unknown stack '${stackId}'.${suggestion ? ` ${suggestion}` : ""} Run 'devforgekit new --list' to see available stacks.`);
             }
 
             if (opts.quality) {
@@ -204,15 +203,17 @@ export function registerNewCommand(program) {
             // from the real filesystem/generator result, never assumed,
             // so "CI Ready"/"Docker Ready" reflect what actually got
             // written rather than what was merely requested.
-            logger.section("Project Created");
-            console.log(`  Location:      ${dir}`);
-            console.log(`  Stack:         ${generator.label}`);
-            console.log(`  License:       ${LICENSE_CHOICES.find((c) => c.value === license)?.title ?? license}`);
-            console.log(`  Git:           ${generator.skipGitInit ? "not initialized (handled by scaffold)" : "initialized"}`);
-            console.log(`  CI workflow:   ${existsSync(path.join(dir, ".github", "workflows")) ? "yes" : "no"}`);
-            console.log(`  Docker:        ${existsSync(path.join(dir, "Dockerfile")) ? "yes" : "no"}`);
-            console.log(`  README:        ${existsSync(path.join(dir, "README.md")) ? "yes" : "no"}`);
-            logger.section("Next commands");
-            for (const step of nextSteps) console.log(`  ${step}`);
+            const badge = (ok) => ok ? chalk.green("✓ yes") : chalk.dim("- no");
+            console.log(section("Project Created", [
+                `Location:      ${dir}`,
+                `Stack:         ${generator.label}`,
+                `License:       ${LICENSE_CHOICES.find((c) => c.value === license)?.title ?? license}`,
+                `Git:           ${generator.skipGitInit ? "not initialized (handled by scaffold)" : "initialized"}`,
+                `CI workflow:   ${badge(existsSync(path.join(dir, ".github", "workflows")))}`,
+                `Docker:        ${badge(existsSync(path.join(dir, "Dockerfile")))}`,
+                `README:        ${badge(existsSync(path.join(dir, "README.md")))}`
+            ]));
+            console.log(`\n${chalk.bold("Next commands")}`);
+            for (const step of nextSteps) console.log(`  ${chalk.cyan("→")} ${step}`);
         }));
 }

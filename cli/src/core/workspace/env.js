@@ -19,6 +19,10 @@ import { workspaceDir } from "./store.js";
 import { DevForgeError } from "../errors.js";
 
 const ALGO = "aes-256-gcm";
+const AUTH_TAG_LENGTH = 16; // 128-bit GCM tag, pinned explicitly on both sides rather than
+// trusting whatever length setAuthTag() is handed - Node accepts a shorter tag unless
+// authTagLength is passed to createDecipheriv, which weakens the forgery resistance GCM
+// is supposed to provide.
 
 function envDir(name) {
     return path.join(workspaceDir(name), "env");
@@ -60,14 +64,18 @@ function saveSecretsFile(name, secrets) {
 
 function encryptValue(key, plaintext) {
     const iv = crypto.randomBytes(12); // 96-bit IV, the GCM standard/recommended size
-    const cipher = crypto.createCipheriv(ALGO, key, iv);
+    const cipher = crypto.createCipheriv(ALGO, key, iv, { authTagLength: AUTH_TAG_LENGTH });
     const ciphertext = Buffer.concat([cipher.update(String(plaintext), "utf8"), cipher.final()]);
     return { iv: iv.toString("base64"), tag: cipher.getAuthTag().toString("base64"), ciphertext: ciphertext.toString("base64") };
 }
 
 function decryptValue(key, entry) {
-    const decipher = crypto.createDecipheriv(ALGO, key, Buffer.from(entry.iv, "base64"));
-    decipher.setAuthTag(Buffer.from(entry.tag, "base64"));
+    const tag = Buffer.from(entry.tag, "base64");
+    if (tag.length !== AUTH_TAG_LENGTH) {
+        throw new DevForgeError(`Secret entry has a malformed authentication tag (expected ${AUTH_TAG_LENGTH} bytes, got ${tag.length}) - refusing to decrypt.`);
+    }
+    const decipher = crypto.createDecipheriv(ALGO, key, Buffer.from(entry.iv, "base64"), { authTagLength: AUTH_TAG_LENGTH });
+    decipher.setAuthTag(tag);
     const plaintext = Buffer.concat([decipher.update(Buffer.from(entry.ciphertext, "base64")), decipher.final()]);
     return plaintext.toString("utf8");
 }
@@ -223,25 +231,33 @@ export function importEnvFile(workspace, filePath, { secretKeys = [] } = {}) {
 // Writes a standalone .env file anywhere on disk (e.g. into a project
 // directory for `docker-compose --env-file`) - `includeSecrets: true`
 // decrypts real values into it, so callers should treat the destination
-// like any other plaintext secrets file (gitignore it, etc.).
+// like any other plaintext secrets file (gitignore it, etc.). The mode
+// is passed to writeFileSync itself (applied atomically at creation) AND
+// chmodSync'd afterward, so there's never a window at the process's
+// default umask (the create-time mode) and a pre-existing file at some
+// other mode still converges to 0600 (the trailing chmodSync) - either
+// alone leaves a gap the other closes.
 export function exportEnvFile(workspace, filePath, { includeSecrets = false } = {}) {
     const vars = { ...workspace.env.variables, ...(includeSecrets ? getAllSecrets(workspace) : {}) };
-    writeFileSync(filePath, serializeEnvFile(vars));
+    writeFileSync(filePath, serializeEnvFile(vars), includeSecrets ? { mode: 0o600 } : undefined);
+    if (includeSecrets) chmodSync(filePath, 0o600);
     return filePath;
 }
 
 // writeWorkspaceEnvFile(workspace) -> the regenerated path
 // `<workspace dir>/env/vars.env`, always overwritten (never hand-edited,
-// same convention as shellIntegration.js's workspace-shell.sh) and
-// mode 0600. Includes decrypted secrets by design - this file's entire
-// purpose is being a real, ready-to-use `--env-file` for tools like
-// docker-compose, the same accepted plaintext-on-disk tradeoff every
-// `.env`/direnv workflow already makes.
+// same convention as shellIntegration.js's workspace-shell.sh) and mode
+// 0600 - both passed to writeFileSync at creation AND chmodSync'd
+// afterward (see exportEnvFile's comment above for why both matter).
+// Includes decrypted secrets by design - this file's entire purpose is
+// being a real, ready-to-use `--env-file` for tools like docker-compose,
+// the same accepted plaintext-on-disk tradeoff every `.env`/direnv
+// workflow already makes.
 export function writeWorkspaceEnvFile(workspace) {
     mkdirSync(envDir(workspace.name), { recursive: true });
     const filePath = path.join(envDir(workspace.name), "vars.env");
     const vars = { ...workspace.env.variables, ...getAllSecrets(workspace) };
-    writeFileSync(filePath, serializeEnvFile(vars));
+    writeFileSync(filePath, serializeEnvFile(vars), { mode: 0o600 });
     chmodSync(filePath, 0o600);
     return filePath;
 }

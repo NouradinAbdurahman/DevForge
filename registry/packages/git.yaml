@@ -2,20 +2,13 @@ schemaVersion: 1
 name: git
 description: Distributed version control system
 category: languages
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: git
 dependencies: []
+conflicts: []
 validate: git --version
 versionCommand: git --version
 repair: brew reinstall git
@@ -29,13 +22,10 @@ repository: https://github.com/git/git
 license: GPL-2.0
 documentation: https://git-scm.com/doc
 maintainer: DevForgeKit Registry
-tags:
-  - vcs
-  - version-control
-aliases:
-  - git-scm
+tags: [vcs, version-control]
+aliases: [git-scm]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -46,4 +36,3 @@ platformInstall:
   windows:
     method: winget
     id: Git.Git
-

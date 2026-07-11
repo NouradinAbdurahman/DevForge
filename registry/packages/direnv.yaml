@@ -2,17 +2,13 @@ schemaVersion: 1
 name: direnv
 description: Loads and unloads environment variables based on the current directory
 category: utilities
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: direnv
 dependencies: []
+conflicts: []
 validate: direnv --version
 versionCommand: direnv --version
 repair: brew reinstall direnv
@@ -21,23 +17,18 @@ uninstall:
   method: brew-formula
   id: direnv
 post_install: []
+recommendedAlternatives:
+  - asdf
 homepage: https://direnv.net
 repository: https://github.com/direnv/direnv
 license: MIT
 documentation: https://direnv.net/man/direnv.1.html
 maintainer: DevForgeKit Registry
-tags:
-  - utility
-  - shell
-  - environment
-aliases:
-  - direnv-shell
+tags: [utility, shell, environment]
+aliases: [direnv-shell]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - asdf
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: direnv
-

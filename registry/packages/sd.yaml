@@ -2,17 +2,13 @@ schemaVersion: 1
 name: sd
 description: An intuitive find-and-replace command-line tool (a sed alternative)
 category: utilities
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: sd
 dependencies: []
+conflicts: []
 validate: sd --version
 versionCommand: sd --version
 repair: brew reinstall sd
@@ -21,23 +17,18 @@ uninstall:
   method: brew-formula
   id: sd
 post_install: []
+recommendedAlternatives:
+  - ripgrep
 homepage: https://github.com/chmln/sd
 repository: https://github.com/chmln/sd
 license: MIT
 documentation: https://github.com/chmln/sd
 maintainer: DevForgeKit Registry
-tags:
-  - utility
-  - cli
-  - text-processing
-aliases:
-  - sd-sed
+tags: [utility, cli, text-processing]
+aliases: [sd-sed]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - ripgrep
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: sd
-

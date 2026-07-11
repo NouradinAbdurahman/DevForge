@@ -2,18 +2,14 @@ schemaVersion: 1
 name: composer
 description: The dependency manager for PHP
 category: package-managers
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: composer
 dependencies:
   - php
+conflicts: []
 validate: composer --version
 versionCommand: composer --version
 repair: brew reinstall composer
@@ -22,23 +18,19 @@ uninstall:
   method: brew-formula
   id: composer
 post_install: []
+recommendedAlternatives:
+  - npm
+  - pip
 homepage: https://getcomposer.org
 repository: https://github.com/composer/composer
 license: MIT
 documentation: https://getcomposer.org/doc/
 maintainer: DevForgeKit Registry
-tags:
-  - package-manager
-  - php
-aliases:
-  - composer-php
+tags: [package-manager, php]
+aliases: [composer-php]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - npm
-  - pip
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: composer
-

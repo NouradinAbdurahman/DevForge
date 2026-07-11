@@ -2,15 +2,13 @@ schemaVersion: 1
 name: iterm2
 description: A replacement terminal emulator for macOS
 category: terminals
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: iterm2
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/iTerm.app'
 versionCommand: ls /Applications | grep iTerm
 repair: brew reinstall --cask iterm2
@@ -19,24 +17,20 @@ uninstall:
   method: brew-cask
   id: iterm2
 post_install: []
+recommendedAlternatives:
+  - alacritty
+  - kitty
+  - wezterm
 homepage: https://iterm2.com
 repository: https://github.com/gnachman/iTerm2
 license: GPL-2.0
 documentation: https://iterm2.com/documentation.html
 maintainer: DevForgeKit Registry
-tags:
-  - terminal
-  - apple
-aliases:
-  - iterm
+tags: [terminal, apple]
+aliases: [iterm]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - alacritty
-  - kitty
-  - wezterm
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: iterm2
-

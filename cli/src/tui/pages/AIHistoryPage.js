@@ -66,7 +66,7 @@ export function AIHistoryPage({ isActive }) {
                 title: "Actions", theme, width: detailW,
                 body: h(Text, { color: theme.textMuted, wrap: "wrap" },
                     "AI History logs structured events (repairs, generations, scans) — never chat contents."),
-                hints: [["R", "Refresh"], ["C", "Clear History"]]
+                hints: [["r", "refresh"], ["c", "clear history"]]
             })
         )
     );

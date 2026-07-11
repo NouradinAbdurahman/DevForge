@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import { existsSync, mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { setPlatformForTesting, resetPlatformForTesting, LinuxPlatform } from "../src/core/platform/index.js";
+import { getPackage } from "../src/core/registry.js";
+import { resolveInstallStep } from "../src/core/installer.js";
 
 import {
     REPAIR_VERSION,
@@ -29,7 +32,8 @@ import {
     explainRepair,
     explainPlan,
     listRollbackPoints,
-    previewRollback
+    previewRollback,
+    scanCliInstallIssues
 } from "../src/core/repair.js";
 
 // Point HOME at a scratch directory to isolate from the developer's real
@@ -402,6 +406,78 @@ test("scanIssues calls onProgress callback", async () => {
     }
 });
 
+// ─── Integration: scanCliInstallIssues ─────────────────────────────────
+// (pre-v3.0.0 "Installation Experience Excellence" - checks the global
+// symlink, cli/node_modules, and ~/.config/devforgekit/install-state.json)
+
+test("scanCliInstallIssues returns well-formed issues, all in the cli-install category", async () => {
+    const originalHome = process.env.HOME;
+    const tempHome = mkdtempSync(path.join(tmpdir(), "devforgekit-repair-cli-install-"));
+    process.env.HOME = tempHome;
+
+    try {
+        const issues = await scanCliInstallIssues();
+        assert.ok(Array.isArray(issues));
+        for (const issue of issues) {
+            assert.equal(issue.category, REPAIR_CATEGORIES.CLI_INSTALL);
+            assert.equal(issue.categoryLabel, "CLI Install");
+            assert.ok(issue.id, "issue should have an id");
+            assert.ok(issue.action, "issue should have a structured action");
+            assert.equal(issue.action.type, ACTION_TYPES.SHELL);
+            assert.match(issue.action.command, /repair_install\.sh/);
+        }
+    } finally {
+        process.env.HOME = originalHome;
+        rmSync(tempHome, { recursive: true, force: true });
+    }
+});
+
+test("scanCliInstallIssues reports failed packages recorded in install-state.json", async () => {
+    const originalHome = process.env.HOME;
+    const tempHome = mkdtempSync(path.join(tmpdir(), "devforgekit-repair-cli-install-failed-"));
+    process.env.HOME = tempHome;
+
+    try {
+        const configDir = path.join(tempHome, ".config", "devforgekit");
+        mkdirSync(configDir, { recursive: true });
+        writeFileSync(
+            path.join(configDir, "install-state.json"),
+            JSON.stringify({ flutter: "failed:cask", git: "installed:brew" }, null, 2)
+        );
+
+        const issues = await scanCliInstallIssues();
+        const failedIssue = issues.find((i) => i.id === "cli-install-failed-packages");
+        assert.ok(failedIssue, "expected an issue for the failed package");
+        assert.match(failedIssue.description, /flutter/);
+        assert.doesNotMatch(failedIssue.description, /\bgit\b/, "an installed package should not be reported as failed");
+        assert.match(failedIssue.action.command, /repair_install\.sh['"]? packages/);
+    } finally {
+        process.env.HOME = originalHome;
+        rmSync(tempHome, { recursive: true, force: true });
+    }
+});
+
+test("scanCliInstallIssues reports no failed-packages issue when install-state.json has none", async () => {
+    const originalHome = process.env.HOME;
+    const tempHome = mkdtempSync(path.join(tmpdir(), "devforgekit-repair-cli-install-clean-"));
+    process.env.HOME = tempHome;
+
+    try {
+        const configDir = path.join(tempHome, ".config", "devforgekit");
+        mkdirSync(configDir, { recursive: true });
+        writeFileSync(
+            path.join(configDir, "install-state.json"),
+            JSON.stringify({ git: "installed:brew", jq: "installed:brew" }, null, 2)
+        );
+
+        const issues = await scanCliInstallIssues();
+        assert.ok(!issues.some((i) => i.id === "cli-install-failed-packages"));
+    } finally {
+        process.env.HOME = originalHome;
+        rmSync(tempHome, { recursive: true, force: true });
+    }
+});
+
 // ─── Integration: verifyRepairs ───────────────────────────────────────
 
 test("verifyRepairs returns verification results with health score", async () => {
@@ -633,6 +709,30 @@ test("validatePrerequisites detects unknown package for install", async () => {
     const result = await validatePrerequisites({ type: ACTION_TYPES.INSTALL, package: "nonexistent-pkg-xyz" });
     assert.ok(!result.ok);
     assert.ok(result.checks.some((c) => c.check === "registry"));
+});
+
+// Phase 3 cross-platform audit regression: validatePrerequisites used to
+// read pkg.install.method directly ("brew-formula" for almost every
+// package, including bat) to decide whether Homebrew is required, instead
+// of resolving through the same platformInstall lookup install() itself
+// uses - so it would have required Homebrew on Linux even for a package
+// like bat whose real platformInstall.linux step is a plain apt install
+// with no Homebrew dependency at all. commandExists("brew") isn't
+// injectable here (this dev machine has brew installed either way, which
+// would mask the bug at the validatePrerequisites boundary), so this
+// verifies the real registry fact the fix depends on: bat's *resolved*
+// Linux step is apt, not the brew-formula its top-level `install` field
+// alone would suggest.
+test("bat's platformInstall resolves to apt on Linux, not its top-level brew-formula install (the fact validatePrerequisites' fix depends on)", async () => {
+    setPlatformForTesting(new LinuxPlatform());
+    try {
+        const pkg = getPackage("bat");
+        assert.equal(pkg.install.method, "brew-formula", "sanity: bat's top-level install is still brew-formula");
+        const step = resolveInstallStep(pkg);
+        assert.equal(step.method, "apt");
+    } finally {
+        resetPlatformForTesting();
+    }
 });
 
 // ─── Phase 8: Per-repair rollback ─────────────────────────────────────

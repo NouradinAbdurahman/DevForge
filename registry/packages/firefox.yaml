@@ -2,15 +2,13 @@ schemaVersion: 1
 name: firefox
 description: Mozilla Firefox web browser
 category: browsers
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: firefox
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/Firefox.app'
 versionCommand: ls /Applications | grep Firefox
 repair: brew reinstall --cask firefox
@@ -19,24 +17,20 @@ uninstall:
   method: brew-cask
   id: firefox
 post_install: []
+recommendedAlternatives:
+  - brave
+  - chrome
+  - edge
 homepage: https://www.mozilla.org/firefox
 repository: https://github.com/mozilla/gecko-dev
 license: MPL-2.0
 documentation: https://support.mozilla.org/products/firefox
 maintainer: DevForgeKit Registry
-tags:
-  - browser
-  - devtools
-aliases:
-  - ff
+tags: [browser, devtools]
+aliases: [ff]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - brave
-  - chrome
-  - edge
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: firefox
-

@@ -2,15 +2,13 @@ schemaVersion: 1
 name: zen-browser
 description: A privacy-focused, customizable Firefox-based browser
 category: browsers
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: zen-browser
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/Zen.app'
 versionCommand: ls /Applications | grep Zen
 repair: brew reinstall --cask zen-browser
@@ -19,23 +17,19 @@ uninstall:
   method: brew-cask
   id: zen-browser
 post_install: []
+recommendedAlternatives:
+  - firefox
+  - brave
 homepage: https://zen-browser.app
 repository: https://github.com/zen-browser/desktop
 license: MPL-2.0
 documentation: https://docs.zen-browser.app/
 maintainer: DevForgeKit Registry
-tags:
-  - browser
-  - privacy
-aliases:
-  - zen
+tags: [browser, privacy]
+aliases: [zen]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - firefox
-  - brave
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: zen-browser
-

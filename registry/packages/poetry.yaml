@@ -2,18 +2,14 @@ schemaVersion: 1
 name: poetry
 description: Python dependency management and packaging made easy
 category: package-managers
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: poetry
 dependencies:
   - python
+conflicts: []
 validate: poetry --version
 versionCommand: poetry --version
 repair: brew reinstall poetry
@@ -22,24 +18,20 @@ uninstall:
   method: brew-formula
   id: poetry
 post_install: []
+recommendedAlternatives:
+  - pipx
+  - uv
+  - pip
 homepage: https://python-poetry.org
 repository: https://github.com/python-poetry/poetry
 license: MIT
 documentation: https://python-poetry.org/docs/
 maintainer: DevForgeKit Registry
-tags:
-  - package-manager
-  - python
-aliases:
-  - poetry-python
+tags: [package-manager, python]
+aliases: [poetry-python]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - pipx
-  - uv
-  - pip
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: poetry
-

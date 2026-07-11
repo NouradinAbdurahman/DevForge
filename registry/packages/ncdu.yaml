@@ -2,17 +2,13 @@ schemaVersion: 1
 name: ncdu
 description: A disk usage analyzer with an ncurses interface
 category: utilities
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: ncdu
 dependencies: []
+conflicts: []
 validate: ncdu --version
 versionCommand: ncdu --version
 repair: brew reinstall ncdu
@@ -26,16 +22,11 @@ repository: https://github.com/rofl0r/ncdu
 license: MIT
 documentation: https://dev.yorhel.nl/ncdu/man
 maintainer: DevForgeKit Registry
-tags:
-  - utility
-  - disk-usage
-  - tui
-aliases:
-  - ncdu-disk
+tags: [utility, disk-usage, tui]
+aliases: [ncdu-disk]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: ncdu
-

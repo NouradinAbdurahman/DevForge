@@ -2,19 +2,13 @@ schemaVersion: 1
 name: btop
 description: A resource monitor with a modern terminal UI
 category: monitoring
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: btop
 dependencies: []
+conflicts: []
 validate: btop --version
 versionCommand: btop --version
 repair: brew reinstall btop
@@ -23,22 +17,18 @@ uninstall:
   method: brew-formula
   id: btop
 post_install: []
+recommendedAlternatives:
+  - htop
+  - glances
 homepage: https://github.com/aristocratos/btop
 repository: https://github.com/aristocratos/btop
 license: Apache-2.0
 documentation: https://github.com/aristocratos/btop#readme
 maintainer: DevForgeKit Registry
-tags:
-  - utility
-  - monitoring
-  - tui
-aliases:
-  - btop4win
+tags: [utility, monitoring, tui]
+aliases: [btop4win]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - htop
-  - glances
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -46,4 +36,3 @@ platformInstall:
   linux:
     method: apt
     id: btop
-

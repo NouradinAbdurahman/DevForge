@@ -2,23 +2,41 @@ schemaVersion: 1
 name: netlify
 description: The Netlify deployment platform's command-line interface
 category: cloud
-platforms: [macos, linux]
-architectures: [intel, apple-silicon, linux]
-install: { method: npm, id: netlify-cli }
-dependencies: [node]
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
+install:
+  method: npm
+  id: netlify-cli
+dependencies:
+  - node
+conflicts: []
 validate: netlify --version
-versionCommand: "netlify --version"
-repair: "npm install -g netlify-cli@latest"
-update: "npm install -g netlify-cli@latest"
-uninstall: { method: npm, id: netlify-cli }
+versionCommand: netlify --version
+repair: npm install -g netlify-cli@latest
+update: npm install -g netlify-cli@latest
+uninstall:
+  method: npm
+  id: netlify-cli
 post_install: []
-homepage: "https://www.netlify.com"
-repository: "https://github.com/netlify/cli"
+recommendedAlternatives:
+  - vercel
+  - railway
+homepage: https://www.netlify.com
+repository: https://github.com/netlify/cli
 license: MIT
-documentation: "https://docs.netlify.com/cli/get-started/"
+documentation: https://docs.netlify.com/cli/get-started/
 maintainer: DevForgeKit Registry
 tags: [cloud, deployment, frontend]
 aliases: [netlify-cli]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives: [vercel, railway]
+lastVerified: '2026-07-05'
+platformInstall:
+  macos:
+    method: npm
+    id: netlify-cli
+  linux:
+    method: npm
+    id: netlify-cli
+  windows:
+    method: npm
+    id: netlify-cli

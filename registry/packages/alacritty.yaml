@@ -2,15 +2,13 @@ schemaVersion: 1
 name: alacritty
 description: A fast, cross-platform, GPU-accelerated terminal emulator
 category: terminals
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: alacritty
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/Alacritty.app'
 versionCommand: alacritty --version
 repair: brew reinstall --cask alacritty
@@ -19,24 +17,20 @@ uninstall:
   method: brew-cask
   id: alacritty
 post_install: []
+recommendedAlternatives:
+  - kitty
+  - wezterm
+  - iterm2
 homepage: https://alacritty.org
 repository: https://github.com/alacritty/alacritty
 license: Apache-2.0
 documentation: https://alacritty.org/config-alacritty.html
 maintainer: DevForgeKit Registry
-tags:
-  - terminal
-  - gpu-accelerated
-aliases:
-  - alacrit
+tags: [terminal, gpu-accelerated]
+aliases: [alacrit]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - kitty
-  - wezterm
-  - iterm2
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: alacritty
-

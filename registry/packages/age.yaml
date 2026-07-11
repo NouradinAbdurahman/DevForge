@@ -2,17 +2,13 @@ schemaVersion: 1
 name: age
 description: A simple, modern, and secure file encryption tool
 category: package-signing
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: age
 dependencies: []
+conflicts: []
 validate: age --version
 versionCommand: age --version
 repair: brew reinstall age
@@ -21,22 +17,18 @@ uninstall:
   method: brew-formula
   id: age
 post_install: []
+recommendedAlternatives:
+  - gnupg
 homepage: https://age-encryption.org
 repository: https://github.com/FiloSottile/age
 license: BSD-3-Clause
 documentation: https://github.com/FiloSottile/age#readme
 maintainer: DevForgeKit Registry
-tags:
-  - security
-  - encryption
-aliases:
-  - age-encryption
+tags: [security, encryption]
+aliases: [age-encryption]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - gnupg
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: age
-

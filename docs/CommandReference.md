@@ -8,6 +8,7 @@ parentheses.
 | Command | Description | Flags |
 | --- | --- | --- |
 | `install` (`bootstrap`) | Full provision: Homebrew, runtimes, dotfiles, editors, services | `--profile <name>`, `--minimal`, `--full`, `--dry-run`, `--skip-services`, `-y/--yes` |
+| `uninstall` | Remove installed packages/extensions/config/services (checklist if no flags in a terminal) | `--all`, `--packages`, `--config`, `--vscode`, `--cursor`, `--services`, `--force`/`--yes`/`-y` (required outside a terminal) |
 | `update` | Upgrade every managed toolchain, restart services | — |
 | `backup` | Capture live config → repo, commit + push if changed | — |
 | `restore` | Re-sync dotfiles and editor config from repo | — |
@@ -54,15 +55,20 @@ parentheses.
 
 ## Components & Registry
 
+See `docs/ComponentManager.md` for `list`/`info`/`doctor`'s unified status aggregation (`core/componentManager.js`) - the same install/version/provider/health/dependency/environment facts every one of these commands reads from, so they can never disagree.
+
 | Command | Description | Flags |
 | --- | --- | --- |
-| `component list` | List all registry components | `--category <cat>`, `--tag <tag>` |
-| `component info <name>` | Show full manifest for one component | — |
+| `component list` | Fast grouped browse of all registry components (name + description) | `--category <id>` |
+| `component list --status` | Live installed/version/health%/provider/update/conflict per component (slower - shells out per component, see docs/ComponentManager.md's performance note) | `--category <id>`, `--installed`, `--json` |
+| `component info <name>` | Unified status: installed/provider/version/binary/health/conflict/environment/dependencies/dependents/capabilities | `--json` (raw manifest instead) |
+| `component doctor <name>` | PASS/WARN diagnostic breakdown + health score + repair pointer | `--json` |
 | `component install [names...]` | Install components (interactive picker if none given) | `--variant <id>` |
 | `component validate <name>` | Run a component's validate command | — |
 | `component repair <name>` | Run a component's repair command | — |
-| `component update <name>` | Run a component's update command | — |
-| `component uninstall <name>` | Uninstall a component | — |
+| `component update <name>` | Run a component's update command, then refresh its tracked environment facts | — |
+| `component reinstall <name>` | Uninstall then install a component fresh | — |
+| `component uninstall <name>` (alias `remove`) | Uninstall a component; warns which tracked components depend on it first | — |
 | `search <query>` | Search components by name, tag, alias, description | `--category <cat>`, `--tag <tag>` |
 | `collection install <name>` | Install a curated collection | `-y/--yes` |
 | `collection list` | List all collections | — |
@@ -224,6 +230,31 @@ Providers: OpenAI, Anthropic, Gemini, Groq, OpenRouter, Ollama, LM Studio.
 | `graph orphan` | Show orphaned nodes | `--json`, `--refresh` |
 | `graph focus <name>` | Extract subgraph around a node | `--format <tree\|json\|dot\|mermaid\|svg>`, `--refresh` |
 | `graph history` | List graph snapshots | `--compare <newFile>` |
+
+## Environment Configuration Engine
+
+See `docs/EnvironmentEngine.md`. Tracks every tool DevForgeKit installs (observed binary location/version/provider) and generates a single owned shell file (PATH/variables/shell hooks) from installed packages' registry metadata - never hand-edited `.zshrc`/`.bashrc`.
+
+| Command | Description | Flags |
+| --- | --- | --- |
+| `env doctor` | Validate against real filesystem/shell state: PATH/variables with per-package attribution + repair suggestions, versioned-path replacement detection, live package verification + multi-installation conflicts, sync/hook checks, per-package health breakdown; health score | `--shell <shell>`, `--json` |
+| `env validate` | Alias for `env doctor` | `--shell <shell>`, `--json` |
+| `env list` | Tracked packages (version/provider/verified/location) + merged PATH (canonical order, with owners)/variables/shell lines | `--json` |
+| `env regenerate` | Rebuild every generated shell file and reinstall the shell hook; preserves + reports manual edits, prints shell + running-editor reload guidance | — |
+| `env graph [name]` | Dependency tree of tracked tools; with a name, what removing it would affect | `--json` |
+| `env shells` | Per-shell writer capability matrix (supported/partial/planned) | `--json` |
+| `env diff [snapshotId]` | Packages/versions/PATH/variable deltas since a snapshot (default: most recent) | `--json` |
+| `env history [day]` | Transaction log: what each regeneration changed | `--json` |
+| `env watch` | Live watch: track newly-installed known tools as their binaries appear | `--interval <seconds>` |
+| `env snapshot` | Save a snapshot of the tracked state + generated files (default subcommand: `create`) | `-m/--message <msg>` |
+| `env snapshot list` | List saved snapshots, newest first | `--json` |
+| `env restore <id>` | Restore a snapshot's state and regenerate from it (safety snapshot taken first) | — |
+
+## Developer Experience
+
+| Command | Description | Flags |
+| --- | --- | --- |
+| `explain <name>` | Why a component is installed (required-by profiles/collections/dependents), what it depends on, and whether it's safe to remove | `--json` |
 
 ## Package Intelligence
 

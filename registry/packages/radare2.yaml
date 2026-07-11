@@ -2,17 +2,13 @@ schemaVersion: 1
 name: radare2
 description: A libre reverse engineering framework
 category: reverse-engineering
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: radare2
 dependencies: []
+conflicts: []
 validate: r2 -v
 versionCommand: r2 -v
 repair: brew reinstall radare2
@@ -21,22 +17,18 @@ uninstall:
   method: brew-formula
   id: radare2
 post_install: []
+recommendedAlternatives:
+  - ghidra
 homepage: https://www.radare.org
 repository: https://github.com/radareorg/radare2
 license: LGPL-3.0
 documentation: https://book.rada.re/
 maintainer: DevForgeKit Registry
-tags:
-  - reverse-engineering
-  - security
-aliases:
-  - r2
+tags: [reverse-engineering, security]
+aliases: [r2]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - ghidra
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: radare2
-

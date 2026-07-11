@@ -2,23 +2,41 @@ schemaVersion: 1
 name: newman
 description: A command-line collection runner for Postman
 category: testing
-platforms: [macos, linux]
-architectures: [intel, apple-silicon, linux]
-install: { method: npm, id: newman }
-dependencies: [node]
-validate: "newman --version"
-versionCommand: "newman --version"
-repair: "npm install -g newman@latest"
-update: "npm install -g newman@latest"
-uninstall: { method: npm, id: newman }
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
+install:
+  method: npm
+  id: newman
+dependencies:
+  - node
+conflicts: []
+validate: newman --version
+versionCommand: newman --version
+repair: npm install -g newman@latest
+update: npm install -g newman@latest
+uninstall:
+  method: npm
+  id: newman
 post_install: []
-homepage: "https://github.com/postmanlabs/newman"
-repository: "https://github.com/postmanlabs/newman"
+recommendedAlternatives:
+  - postman
+  - insomnia
+homepage: https://github.com/postmanlabs/newman
+repository: https://github.com/postmanlabs/newman
 license: Apache-2.0
-documentation: "https://learning.postman.com/docs/collections/using-newman-cli/command-line-integration-with-newman/"
+documentation: https://learning.postman.com/docs/collections/using-newman-cli/command-line-integration-with-newman/
 maintainer: DevForgeKit Registry
 tags: [testing, api]
 aliases: [newman-postman]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives: [postman, insomnia]
+lastVerified: '2026-07-05'
+platformInstall:
+  macos:
+    method: npm
+    id: newman
+  linux:
+    method: npm
+    id: newman
+  windows:
+    method: npm
+    id: newman

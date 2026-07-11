@@ -2,17 +2,13 @@ schemaVersion: 1
 name: httpie
 description: A user-friendly command-line HTTP client
 category: api-development
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: httpie
 dependencies: []
+conflicts: []
 validate: http --version
 versionCommand: http --version
 repair: brew reinstall httpie
@@ -21,24 +17,19 @@ uninstall:
   method: brew-formula
   id: httpie
 post_install: []
+recommendedAlternatives:
+  - curl
+  - wget
 homepage: https://httpie.io
 repository: https://github.com/httpie/cli
 license: BSD-3-Clause
 documentation: https://httpie.io/docs/cli
 maintainer: DevForgeKit Registry
-tags:
-  - api-development
-  - http
-  - cli
-aliases:
-  - http
+tags: [api-development, http, cli]
+aliases: [http]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - curl
-  - wget
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: httpie
-

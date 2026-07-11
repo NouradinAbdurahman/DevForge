@@ -2,18 +2,13 @@ schemaVersion: 1
 name: mysql
 description: MySQL relational database
 category: databases
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - x64
-  - arm64
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, x64, arm64]
 install:
   method: brew-formula
   id: mysql
 dependencies: []
+conflicts: []
 validate: mysqladmin ping --silent
 versionCommand: mysql --version
 repair: brew services restart mysql
@@ -23,23 +18,19 @@ uninstall:
   id: mysql
 post_install:
   - brew services start mysql
+recommendedAlternatives:
+  - mariadb
+  - postgres
+  - sqlite
 homepage: https://www.mysql.com
 repository: https://github.com/mysql/mysql-server
 license: GPL-2.0
 documentation: https://dev.mysql.com/doc/
 maintainer: DevForgeKit Registry
-tags:
-  - database
-  - relational
-  - sql
-aliases:
-  - mysqld
+tags: [database, relational, sql]
+aliases: [mysqld]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - mariadb
-  - postgres
-  - sqlite
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -47,4 +38,3 @@ platformInstall:
   linux:
     method: apt
     id: mysql-server
-

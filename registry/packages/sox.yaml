@@ -2,17 +2,13 @@ schemaVersion: 1
 name: sox
 description: A cross-platform command-line audio processing tool
 category: media
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: sox
 dependencies: []
+conflicts: []
 validate: sox --version
 versionCommand: sox --version
 repair: brew reinstall sox
@@ -21,23 +17,19 @@ uninstall:
   method: brew-formula
   id: sox
 post_install: []
+recommendedAlternatives:
+  - ffmpeg
+  - imagemagick
 homepage: https://sourceforge.net/projects/sox
 repository: https://github.com/chirlu/sox
 license: GPL-2.0
 documentation: https://github.com/chirlu/sox
 maintainer: DevForgeKit Registry
-tags:
-  - media
-  - audio
-aliases:
-  - sox-audio
+tags: [media, audio]
+aliases: [sox-audio]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - ffmpeg
-  - imagemagick
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: sox
-

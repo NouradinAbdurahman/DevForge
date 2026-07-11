@@ -2,15 +2,13 @@ schemaVersion: 1
 name: xcodegen
 description: Generates Xcode projects from a project spec
 category: apple-development
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-formula
   id: xcodegen
 dependencies: []
+conflicts: []
 validate: xcodegen --version
 versionCommand: xcodegen --version
 repair: brew reinstall xcodegen
@@ -19,23 +17,18 @@ uninstall:
   method: brew-formula
   id: xcodegen
 post_install: []
+recommendedAlternatives:
+  - fastlane
 homepage: https://github.com/yonaskolb/XcodeGen
 repository: https://github.com/yonaskolb/XcodeGen
 license: MIT
 documentation: https://github.com/yonaskolb/XcodeGen
 maintainer: DevForgeKit Registry
-tags:
-  - apple-development
-  - ios
-  - macos
-aliases:
-  - xcodegen-xcode
+tags: [apple-development, ios, macos]
+aliases: [xcodegen-xcode]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - fastlane
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: xcodegen
-

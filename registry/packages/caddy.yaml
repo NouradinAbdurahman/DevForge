@@ -2,17 +2,13 @@ schemaVersion: 1
 name: caddy
 description: A modern web server with automatic HTTPS
 category: web
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: caddy
 dependencies: []
+conflicts: []
 validate: caddy version
 versionCommand: caddy version
 repair: brew reinstall caddy
@@ -21,22 +17,18 @@ uninstall:
   method: brew-formula
   id: caddy
 post_install: []
+recommendedAlternatives:
+  - nginx
 homepage: https://caddyserver.com
 repository: https://github.com/caddyserver/caddy
 license: Apache-2.0
 documentation: https://caddyserver.com/docs/
 maintainer: DevForgeKit Registry
-tags:
-  - web
-  - server
-aliases:
-  - caddyserver
+tags: [web, server]
+aliases: [caddyserver]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - nginx
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: caddy
-

@@ -2,20 +2,13 @@ schemaVersion: 1
 name: ripgrep
 description: A line-oriented search tool that recursively searches directories for a regex
 category: utilities
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: ripgrep
 dependencies: []
+conflicts: []
 validate: rg --version
 versionCommand: rg --version
 repair: brew reinstall ripgrep
@@ -24,21 +17,17 @@ uninstall:
   method: brew-formula
   id: ripgrep
 post_install: []
+recommendedAlternatives:
+  - fzf
 homepage: https://github.com/BurntSushi/ripgrep
 repository: https://github.com/BurntSushi/ripgrep
 license: MIT
 documentation: https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md
 maintainer: DevForgeKit Registry
-tags:
-  - utility
-  - search
-  - cli
-aliases:
-  - rg
+tags: [utility, search, cli]
+aliases: [rg]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - fzf
+lastVerified: '2026-07-05'
 ciVerified: true
 platformInstall:
   macos:
@@ -50,4 +39,3 @@ platformInstall:
   windows:
     method: winget
     id: BurntSushi.ripgrep.MSVC
-

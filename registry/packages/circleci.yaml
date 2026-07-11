@@ -2,17 +2,13 @@ schemaVersion: 1
 name: circleci
 description: The official CircleCI local command-line interface
 category: ci-cd
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: circleci
 dependencies: []
+conflicts: []
 validate: circleci version
 versionCommand: circleci version
 repair: brew reinstall circleci
@@ -21,23 +17,19 @@ uninstall:
   method: brew-formula
   id: circleci
 post_install: []
+recommendedAlternatives:
+  - github-cli
+  - gitlab-runner
 homepage: https://circleci.com/docs/local-cli
 repository: https://github.com/CircleCI-Public/circleci-cli
 license: MIT
 documentation: https://circleci.com/docs/local-cli
 maintainer: DevForgeKit Registry
-tags:
-  - ci-cd
-  - circleci
-aliases:
-  - circle
+tags: [ci-cd, circleci]
+aliases: [circle]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - github-cli
-  - gitlab-runner
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: circleci
-

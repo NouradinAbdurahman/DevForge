@@ -2,16 +2,14 @@ schemaVersion: 1
 name: elasticsearch
 description: Elasticsearch - a distributed search and analytics engine
 category: databases
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-formula
   id: elasticsearch
 dependencies:
   - java
+conflicts: []
 validate: elasticsearch --version
 versionCommand: elasticsearch --version
 repair: brew services restart elasticsearch
@@ -26,16 +24,11 @@ repository: https://github.com/elastic/elasticsearch
 license: SSPL-1.0
 documentation: https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html
 maintainer: DevForgeKit Registry
-tags:
-  - database
-  - search
-  - analytics
-aliases:
-  - es
+tags: [database, search, analytics]
+aliases: [es]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: elasticsearch
-

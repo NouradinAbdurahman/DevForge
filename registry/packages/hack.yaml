@@ -2,15 +2,13 @@ schemaVersion: 1
 name: hack
 description: A typeface designed for source code
 category: fonts
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: font-hack
 dependencies: []
+conflicts: []
 validate: test -n "$(find /Library/Fonts "$HOME/Library/Fonts" -iname '*Hack*' -print -quit 2>/dev/null)"
 versionCommand: ls ~/Library/Fonts | grep -i Hack
 repair: brew reinstall --cask font-hack
@@ -24,15 +22,11 @@ repository: https://github.com/source-foundry/Hack
 license: MIT
 documentation: https://sourcefoundry.org/hack
 maintainer: DevForgeKit Registry
-tags:
-  - font
-  - monospace
-aliases:
-  - hack-font
+tags: [font, monospace]
+aliases: [hack-font]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: font-hack
-

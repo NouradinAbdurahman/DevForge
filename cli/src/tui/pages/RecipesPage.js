@@ -8,7 +8,7 @@
 // would be dishonest (see docs/TUI.md's scoping notes).
 import { useState } from "react";
 import { Box, Text, useInput } from "ink";
-import { h, Panel, SelectList, DetailPanel, InstallProgress, statusColor, useDetailWidth } from "../components/ui.js";
+import { h, Panel, SelectList, DetailPanel, InstallProgress, EmptyState, statusColor, useDetailWidth } from "../components/ui.js";
 
 const EMPTY_TEXT = "No recipes found.";
 import { useStore } from "../store.js";
@@ -93,6 +93,12 @@ export function RecipesPage({ isActive }) {
     useInput((input) => {
         if (input === "a") runRecipe(current);
     }, { isActive: Boolean(isActive) && !state.searchOpen });
+
+    if (recipes.length === 0) {
+        return h(Box, { flexGrow: 1 },
+            h(Panel, { title: "Recipes (0)", theme, isActive, flexGrow: 1 },
+                h(EmptyState, { title: "No recipes found.", hint: "devforgekit recipe create", theme })));
+    }
 
     return h(Box, { flexGrow: 1 },
         h(Panel, { title: `Recipes (${recipes.length})`, theme, isActive, flexGrow: 1 },

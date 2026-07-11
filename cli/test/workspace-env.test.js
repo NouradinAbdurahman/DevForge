@@ -64,6 +64,24 @@ test("the encrypted sidecar file holds ciphertext/iv/tag, never plaintext", asyn
     });
 });
 
+test("getSecret refuses to decrypt an entry whose auth tag has been truncated, instead of silently accepting a weaker tag", async () => {
+    await withTempHome(async () => {
+        let doc = createWorkspace({ name: "acme-backend", description: "x" });
+        doc = setSecret(doc, "API_KEY", "sk-super-secret-value");
+        saveWorkspace(doc);
+
+        const sidecarPath = path.join(workspaceDir("acme-backend"), "env", "secrets.enc.json");
+        const sidecar = JSON.parse(readFileSync(sidecarPath, "utf8"));
+        const fullTag = Buffer.from(sidecar.API_KEY.tag, "base64");
+        assert.equal(fullTag.length, 16);
+        sidecar.API_KEY.tag = fullTag.subarray(0, 4).toString("base64");
+        writeFileSync(sidecarPath, JSON.stringify(sidecar, null, 2));
+
+        const reloaded = getWorkspace("acme-backend");
+        assert.equal(getSecret(reloaded, "API_KEY"), null);
+    });
+});
+
 test("setVariable refuses to shadow an existing secret key; removeSecret/removeVariable clean up correctly", async () => {
     await withTempHome(async () => {
         let doc = createWorkspace({ name: "acme-backend", description: "x" });
@@ -142,6 +160,10 @@ test("exportEnvFile writes plain vars by default, and decrypted secrets only wit
         const withSecrets = path.join(tempHome, "out2.env");
         exportEnvFile(doc, withSecrets, { includeSecrets: true });
         assert.match(readFileSync(withSecrets, "utf8"), /API_KEY=sk-value/);
+        // A file holding decrypted secrets must never be created at the
+        // process's default umask (commonly world/group-readable) - the
+        // mode has to be restrictive from the moment the file exists.
+        assert.equal((statSync(withSecrets).mode & 0o777).toString(8), "600");
     });
 });
 

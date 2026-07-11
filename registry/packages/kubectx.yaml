@@ -2,18 +2,14 @@ schemaVersion: 1
 name: kubectx
 description: Fast context switching between Kubernetes clusters
 category: kubernetes
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: kubectx
 dependencies:
   - kubectl
+conflicts: []
 validate: command -v kubectx
 versionCommand: kubectx --version
 repair: brew reinstall kubectx
@@ -22,23 +18,19 @@ uninstall:
   method: brew-formula
   id: kubectx
 post_install: []
+recommendedAlternatives:
+  - kubens
+  - kubectl
 homepage: https://github.com/ahmetb/kubectx
 repository: https://github.com/ahmetb/kubectx
 license: Apache-2.0
 documentation: https://github.com/ahmetb/kubectx
 maintainer: DevForgeKit Registry
-tags:
-  - kubernetes
-  - cli
-aliases:
-  - kctx
+tags: [kubernetes, cli]
+aliases: [kctx]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - kubens
-  - kubectl
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: kubectx
-

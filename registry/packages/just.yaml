@@ -2,17 +2,13 @@ schemaVersion: 1
 name: just
 description: A handy command runner for saving and running project-specific commands
 category: build-systems
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: just
 dependencies: []
+conflicts: []
 validate: just --version
 versionCommand: just --version
 repair: brew reinstall just
@@ -21,23 +17,18 @@ uninstall:
   method: brew-formula
   id: just
 post_install: []
+recommendedAlternatives:
+  - gnu-make
 homepage: https://github.com/casey/just
 repository: https://github.com/casey/just
 license: CC0-1.0
 documentation: https://just.systems/man/en/
 maintainer: DevForgeKit Registry
-tags:
-  - build
-  - task-runner
-  - cli
-aliases:
-  - justfile
+tags: [build, task-runner, cli]
+aliases: [justfile]
 stability: stable
-lastVerified: "2026-07-06"
-recommendedAlternatives:
-  - gnu-make
+lastVerified: '2026-07-06'
 platformInstall:
   macos:
     method: brew-formula
     id: just
-

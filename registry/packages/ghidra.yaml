@@ -2,16 +2,14 @@ schemaVersion: 1
 name: ghidra
 description: A software reverse engineering framework, originally developed by the NSA
 category: security
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: ghidra
 dependencies:
   - java
+conflicts: []
 validate: test -d '/Applications/ghidra'
 versionCommand: ls /Applications | grep Ghidra
 repair: brew reinstall --cask ghidra
@@ -20,22 +18,18 @@ uninstall:
   method: brew-cask
   id: ghidra
 post_install: []
+recommendedAlternatives:
+  - radare2
 homepage: https://ghidra-sre.org
 repository: https://github.com/NationalSecurityAgency/ghidra
 license: Apache-2.0
 documentation: https://github.com/NationalSecurityAgency/ghidra/wiki
 maintainer: DevForgeKit Registry
-tags:
-  - security
-  - reverse-engineering
-aliases:
-  - ghidra-re
+tags: [security, reverse-engineering]
+aliases: [ghidra-re]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - radare2
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: ghidra
-

@@ -1,7 +1,7 @@
 schemaVersion: 1
 name: embedded-engineer
 description: A microcontroller and embedded systems toolkit - PlatformIO, Arduino CLI, esptool, OpenOCD, and CMake - installed, configured, and verified in one command
-icon: "🔧"
+icon: 🔧
 tags: [embedded, iot, hardware]
 components: [platformio, arduino-cli, esptool, openocd, cmake, git, vscode]
 configure: [git, vscode, shell]

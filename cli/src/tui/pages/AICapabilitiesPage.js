@@ -62,7 +62,7 @@ export function AICapabilitiesPage({ isActive }) {
             h(DetailPanel, {
                 title: providerId ? `${providerIcon(providerId)} ${providerLabel(providerId)}` : "Active Provider",
                 theme, width: 36,
-                emptyText: "No provider configured. Press P to choose one.",
+                emptyText: "No provider configured. Press p to choose one.",
                 sections: providerId ? [{
                     labelWidth: 18,
                     pairs: capabilityList(providerId).map((c) => [
@@ -71,7 +71,7 @@ export function AICapabilitiesPage({ isActive }) {
                         c.supported ? theme.success : theme.textMuted
                     ])
                 }] : [],
-                hints: providerId ? [["P", "Providers"], ["M", "Models"], ["O", "Overview"]] : undefined
+                hints: providerId ? [["p", "providers"], ["m", "models"], ["o", "overview"]] : undefined
             })
         )
     );

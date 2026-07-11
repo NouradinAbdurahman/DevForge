@@ -2,15 +2,13 @@ schemaVersion: 1
 name: windsurf
 description: An agentic AI code editor
 category: editors
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: windsurf
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/Windsurf.app'
 versionCommand: ls /Applications | grep Windsurf
 repair: brew reinstall --cask windsurf
@@ -19,25 +17,20 @@ uninstall:
   method: brew-cask
   id: windsurf
 post_install: []
+recommendedAlternatives:
+  - vscode
+  - cursor
+  - zed
 homepage: https://windsurf.com
 repository: https://github.com/Exafunction/windsurf.vim
 license: proprietary
 documentation: https://docs.windsurf.com/
 maintainer: DevForgeKit Registry
-tags:
-  - editor
-  - ide
-  - ai
-aliases:
-  - windsurf-editor
+tags: [editor, ide, ai]
+aliases: [windsurf-editor]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - vscode
-  - cursor
-  - zed
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: windsurf
-

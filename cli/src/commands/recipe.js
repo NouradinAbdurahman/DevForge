@@ -25,6 +25,8 @@ import { buildGroupedChoices } from "./component.js";
 import { multiselect, confirm, text } from "../lib/prompts.js";
 import { userConfigDir } from "../core/paths.js";
 import { scanCompatibility } from "../core/compatibility/engine.js";
+import { table, section } from "../lib/ui.js";
+import { didYouMeanMessage } from "../lib/suggest.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling, usageError } from "../core/errors.js";
 
@@ -130,7 +132,15 @@ async function installRecipeDoc(r, { skipConfigure = false, skipVerify = false, 
 export function registerRecipeCommand(program) {
     const recipe = program
         .command("recipe")
-        .description("Manage recipes - reusable, one-command environment workflows (install + configure + verify)");
+        .description("Manage recipes - reusable, one-command environment workflows (install + configure + verify)")
+        .addHelpText("after", `
+Examples:
+  $ devforgekit recipe list                   Every recipe, with resolved component counts
+  $ devforgekit recipe show flutter-developer  Components, configure steps, compatibility score
+  $ devforgekit recipe install flutter-developer  Install -> configure -> verify, in one step
+  $ devforgekit recipe create                 Interactively build a custom recipe
+
+Learn more: docs/Recipes.md`);
 
     recipe
         .command("list")
@@ -141,11 +151,21 @@ export function registerRecipeCommand(program) {
                 logger.info("No recipes found.");
                 return;
             }
-            logger.section("DevForgeKit Recipes");
-            for (const r of recipes) {
-                const size = expandRecipe(r).length;
-                console.log(`  ${r.icon ? `${r.icon} ` : ""}${r.name} - ${r.description} (${size} components)`);
-            }
+            console.log(section(`DevForgeKit Recipes (${recipes.length})`, [
+                table(
+                    recipes.map((r) => ({
+                        name: `${r.icon ? `${r.icon} ` : ""}${r.name}`,
+                        description: r.description,
+                        components: expandRecipe(r).length
+                    })),
+                    [
+                        { key: "name", label: "NAME" },
+                        { key: "description", label: "DESCRIPTION", maxWidth: 45 },
+                        { key: "components", label: "COMPONENTS" }
+                    ]
+                )
+            ]));
+            logger.info("Next: devforgekit recipe show <name>, or devforgekit recipe install <name>");
         }));
 
     recipe
@@ -239,7 +259,8 @@ export function registerRecipeCommand(program) {
                 (r.tags || []).some((t) => t.toLowerCase().includes(q)));
 
             if (matches.length === 0) {
-                throw usageError(`No recipes matched '${query}'.`);
+                const suggestion = didYouMeanMessage(query, loadRecipes().map((r) => r.name));
+                throw usageError(`No recipes matched '${query}'.${suggestion ? ` ${suggestion}` : ""}`);
             }
             logger.section(`Results for '${query}'`);
             for (const r of matches) {

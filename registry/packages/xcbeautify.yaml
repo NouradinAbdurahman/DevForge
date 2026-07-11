@@ -2,15 +2,13 @@ schemaVersion: 1
 name: xcbeautify
 description: A little beautifier tool for xcodebuild output
 category: apple-development
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-formula
   id: xcbeautify
 dependencies: []
+conflicts: []
 validate: xcbeautify --version
 versionCommand: xcbeautify --version
 repair: brew reinstall xcbeautify
@@ -24,15 +22,11 @@ repository: https://github.com/cpisciotta/xcbeautify
 license: MIT
 documentation: https://github.com/cpisciotta/xcbeautify
 maintainer: DevForgeKit Registry
-tags:
-  - apple-development
-  - ci-cd
-aliases:
-  - xcbeautify-xcode
+tags: [apple-development, ci-cd]
+aliases: [xcbeautify-xcode]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: xcbeautify
-

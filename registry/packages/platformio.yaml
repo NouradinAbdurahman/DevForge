@@ -2,17 +2,13 @@ schemaVersion: 1
 name: platformio
 description: A professional collaborative platform for embedded development
 category: embedded
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: platformio
 dependencies: []
+conflicts: []
 validate: pio --version
 versionCommand: pio --version
 repair: brew reinstall platformio
@@ -21,22 +17,18 @@ uninstall:
   method: brew-formula
   id: platformio
 post_install: []
+recommendedAlternatives:
+  - arduino-cli
 homepage: https://platformio.org
 repository: https://github.com/platformio/platformio-core
 license: Apache-2.0
 documentation: https://docs.platformio.org
 maintainer: DevForgeKit Registry
-tags:
-  - embedded
-  - iot
-aliases:
-  - pio
+tags: [embedded, iot]
+aliases: [pio]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - arduino-cli
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: platformio
-

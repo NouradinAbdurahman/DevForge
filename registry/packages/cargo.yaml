@@ -4,21 +4,29 @@ description: Rust's package manager and build tool, bundled with the Rust toolch
 category: package-managers
 platforms: [macos, linux]
 architectures: [intel, apple-silicon, linux]
-install: { method: shell, command: "rustup component add cargo" }
-dependencies: [rust]
+install:
+  method: shell
+  command: rustup component add cargo
+dependencies:
+  - rust
+conflicts: []
 validate: cargo --version
-versionCommand: "cargo --version"
-repair: "rustup component add cargo"
+versionCommand: cargo --version
+repair: rustup component add cargo
 update: rustup update
-uninstall: { method: shell, command: "echo 'cargo ships with Rust - remove Rust to remove cargo'" }
+uninstall:
+  method: shell
+  command: echo 'cargo ships with Rust - remove Rust to remove cargo'
 post_install: []
-homepage: "https://doc.rust-lang.org/cargo"
-repository: "https://github.com/rust-lang/cargo"
+recommendedAlternatives:
+  - go
+  - npm
+homepage: https://doc.rust-lang.org/cargo
+repository: https://github.com/rust-lang/cargo
 license: MIT
-documentation: "https://doc.rust-lang.org/cargo"
+documentation: https://doc.rust-lang.org/cargo
 maintainer: DevForgeKit Registry
 tags: [package-manager, rust]
 aliases: [cargo-rs]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives: [go, npm]
+lastVerified: '2026-07-05'

@@ -2,23 +2,41 @@ schemaVersion: 1
 name: vercel
 description: The Vercel deployment platform's command-line interface
 category: cloud
-platforms: [macos, linux]
-architectures: [intel, apple-silicon, linux]
-install: { method: npm, id: vercel }
-dependencies: [node]
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
+install:
+  method: npm
+  id: vercel
+dependencies:
+  - node
+conflicts: []
 validate: vercel --version
-versionCommand: "vercel --version"
-repair: "npm install -g vercel@latest"
-update: "npm install -g vercel@latest"
-uninstall: { method: npm, id: vercel }
+versionCommand: vercel --version
+repair: npm install -g vercel@latest
+update: npm install -g vercel@latest
+uninstall:
+  method: npm
+  id: vercel
 post_install: []
-homepage: "https://vercel.com"
-repository: "https://github.com/vercel/vercel"
+recommendedAlternatives:
+  - netlify
+  - railway
+homepage: https://vercel.com
+repository: https://github.com/vercel/vercel
 license: Apache-2.0
-documentation: "https://vercel.com/docs/cli"
+documentation: https://vercel.com/docs/cli
 maintainer: DevForgeKit Registry
 tags: [cloud, deployment, frontend]
 aliases: [vercel-cli, now]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives: [netlify, railway]
+lastVerified: '2026-07-05'
+platformInstall:
+  macos:
+    method: npm
+    id: vercel
+  linux:
+    method: npm
+    id: vercel
+  windows:
+    method: npm
+    id: vercel

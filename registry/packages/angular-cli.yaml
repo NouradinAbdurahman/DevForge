@@ -2,22 +2,38 @@ schemaVersion: 1
 name: angular-cli
 description: The command-line interface for Angular applications
 category: languages
-platforms: [macos, linux]
-architectures: [intel, apple-silicon, linux]
-install: { method: npm, id: "@angular/cli" }
-dependencies: [node]
-validate: "ng version"
-versionCommand: "ng version"
-repair: "npm install -g @angular/cli@latest"
-update: "npm install -g @angular/cli@latest"
-uninstall: { method: npm, id: "@angular/cli" }
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
+install:
+  method: npm
+  id: '@angular/cli'
+dependencies:
+  - node
+conflicts: []
+validate: ng version
+versionCommand: ng version
+repair: npm install -g @angular/cli@latest
+update: npm install -g @angular/cli@latest
+uninstall:
+  method: npm
+  id: '@angular/cli'
 post_install: []
-homepage: "https://angular.dev"
-repository: "https://github.com/angular/angular-cli"
+homepage: https://angular.dev
+repository: https://github.com/angular/angular-cli
 license: MIT
-documentation: "https://angular.dev/tools/cli"
+documentation: https://angular.dev/tools/cli
 maintainer: DevForgeKit Registry
 tags: [language, frontend, framework]
 aliases: [ng, angular]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
+platformInstall:
+  macos:
+    method: npm
+    id: '@angular/cli'
+  linux:
+    method: npm
+    id: '@angular/cli'
+  windows:
+    method: npm
+    id: '@angular/cli'

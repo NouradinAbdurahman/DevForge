@@ -2,15 +2,13 @@ schemaVersion: 1
 name: jetbrains-mono
 description: A monospace font designed for developers, by JetBrains
 category: fonts
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: font-jetbrains-mono
 dependencies: []
+conflicts: []
 validate: test -n "$(find /Library/Fonts "$HOME/Library/Fonts" -iname '*JetBrainsMono*' -print -quit 2>/dev/null)"
 versionCommand: ls ~/Library/Fonts | grep -i 'JetBrains Mono'
 repair: brew reinstall --cask font-jetbrains-mono
@@ -24,15 +22,11 @@ repository: https://github.com/JetBrains/JetBrainsMono
 license: OFL-1.1
 documentation: https://www.jetbrains.com/lp/mono
 maintainer: DevForgeKit Registry
-tags:
-  - font
-  - monospace
-aliases:
-  - jetbrains-font
+tags: [font, monospace]
+aliases: [jetbrains-font]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: font-jetbrains-mono
-

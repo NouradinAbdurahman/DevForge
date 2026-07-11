@@ -2,20 +2,13 @@ schemaVersion: 1
 name: cmake
 description: A cross-platform build system generator
 category: build-systems
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: cmake
 dependencies: []
+conflicts: []
 validate: cmake --version
 versionCommand: cmake --version
 repair: brew reinstall cmake
@@ -24,22 +17,18 @@ uninstall:
   method: brew-formula
   id: cmake
 post_install: []
+recommendedAlternatives:
+  - meson
+  - ninja
 homepage: https://cmake.org
 repository: https://gitlab.kitware.com/cmake/cmake
 license: BSD-3-Clause
 documentation: https://cmake.org/documentation/
 maintainer: DevForgeKit Registry
-tags:
-  - build-tool
-  - build
-  - cpp
-aliases:
-  - cmake-build
+tags: [build-tool, build, cpp]
+aliases: [cmake-build]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - meson
-  - ninja
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -50,4 +39,3 @@ platformInstall:
   windows:
     method: winget
     id: Kitware.CMake
-

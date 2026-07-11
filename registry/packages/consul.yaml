@@ -2,18 +2,14 @@ schemaVersion: 1
 name: consul
 description: HashiCorp's service networking and service discovery tool
 category: devops
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: hashicorp/tap/consul
   tap: hashicorp/tap
 dependencies: []
+conflicts: []
 validate: consul version
 versionCommand: consul version
 repair: brew reinstall hashicorp/tap/consul
@@ -23,26 +19,20 @@ uninstall:
   id: hashicorp/tap/consul
   tap: hashicorp/tap
 post_install: []
+recommendedAlternatives:
+  - vault
+  - nomad
 homepage: https://www.consul.io
 repository: https://github.com/hashicorp/consul
 license: BUSL-1.1
 documentation: https://developer.hashicorp.com/consul/docs
 maintainer: DevForgeKit Registry
-tags:
-  - devops
-  - networking
-  - service-discovery
-  - hashicorp
-aliases:
-  - consul-hashicorp
+tags: [devops, networking, service-discovery, hashicorp]
+aliases: [consul-hashicorp]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - vault
-  - nomad
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: hashicorp/tap/consul
     tap: hashicorp/tap
-

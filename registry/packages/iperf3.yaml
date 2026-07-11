@@ -2,17 +2,13 @@ schemaVersion: 1
 name: iperf3
 description: A tool for active measurements of network bandwidth
 category: networking
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: iperf3
 dependencies: []
+conflicts: []
 validate: iperf3 --version
 versionCommand: iperf3 --version
 repair: brew reinstall iperf3
@@ -21,23 +17,18 @@ uninstall:
   method: brew-formula
   id: iperf3
 post_install: []
+recommendedAlternatives:
+  - speedtest-cli
 homepage: https://iperf.fr
 repository: https://github.com/esnet/iperf
 license: BSD-3-Clause
 documentation: https://iperf.fr/iperf-doc.php
 maintainer: DevForgeKit Registry
-tags:
-  - networking
-  - bandwidth
-  - diagnostics
-aliases:
-  - iperf
+tags: [networking, bandwidth, diagnostics]
+aliases: [iperf]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - speedtest-cli
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: iperf3
-

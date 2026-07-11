@@ -2,17 +2,13 @@ schemaVersion: 1
 name: difftastic
 description: A structural diff tool that understands syntax
 category: utilities
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: difftastic
 dependencies: []
+conflicts: []
 validate: difft --version
 versionCommand: difft --version
 repair: brew reinstall difftastic
@@ -26,15 +22,11 @@ repository: https://github.com/Wilfred/difftastic
 license: MIT
 documentation: https://difftastic.wilfred.me.uk/
 maintainer: DevForgeKit Registry
-tags:
-  - diff
-  - cli
-aliases:
-  - difft
+tags: [diff, cli]
+aliases: [difft]
 stability: stable
-lastVerified: "2026-07-06"
+lastVerified: '2026-07-06'
 platformInstall:
   macos:
     method: brew-formula
     id: difftastic
-

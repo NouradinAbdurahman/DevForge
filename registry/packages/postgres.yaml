@@ -2,15 +2,13 @@ schemaVersion: 1
 name: postgres
 description: PostgreSQL relational database
 category: databases
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-formula
   id: postgresql@17
 dependencies: []
+conflicts: []
 validate: pg_isready
 versionCommand: postgres --version
 repair: brew services restart postgresql@17
@@ -20,26 +18,20 @@ uninstall:
   id: postgresql@17
 post_install:
   - brew services start postgresql@17
+recommendedAlternatives:
+  - mysql
+  - sqlite
+  - cockroachdb
 homepage: https://www.postgresql.org
 repository: https://github.com/postgres/postgres
 license: PostgreSQL
 documentation: https://www.postgresql.org/docs/
 maintainer: DevForgeKit Registry
-tags:
-  - database
-  - relational
-  - sql
-aliases:
-  - psql
-  - pg
+tags: [database, relational, sql]
+aliases: [psql, pg]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - mysql
-  - sqlite
-  - cockroachdb
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: postgresql@17
-

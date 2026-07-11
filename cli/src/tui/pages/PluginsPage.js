@@ -91,6 +91,11 @@ export function PluginsPage({ isActive }) {
 }
 
 function InstalledTab({ all, isActive, theme, current, setHighlighted, commands }) {
+    if (all.length === 0) {
+        return h(Box, { flexGrow: 1 },
+            h(Panel, { title: "Plugins (0 discovered)", theme, isActive, flexGrow: 1 },
+                h(EmptyState, { title: "No plugins found.", hint: "devforgekit plugin create my-plugin", theme })));
+    }
     return h(Box, { flexGrow: 1 },
         h(Panel, { title: `Plugins (${all.length} discovered)`, theme, isActive, flexGrow: 1 },
             h(SelectList, {
@@ -208,6 +213,11 @@ function QualityTab({ all, isActive, theme, current, setHighlighted }) {
 }
 
 function DetailsTab({ all, isActive, theme, current, setHighlighted, detailW }) {
+    if (all.length === 0) {
+        return h(Box, { flexGrow: 1 },
+            h(Panel, { title: "Plugins (0)", theme, isActive, flexGrow: 1 },
+                h(EmptyState, { title: "No plugins found.", hint: "devforgekit plugin create my-plugin", theme })));
+    }
     return h(Box, { flexGrow: 1 },
         h(Panel, { title: `Plugins (${all.length})`, theme, isActive, flexGrow: 1 },
             h(SelectList, {

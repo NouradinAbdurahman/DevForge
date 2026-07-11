@@ -199,6 +199,7 @@
       "dependencies": [
         "docker"
       ],
+      "conflicts": [],
       "validate": "act --version",
       "versionCommand": "act --version",
       "repair": "brew reinstall act",
@@ -208,6 +209,9 @@
         "id": "act"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "github-cli"
+      ],
       "homepage": "https://github.com/nektos/act",
       "repository": "https://github.com/nektos/act",
       "license": "MIT",
@@ -222,9 +226,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "github-cli"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -251,6 +252,7 @@
         "id": "age"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "age --version",
       "versionCommand": "age --version",
       "repair": "brew reinstall age",
@@ -260,6 +262,9 @@
         "id": "age"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "gnupg"
+      ],
       "homepage": "https://age-encryption.org",
       "repository": "https://github.com/FiloSottile/age",
       "license": "BSD-3-Clause",
@@ -274,9 +279,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "gnupg"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -304,6 +306,7 @@
       "dependencies": [
         "pipx"
       ],
+      "conflicts": [],
       "validate": "aider --version",
       "versionCommand": "aider --version",
       "repair": "pipx upgrade aider-chat",
@@ -313,6 +316,10 @@
         "command": "pipx uninstall aider-chat"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "continue",
+        "claude-code"
+      ],
       "homepage": "https://aider.chat",
       "repository": "https://github.com/Aider-AI/aider",
       "license": "Apache-2.0",
@@ -327,11 +334,7 @@
         "aider-chat"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "continue",
-        "claude-code"
-      ]
+      "lastVerified": "2026-07-05"
     },
     {
       "schemaVersion": 1,
@@ -352,6 +355,7 @@
         "id": "aircrack-ng"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "aircrack-ng --help",
       "versionCommand": "aircrack-ng --version",
       "repair": "brew reinstall aircrack-ng",
@@ -361,6 +365,10 @@
         "id": "aircrack-ng"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "wireshark",
+        "tcpdump"
+      ],
       "homepage": "https://www.aircrack-ng.org",
       "repository": "https://github.com/aircrack-ng/aircrack-ng",
       "license": "GPL-2.0",
@@ -377,10 +385,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "wireshark",
-        "tcpdump"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -405,6 +409,7 @@
         "id": "alacritty"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Alacritty.app'",
       "versionCommand": "alacritty --version",
       "repair": "brew reinstall --cask alacritty",
@@ -414,6 +419,11 @@
         "id": "alacritty"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "kitty",
+        "wezterm",
+        "iterm2"
+      ],
       "homepage": "https://alacritty.org",
       "repository": "https://github.com/alacritty/alacritty",
       "license": "Apache-2.0",
@@ -428,11 +438,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "kitty",
-        "wezterm",
-        "iterm2"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -459,6 +464,7 @@
       "dependencies": [
         "java"
       ],
+      "conflicts": [],
       "validate": "test -d '/Applications/Android Studio.app'",
       "versionCommand": "ls /Applications | grep 'Android Studio'",
       "repair": "brew reinstall --cask android-studio",
@@ -468,6 +474,10 @@
         "id": "android-studio"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "genymotion",
+        "scrcpy"
+      ],
       "homepage": "https://developer.android.com/studio",
       "repository": "https://android.googlesource.com/platform/tools/adt/idea",
       "license": "Apache-2.0",
@@ -483,10 +493,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "genymotion",
-        "scrcpy"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -501,12 +507,15 @@
       "category": "languages",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -515,6 +524,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "ng version",
       "versionCommand": "ng version",
       "repair": "npm install -g @angular/cli@latest",
@@ -539,7 +549,21 @@
         "angular"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05"
+      "lastVerified": "2026-07-05",
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "@angular/cli"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "@angular/cli"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "@angular/cli"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -565,6 +589,7 @@
       "dependencies": [
         "python"
       ],
+      "conflicts": [],
       "validate": "ansible --version",
       "versionCommand": "ansible --version",
       "repair": "brew reinstall ansible",
@@ -574,6 +599,9 @@
         "id": "ansible"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "terraform"
+      ],
       "homepage": "https://www.ansible.com",
       "repository": "https://github.com/ansible/ansible",
       "license": "GPL-3.0",
@@ -589,9 +617,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "terraform"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -624,6 +649,7 @@
         "id": "arangodb"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "arangod --version",
       "versionCommand": "arangod --version",
       "repair": "brew reinstall --cask arangodb",
@@ -633,6 +659,10 @@
         "id": "arangodb"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "mongodb",
+        "neo4j"
+      ],
       "homepage": "https://arangodb.com",
       "repository": "https://github.com/arangodb/arangodb",
       "license": "BUSL-1.1",
@@ -649,10 +679,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "mongodb",
-        "neo4j"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -677,6 +703,7 @@
         "id": "arc"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Arc.app'",
       "versionCommand": "arc --version",
       "repair": "brew reinstall --cask arc",
@@ -686,6 +713,11 @@
         "id": "arc"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "brave",
+        "firefox",
+        "chrome"
+      ],
       "homepage": "https://arc.net",
       "repository": "https://arc.net",
       "license": "proprietary",
@@ -700,11 +732,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "brave",
-        "firefox",
-        "chrome"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -731,6 +758,7 @@
         "id": "arduino-cli"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "arduino-cli version",
       "versionCommand": "arduino-cli version",
       "repair": "brew reinstall arduino-cli",
@@ -740,6 +768,9 @@
         "id": "arduino-cli"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "platformio"
+      ],
       "homepage": "https://arduino.github.io/arduino-cli",
       "repository": "https://github.com/arduino/arduino-cli",
       "license": "GPL-3.0",
@@ -755,9 +786,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "platformio"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -786,6 +814,7 @@
         "id": "asdf"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "asdf --version",
       "versionCommand": "asdf --version",
       "repair": "brew reinstall asdf",
@@ -795,6 +824,10 @@
         "id": "asdf"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "volta",
+        "sdkman"
+      ],
       "homepage": "https://asdf-vm.com",
       "repository": "https://github.com/asdf-vm/asdf",
       "license": "MIT",
@@ -809,10 +842,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "volta",
-        "sdkman"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -843,6 +872,7 @@
         "id": "atuin"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "atuin --version",
       "versionCommand": "atuin --version",
       "repair": "brew reinstall atuin",
@@ -852,6 +882,9 @@
         "id": "atuin"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "fzf"
+      ],
       "homepage": "https://atuin.sh",
       "repository": "https://github.com/atuinsh/atuin",
       "license": "MIT",
@@ -867,9 +900,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-06",
-      "recommendedAlternatives": [
-        "fzf"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -896,6 +926,7 @@
         "id": "awscli"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "aws --version",
       "versionCommand": "aws --version",
       "repair": "brew reinstall awscli",
@@ -905,6 +936,10 @@
         "id": "awscli"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "gcloud",
+        "azure-cli"
+      ],
       "homepage": "https://aws.amazon.com/cli",
       "repository": "https://github.com/aws/aws-cli",
       "license": "Apache-2.0",
@@ -919,10 +954,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "gcloud",
-        "azure-cli"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -949,6 +980,7 @@
         "id": "azure-cli"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "az --version",
       "versionCommand": "az --version",
       "repair": "brew reinstall azure-cli",
@@ -958,6 +990,10 @@
         "id": "azure-cli"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "aws-cli",
+        "gcloud"
+      ],
       "homepage": "https://learn.microsoft.com/cli/azure",
       "repository": "https://github.com/Azure/azure-cli",
       "license": "MIT",
@@ -972,10 +1008,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "aws-cli",
-        "gcloud"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -1005,6 +1037,7 @@
         "id": "bat"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "bat --version",
       "versionCommand": "bat --version",
       "repair": "brew reinstall bat",
@@ -1063,6 +1096,7 @@
         "id": "bazelisk"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "bazel --version",
       "versionCommand": "bazelisk version",
       "repair": "brew reinstall bazelisk",
@@ -1113,6 +1147,7 @@
         "id": "bind"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "dig -v",
       "versionCommand": "named -v",
       "repair": "brew reinstall bind",
@@ -1163,6 +1198,7 @@
         "id": "binwalk"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "binwalk --help",
       "versionCommand": "binwalk --version",
       "repair": "brew reinstall binwalk",
@@ -1211,6 +1247,7 @@
         "id": "blender"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Blender.app'",
       "versionCommand": "blender --version",
       "repair": "brew reinstall --cask blender",
@@ -1259,6 +1296,7 @@
         "id": "brave-browser"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Brave Browser.app'",
       "versionCommand": "ls /Applications | grep Brave",
       "repair": "brew reinstall --cask brave-browser",
@@ -1268,6 +1306,11 @@
         "id": "brave-browser"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "firefox",
+        "chrome",
+        "edge"
+      ],
       "homepage": "https://brave.com",
       "repository": "https://github.com/brave/brave-browser",
       "license": "MPL-2.0",
@@ -1282,11 +1325,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "firefox",
-        "chrome",
-        "edge"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -1312,6 +1350,7 @@
         "command": "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "brew --version",
       "versionCommand": "brew --version",
       "repair": "brew doctor",
@@ -1357,6 +1396,7 @@
         "id": "btop"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "btop --version",
       "versionCommand": "btop --version",
       "repair": "brew reinstall btop",
@@ -1366,6 +1406,10 @@
         "id": "btop"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "htop",
+        "glances"
+      ],
       "homepage": "https://github.com/aristocratos/btop",
       "repository": "https://github.com/aristocratos/btop",
       "license": "Apache-2.0",
@@ -1381,10 +1425,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "htop",
-        "glances"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -1415,6 +1455,7 @@
         "id": "buildah"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "buildah --version",
       "versionCommand": "buildah --version",
       "repair": "brew reinstall buildah",
@@ -1464,6 +1505,7 @@
         "id": "buildkite-agent"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "buildkite-agent --version",
       "versionCommand": "buildkite-agent --version",
       "repair": "brew reinstall buildkite-agent",
@@ -1473,6 +1515,10 @@
         "id": "buildkite-agent"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "github-cli",
+        "gitlab-runner"
+      ],
       "homepage": "https://buildkite.com/docs/agent",
       "repository": "https://github.com/buildkite/agent",
       "license": "MIT",
@@ -1487,10 +1533,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "github-cli",
-        "gitlab-runner"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -1517,6 +1559,7 @@
         "command": "curl -fsSL https://bun.sh/install | bash"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "bun --version",
       "versionCommand": "bun --version",
       "repair": "bun upgrade",
@@ -1526,6 +1569,9 @@
         "command": "rm -rf \"$HOME/.bun\""
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "node"
+      ],
       "homepage": "https://bun.sh",
       "repository": "https://github.com/oven-sh/bun",
       "license": "MIT",
@@ -1540,10 +1586,7 @@
         "bunjs"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "node"
-      ]
+      "lastVerified": "2026-07-05"
     },
     {
       "schemaVersion": 1,
@@ -1562,6 +1605,7 @@
         "id": "burp-suite"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Burp Suite Community Edition.app'",
       "versionCommand": "ls /Applications | grep Burp",
       "repair": "brew reinstall --cask burp-suite",
@@ -1571,6 +1615,10 @@
         "id": "burp-suite"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "metasploit",
+        "nikto"
+      ],
       "homepage": "https://portswigger.net/burp",
       "repository": "https://portswigger.net/burp",
       "license": "proprietary",
@@ -1586,10 +1634,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "metasploit",
-        "nikto"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -1615,6 +1659,7 @@
         "command": "xcode-select --install"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "clang --version",
       "versionCommand": "gcc --version",
       "repair": "xcode-select --install",
@@ -1658,6 +1703,7 @@
         "id": "caddy"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "caddy version",
       "versionCommand": "caddy version",
       "repair": "brew reinstall caddy",
@@ -1667,6 +1713,9 @@
         "id": "caddy"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "nginx"
+      ],
       "homepage": "https://caddyserver.com",
       "repository": "https://github.com/caddyserver/caddy",
       "license": "Apache-2.0",
@@ -1681,9 +1730,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "nginx"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -1712,6 +1758,7 @@
       "dependencies": [
         "rust"
       ],
+      "conflicts": [],
       "validate": "cargo --version",
       "versionCommand": "cargo --version",
       "repair": "rustup component add cargo",
@@ -1721,6 +1768,10 @@
         "command": "echo 'cargo ships with Rust - remove Rust to remove cargo'"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "go",
+        "npm"
+      ],
       "homepage": "https://doc.rust-lang.org/cargo",
       "repository": "https://github.com/rust-lang/cargo",
       "license": "MIT",
@@ -1734,11 +1785,7 @@
         "cargo-rs"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "go",
-        "npm"
-      ]
+      "lastVerified": "2026-07-05"
     },
     {
       "schemaVersion": 1,
@@ -1757,6 +1804,7 @@
         "id": "font-cascadia-code"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -n \"$(find /Library/Fonts \"$HOME/Library/Fonts\" -iname '*CascadiaCode*' -print -quit 2>/dev/null)\"",
       "versionCommand": "ls ~/Library/Fonts | grep -i cascadia",
       "repair": "brew reinstall --cask font-cascadia-code",
@@ -1806,6 +1854,7 @@
       "dependencies": [
         "java"
       ],
+      "conflicts": [],
       "validate": "cassandra -v",
       "versionCommand": "cassandra --version",
       "repair": "brew reinstall cassandra",
@@ -1815,6 +1864,10 @@
         "id": "cassandra"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "mongodb",
+        "arangodb"
+      ],
       "homepage": "https://cassandra.apache.org",
       "repository": "https://github.com/apache/cassandra",
       "license": "Apache-2.0",
@@ -1830,10 +1883,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "mongodb",
-        "arangodb"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -1860,6 +1909,7 @@
         "id": "certbot"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "certbot --version",
       "versionCommand": "certbot --version",
       "repair": "brew reinstall certbot",
@@ -1869,6 +1919,9 @@
         "id": "certbot"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "mkcert"
+      ],
       "homepage": "https://certbot.eff.org",
       "repository": "https://github.com/certbot/certbot",
       "license": "Apache-2.0",
@@ -1884,9 +1937,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "mkcert"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -1901,12 +1951,15 @@
       "category": "databases",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "pip",
@@ -1915,6 +1968,7 @@
       "dependencies": [
         "python"
       ],
+      "conflicts": [],
       "validate": "chroma --version",
       "versionCommand": "chroma --version",
       "repair": "pip install --upgrade chromadb",
@@ -1924,6 +1978,9 @@
         "id": "chromadb"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "qdrant"
+      ],
       "homepage": "https://www.trychroma.com",
       "repository": "https://github.com/chroma-core/chroma",
       "license": "Apache-2.0",
@@ -1939,9 +1996,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "qdrant"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "pip",
+          "id": "chromadb"
+        },
+        "linux": {
+          "method": "pip",
+          "id": "chromadb"
+        },
+        "windows": {
+          "method": "pip",
+          "id": "chromadb"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -1960,6 +2028,7 @@
         "id": "google-chrome"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Google Chrome.app'",
       "versionCommand": "ls /Applications | grep 'Google Chrome'",
       "repair": "brew reinstall --cask google-chrome",
@@ -1969,6 +2038,11 @@
         "id": "google-chrome"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "firefox",
+        "brave",
+        "edge"
+      ],
       "homepage": "https://www.google.com/chrome",
       "repository": "https://chromium.googlesource.com/chromium/src",
       "license": "proprietary",
@@ -1983,11 +2057,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "firefox",
-        "brave",
-        "edge"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -2014,6 +2083,7 @@
         "id": "circleci"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "circleci version",
       "versionCommand": "circleci version",
       "repair": "brew reinstall circleci",
@@ -2023,6 +2093,10 @@
         "id": "circleci"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "github-cli",
+        "gitlab-runner"
+      ],
       "homepage": "https://circleci.com/docs/local-cli",
       "repository": "https://github.com/CircleCI-Public/circleci-cli",
       "license": "MIT",
@@ -2037,10 +2111,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "github-cli",
-        "gitlab-runner"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -2055,12 +2125,15 @@
       "category": "ai",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -2069,6 +2142,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "claude --version",
       "versionCommand": "claude --version",
       "repair": "npm install -g @anthropic-ai/claude-code@latest",
@@ -2078,6 +2152,10 @@
         "id": "@anthropic-ai/claude-code"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "aider",
+        "continue"
+      ],
       "homepage": "https://claude.com/claude-code",
       "repository": "https://github.com/anthropics/claude-code",
       "license": "proprietary",
@@ -2093,10 +2171,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "aider",
-        "continue"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "@anthropic-ai/claude-code"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "@anthropic-ai/claude-code"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "@anthropic-ai/claude-code"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -2115,6 +2203,7 @@
         "id": "clickhouse"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "clickhouse --version",
       "versionCommand": "clickhouse-client --version",
       "repair": "brew reinstall clickhouse",
@@ -2124,6 +2213,10 @@
         "id": "clickhouse"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "duckdb",
+        "postgres"
+      ],
       "homepage": "https://clickhouse.com",
       "repository": "https://github.com/ClickHouse/ClickHouse",
       "license": "Apache-2.0",
@@ -2139,10 +2232,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "duckdb",
-        "postgres"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -2171,6 +2260,7 @@
       "dependencies": [
         "java"
       ],
+      "conflicts": [],
       "validate": "clojure --version",
       "versionCommand": "clojure --version",
       "repair": "brew reinstall clojure",
@@ -2180,6 +2270,10 @@
         "id": "clojure"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "scala",
+        "kotlin"
+      ],
       "homepage": "https://clojure.org",
       "repository": "https://github.com/clojure/clojure",
       "license": "EPL-1.0",
@@ -2195,10 +2289,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "scala",
-        "kotlin"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -2225,6 +2315,7 @@
         "id": "cloudflared"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "cloudflared --version",
       "versionCommand": "cloudflared --version",
       "repair": "brew reinstall cloudflared",
@@ -2234,6 +2325,10 @@
         "id": "cloudflared"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "vercel",
+        "netlify"
+      ],
       "homepage": "https://developers.cloudflare.com/cloudflare-one/connections/connect-networks",
       "repository": "https://github.com/cloudflare/cloudflared",
       "license": "Apache-2.0",
@@ -2249,10 +2344,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "vercel",
-        "netlify"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -2282,6 +2373,7 @@
         "id": "cmake"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "cmake --version",
       "versionCommand": "cmake --version",
       "repair": "brew reinstall cmake",
@@ -2291,6 +2383,10 @@
         "id": "cmake"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "meson",
+        "ninja"
+      ],
       "homepage": "https://cmake.org",
       "repository": "https://gitlab.kitware.com/cmake/cmake",
       "license": "BSD-3-Clause",
@@ -2306,10 +2402,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "meson",
-        "ninja"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -2345,6 +2437,7 @@
         "tap": "cockroachdb/tap"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "cockroach version",
       "versionCommand": "cockroach version",
       "repair": "brew reinstall cockroachdb/tap/cockroach",
@@ -2355,6 +2448,10 @@
         "tap": "cockroachdb/tap"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "postgres",
+        "mysql"
+      ],
       "homepage": "https://www.cockroachlabs.com",
       "repository": "https://github.com/cockroachdb/cockroach",
       "license": "BUSL-1.1",
@@ -2370,10 +2467,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "postgres",
-        "mysql"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -2401,6 +2494,7 @@
       "dependencies": [
         "ruby"
       ],
+      "conflicts": [],
       "validate": "pod --version",
       "versionCommand": "pod --version",
       "repair": "brew reinstall cocoapods",
@@ -2449,6 +2543,7 @@
         "id": "colima"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "colima version",
       "versionCommand": "colima version",
       "repair": "brew reinstall colima",
@@ -2458,6 +2553,10 @@
         "id": "colima"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "docker",
+        "lima"
+      ],
       "homepage": "https://github.com/abiosoft/colima",
       "repository": "https://github.com/abiosoft/colima",
       "license": "MIT",
@@ -2473,10 +2572,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "docker",
-        "lima"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -2505,6 +2600,7 @@
       "dependencies": [
         "php"
       ],
+      "conflicts": [],
       "validate": "composer --version",
       "versionCommand": "composer --version",
       "repair": "brew reinstall composer",
@@ -2514,6 +2610,10 @@
         "id": "composer"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "npm",
+        "pip"
+      ],
       "homepage": "https://getcomposer.org",
       "repository": "https://github.com/composer/composer",
       "license": "MIT",
@@ -2528,10 +2628,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "npm",
-        "pip"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -2559,6 +2655,7 @@
         "tap": "hashicorp/tap"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "consul version",
       "versionCommand": "consul version",
       "repair": "brew reinstall hashicorp/tap/consul",
@@ -2569,6 +2666,10 @@
         "tap": "hashicorp/tap"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "vault",
+        "nomad"
+      ],
       "homepage": "https://www.consul.io",
       "repository": "https://github.com/hashicorp/consul",
       "license": "BUSL-1.1",
@@ -2585,10 +2686,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "vault",
-        "nomad"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -2617,6 +2714,7 @@
       "dependencies": [
         "vscode"
       ],
+      "conflicts": [],
       "validate": "code --list-extensions | grep -q continue.continue",
       "versionCommand": "continue --version",
       "repair": "code --install-extension continue.continue --force",
@@ -2626,6 +2724,10 @@
         "command": "code --uninstall-extension continue.continue"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "aider",
+        "cursor"
+      ],
       "homepage": "https://continue.dev",
       "repository": "https://github.com/continuedev/continue",
       "license": "Apache-2.0",
@@ -2639,11 +2741,7 @@
         "continue-dev"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "aider",
-        "cursor"
-      ]
+      "lastVerified": "2026-07-05"
     },
     {
       "schemaVersion": 1,
@@ -2664,6 +2762,7 @@
         "id": "cosign"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "cosign version",
       "versionCommand": "cosign version",
       "repair": "brew reinstall cosign",
@@ -2673,6 +2772,9 @@
         "id": "cosign"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "gnupg"
+      ],
       "homepage": "https://docs.sigstore.dev/cosign/overview",
       "repository": "https://github.com/sigstore/cosign",
       "license": "Apache-2.0",
@@ -2688,9 +2790,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "gnupg"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -2717,6 +2816,7 @@
         "id": "gcc"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "g++ --version",
       "versionCommand": "g++ --version",
       "repair": "brew reinstall gcc",
@@ -2766,6 +2866,7 @@
         "id": "dotnet-sdk"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "dotnet --version",
       "versionCommand": "dotnet --version",
       "repair": "brew reinstall --cask dotnet-sdk",
@@ -2786,7 +2887,6 @@
       ],
       "aliases": [
         "dotnet",
-        "csharp",
         "c#"
       ],
       "stability": "stable",
@@ -2818,17 +2918,8 @@
         "method": "brew-formula",
         "id": "curl"
       },
-      "platformInstall": {
-        "macos": {
-          "method": "brew-formula",
-          "id": "curl"
-        },
-        "linux": {
-          "method": "apt",
-          "id": "curl"
-        }
-      },
       "dependencies": [],
+      "conflicts": [],
       "validate": "curl --version",
       "versionCommand": "curl --version",
       "repair": "brew reinstall curl",
@@ -2838,6 +2929,10 @@
         "id": "curl"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "wget",
+        "httpie"
+      ],
       "homepage": "https://curl.se",
       "repository": "https://github.com/curl/curl",
       "license": "curl",
@@ -2853,10 +2948,16 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "wget",
-        "httpie"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "brew-formula",
+          "id": "curl"
+        },
+        "linux": {
+          "method": "apt",
+          "id": "curl"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -2875,6 +2976,7 @@
         "id": "cursor"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Cursor.app'",
       "versionCommand": "ls /Applications | grep Cursor",
       "repair": "brew reinstall --cask cursor",
@@ -2884,6 +2986,11 @@
         "id": "cursor"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "vscode",
+        "windsurf",
+        "zed"
+      ],
       "homepage": "https://www.cursor.com",
       "repository": "https://github.com/getcursor/cursor",
       "license": "proprietary",
@@ -2899,11 +3006,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "vscode",
-        "windsurf",
-        "zed"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -2918,12 +3020,15 @@
       "category": "testing",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -2932,6 +3037,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "cypress --version",
       "versionCommand": "cypress --version",
       "repair": "npm install -g cypress@latest",
@@ -2941,6 +3047,9 @@
         "id": "cypress"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "playwright"
+      ],
       "homepage": "https://www.cypress.io",
       "repository": "https://github.com/cypress-io/cypress",
       "license": "MIT",
@@ -2956,9 +3065,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "playwright"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "cypress"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "cypress"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "cypress"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -2979,6 +3099,7 @@
         "id": "dart"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "dart --version",
       "versionCommand": "dart --version",
       "repair": "brew reinstall dart",
@@ -2988,6 +3109,9 @@
         "id": "dart"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "kotlin"
+      ],
       "homepage": "https://dart.dev",
       "repository": "https://github.com/dart-lang/sdk",
       "license": "BSD-3-Clause",
@@ -3002,9 +3126,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "kotlin"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -3031,6 +3152,7 @@
         "id": "difftastic"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "difft --version",
       "versionCommand": "difft --version",
       "repair": "brew reinstall difftastic",
@@ -3080,6 +3202,7 @@
         "id": "direnv"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "direnv --version",
       "versionCommand": "direnv --version",
       "repair": "brew reinstall direnv",
@@ -3089,6 +3212,9 @@
         "id": "direnv"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "asdf"
+      ],
       "homepage": "https://direnv.net",
       "repository": "https://github.com/direnv/direnv",
       "license": "MIT",
@@ -3104,9 +3230,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "asdf"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -3135,6 +3258,7 @@
       "dependencies": [
         "docker"
       ],
+      "conflicts": [],
       "validate": "dive --version",
       "versionCommand": "dive --version",
       "repair": "brew reinstall dive",
@@ -3198,6 +3322,10 @@
             "windows": {
               "method": "winget",
               "id": "Docker.DockerDesktop"
+            },
+            "linux": {
+              "unsupported": true,
+              "reason": "Docker Desktop for Linux has no single-command Homebrew/apt/dnf/pacman install (it ships as a manually-downloaded .deb/.rpm from docker.com) - use the docker-engine variant instead for a real package-manager-driven install."
             }
           }
         },
@@ -3207,6 +3335,12 @@
           "install": {
             "method": "brew-formula",
             "id": "colima"
+          },
+          "platformInstall": {
+            "windows": {
+              "unsupported": true,
+              "reason": "Colima is built on Lima, which only supports macOS and Linux hosts - there is no Windows port."
+            }
           }
         },
         {
@@ -3215,10 +3349,35 @@
           "install": {
             "method": "apt",
             "id": "docker-ce"
+          },
+          "platformInstall": {
+            "linux": [
+              {
+                "method": "apt",
+                "id": "docker-ce"
+              },
+              {
+                "method": "dnf",
+                "id": "docker-ce"
+              },
+              {
+                "method": "pacman",
+                "id": "docker"
+              }
+            ],
+            "macos": {
+              "unsupported": true,
+              "reason": "Docker Engine (dockerd) requires the Linux kernel's native cgroups/namespaces - it cannot run directly on macOS. Use the docker-desktop variant, which runs a Linux VM under the hood."
+            },
+            "windows": {
+              "unsupported": true,
+              "reason": "Docker Engine on Windows requires WSL2 as a Linux host, not a direct winget/choco/scoop install - use the docker-desktop variant, which manages the WSL2 backend automatically."
+            }
           }
         }
       ],
       "dependencies": [],
+      "conflicts": [],
       "validate": "docker info",
       "versionCommand": "docker --version",
       "repair": "brew reinstall --cask docker",
@@ -3273,6 +3432,7 @@
       "dependencies": [
         "docker"
       ],
+      "conflicts": [],
       "validate": "docker-compose --version",
       "versionCommand": "docker compose version",
       "repair": "brew reinstall docker-compose",
@@ -3330,6 +3490,7 @@
         "id": "doctl"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "doctl version",
       "versionCommand": "doctl version",
       "repair": "brew reinstall doctl",
@@ -3339,6 +3500,10 @@
         "id": "doctl"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "aws-cli",
+        "gcloud"
+      ],
       "homepage": "https://docs.digitalocean.com/reference/doctl",
       "repository": "https://github.com/digitalocean/doctl",
       "license": "Apache-2.0",
@@ -3353,10 +3518,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "aws-cli",
-        "gcloud"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -3383,6 +3544,7 @@
         "id": "duckdb"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "duckdb --version",
       "versionCommand": "duckdb --version",
       "repair": "brew reinstall duckdb",
@@ -3392,6 +3554,10 @@
         "id": "duckdb"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "sqlite",
+        "postgres"
+      ],
       "homepage": "https://duckdb.org",
       "repository": "https://github.com/duckdb/duckdb",
       "license": "MIT",
@@ -3408,10 +3574,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "sqlite",
-        "postgres"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -3436,6 +3598,7 @@
         "id": "microsoft-edge"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Microsoft Edge.app'",
       "versionCommand": "ls /Applications | grep Edge",
       "repair": "brew reinstall --cask microsoft-edge",
@@ -3445,6 +3608,11 @@
         "id": "microsoft-edge"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "firefox",
+        "brave",
+        "chrome"
+      ],
       "homepage": "https://www.microsoft.com/edge",
       "repository": "https://www.microsoft.com/edge",
       "license": "proprietary",
@@ -3459,11 +3627,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "firefox",
-        "brave",
-        "chrome"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -3490,6 +3653,7 @@
       "dependencies": [
         "java"
       ],
+      "conflicts": [],
       "validate": "elasticsearch --version",
       "versionCommand": "elasticsearch --version",
       "repair": "brew services restart elasticsearch",
@@ -3530,12 +3694,15 @@
       "category": "desktop",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -3544,6 +3711,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "electron --version",
       "versionCommand": "electron --version",
       "repair": "npm install -g electron@latest",
@@ -3553,6 +3721,9 @@
         "id": "electron"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "tauri-cli"
+      ],
       "homepage": "https://www.electronjs.org",
       "repository": "https://github.com/electron/electron",
       "license": "MIT",
@@ -3567,9 +3738,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "tauri-cli"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "electron"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "electron"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "electron"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -3590,6 +3772,7 @@
         "id": "elixir"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "elixir --version",
       "versionCommand": "elixir --version",
       "repair": "brew reinstall elixir",
@@ -3643,6 +3826,7 @@
         "id": "emacs"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "emacs --version",
       "versionCommand": "emacs --version",
       "repair": "brew reinstall emacs",
@@ -3652,6 +3836,9 @@
         "id": "emacs"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "neovim"
+      ],
       "homepage": "https://www.gnu.org/software/emacs",
       "repository": "https://git.savannah.gnu.org/cgit/emacs.git",
       "license": "GPL-3.0",
@@ -3666,9 +3853,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "neovim"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -3703,6 +3887,7 @@
         "id": "entr"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "entr -v",
       "versionCommand": "entr --version",
       "repair": "brew reinstall entr",
@@ -3712,6 +3897,9 @@
         "id": "entr"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "watchexec"
+      ],
       "homepage": "https://eradman.com/entrproject",
       "repository": "https://github.com/eradman/entr",
       "license": "ISC",
@@ -3727,9 +3915,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "watchexec"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -3744,12 +3929,15 @@
       "category": "code-quality",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -3758,6 +3946,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "eslint --version",
       "versionCommand": "eslint --version",
       "repair": "npm install -g eslint@latest",
@@ -3781,7 +3970,21 @@
         "eslint-cli"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05"
+      "lastVerified": "2026-07-05",
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "eslint"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "eslint"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "eslint"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -3790,12 +3993,15 @@
       "category": "embedded",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "pip",
@@ -3804,6 +4010,7 @@
       "dependencies": [
         "python"
       ],
+      "conflicts": [],
       "validate": "esptool.py version",
       "versionCommand": "esptool.py version",
       "repair": "pip install --upgrade esptool",
@@ -3813,6 +4020,9 @@
         "id": "esptool"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "platformio"
+      ],
       "homepage": "https://docs.espressif.com/projects/esptool",
       "repository": "https://github.com/espressif/esptool",
       "license": "GPL-2.0",
@@ -3827,9 +4037,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "platformio"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "pip",
+          "id": "esptool"
+        },
+        "linux": {
+          "method": "pip",
+          "id": "esptool"
+        },
+        "windows": {
+          "method": "pip",
+          "id": "esptool"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -3850,6 +4071,7 @@
         "id": "exiftool"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "exiftool -ver",
       "versionCommand": "exiftool --ver",
       "repair": "brew reinstall exiftool",
@@ -3859,6 +4081,9 @@
         "id": "exiftool"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "imagemagick"
+      ],
       "homepage": "https://exiftool.org",
       "repository": "https://github.com/exiftool/exiftool",
       "license": "Artistic-2.0",
@@ -3874,9 +4099,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "imagemagick"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -3905,6 +4127,7 @@
         "id": "eza"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "eza --version",
       "versionCommand": "eza --version",
       "repair": "brew reinstall eza",
@@ -3914,6 +4137,9 @@
         "id": "eza"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "bat"
+      ],
       "homepage": "https://eza.rocks",
       "repository": "https://github.com/eza-community/eza",
       "license": "MIT",
@@ -3928,9 +4154,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "bat"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -3961,6 +4184,7 @@
       "dependencies": [
         "ruby"
       ],
+      "conflicts": [],
       "validate": "fastlane --version",
       "versionCommand": "fastlane --version",
       "repair": "brew reinstall fastlane",
@@ -3970,6 +4194,9 @@
         "id": "fastlane"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "xcodegen"
+      ],
       "homepage": "https://fastlane.tools",
       "repository": "https://github.com/fastlane/fastlane",
       "license": "MIT",
@@ -3985,9 +4212,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "xcodegen"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -4017,6 +4241,7 @@
         "id": "fd"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "fd --version",
       "versionCommand": "fd --version",
       "repair": "brew reinstall fd",
@@ -4026,6 +4251,9 @@
         "id": "fd"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "fzf"
+      ],
       "homepage": "https://github.com/sharkdp/fd",
       "repository": "https://github.com/sharkdp/fd",
       "license": "MIT",
@@ -4041,9 +4269,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "fzf"
-      ],
       "ciVerified": true,
       "platformInstall": {
         "macos": {
@@ -4082,6 +4307,7 @@
         "id": "ffmpeg"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "ffmpeg -version",
       "versionCommand": "ffmpeg -version",
       "repair": "brew reinstall ffmpeg",
@@ -4091,6 +4317,10 @@
         "id": "ffmpeg"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "imagemagick",
+        "sox"
+      ],
       "homepage": "https://ffmpeg.org",
       "repository": "https://github.com/FFmpeg/FFmpeg",
       "license": "LGPL-2.1",
@@ -4107,10 +4337,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "imagemagick",
-        "sox"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -4143,6 +4369,7 @@
         "id": "figma"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Figma.app'",
       "versionCommand": "ls /Applications | grep Figma",
       "repair": "brew reinstall --cask figma",
@@ -4190,6 +4417,7 @@
         "id": "font-fira-code"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -n \"$(find /Library/Fonts \"$HOME/Library/Fonts\" -iname '*FiraCode*' -print -quit 2>/dev/null)\"",
       "versionCommand": "ls ~/Library/Fonts | grep -i 'Fira Code'",
       "repair": "brew reinstall --cask font-fira-code",
@@ -4240,6 +4468,7 @@
         "id": "firebase-cli"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "firebase --version",
       "versionCommand": "firebase --version",
       "repair": "brew reinstall firebase-cli",
@@ -4249,6 +4478,9 @@
         "id": "firebase-cli"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "supabase"
+      ],
       "homepage": "https://firebase.google.com/docs/cli",
       "repository": "https://github.com/firebase/firebase-tools",
       "license": "MIT",
@@ -4264,9 +4496,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "supabase"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -4291,6 +4520,7 @@
         "id": "firefox"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Firefox.app'",
       "versionCommand": "ls /Applications | grep Firefox",
       "repair": "brew reinstall --cask firefox",
@@ -4300,6 +4530,11 @@
         "id": "firefox"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "brave",
+        "chrome",
+        "edge"
+      ],
       "homepage": "https://www.mozilla.org/firefox",
       "repository": "https://github.com/mozilla/gecko-dev",
       "license": "MPL-2.0",
@@ -4314,11 +4549,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "brave",
-        "chrome",
-        "edge"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -4345,6 +4575,7 @@
       "dependencies": [
         "dart"
       ],
+      "conflicts": [],
       "validate": "flutter doctor",
       "versionCommand": "flutter --version",
       "repair": "flutter doctor --android-licenses",
@@ -4395,6 +4626,7 @@
         "id": "flyctl"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "flyctl version",
       "versionCommand": "flyctl version",
       "repair": "brew reinstall flyctl",
@@ -4404,6 +4636,10 @@
         "id": "flyctl"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "railway",
+        "vercel"
+      ],
       "homepage": "https://fly.io",
       "repository": "https://github.com/superfly/flyctl",
       "license": "Apache-2.0",
@@ -4420,10 +4656,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "railway",
-        "vercel"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -4453,6 +4685,7 @@
         "id": "fzf"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "fzf --version",
       "versionCommand": "fzf --version",
       "repair": "brew reinstall fzf",
@@ -4511,6 +4744,7 @@
         "id": "google-cloud-sdk"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "gcloud --version",
       "versionCommand": "gcloud --version",
       "repair": "brew reinstall --cask google-cloud-sdk",
@@ -4520,6 +4754,10 @@
         "id": "google-cloud-sdk"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "aws-cli",
+        "azure-cli"
+      ],
       "homepage": "https://cloud.google.com/sdk",
       "repository": "https://github.com/GoogleCloudPlatform/cloud-sdk-docker",
       "license": "Apache-2.0",
@@ -4535,10 +4773,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "aws-cli",
-        "azure-cli"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -4567,6 +4801,7 @@
       "dependencies": [
         "ruby"
       ],
+      "conflicts": [],
       "validate": "gem --version",
       "versionCommand": "gem --version",
       "repair": "gem update --system",
@@ -4576,6 +4811,9 @@
         "command": "echo 'gem ships with Ruby - remove Ruby to remove gem'"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "npm"
+      ],
       "homepage": "https://rubygems.org",
       "repository": "https://github.com/rubygems/rubygems",
       "license": "MIT",
@@ -4589,10 +4827,7 @@
         "rubygems"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "npm"
-      ]
+      "lastVerified": "2026-07-05"
     },
     {
       "schemaVersion": 1,
@@ -4601,12 +4836,15 @@
       "category": "ai",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -4615,6 +4853,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "gemini --version",
       "versionCommand": "gemini --version",
       "repair": "npm install -g @google/gemini-cli@latest",
@@ -4624,6 +4863,10 @@
         "id": "@google/gemini-cli"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "openai-cli",
+        "llm"
+      ],
       "homepage": "https://github.com/google-gemini/gemini-cli",
       "repository": "https://github.com/google-gemini/gemini-cli",
       "license": "Apache-2.0",
@@ -4639,10 +4882,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "openai-cli",
-        "llm"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "@google/gemini-cli"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "@google/gemini-cli"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "@google/gemini-cli"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -4661,6 +4914,7 @@
         "id": "genymotion"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Genymotion.app'",
       "versionCommand": "ls /Applications | grep Genymotion",
       "repair": "brew reinstall --cask genymotion",
@@ -4670,6 +4924,10 @@
         "id": "genymotion"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "android-studio",
+        "scrcpy"
+      ],
       "homepage": "https://www.genymotion.com",
       "repository": "https://www.genymotion.com",
       "license": "proprietary",
@@ -4685,10 +4943,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "android-studio",
-        "scrcpy"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -4715,6 +4969,7 @@
       "dependencies": [
         "java"
       ],
+      "conflicts": [],
       "validate": "test -d '/Applications/ghidra'",
       "versionCommand": "ls /Applications | grep Ghidra",
       "repair": "brew reinstall --cask ghidra",
@@ -4724,6 +4979,9 @@
         "id": "ghidra"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "radare2"
+      ],
       "homepage": "https://ghidra-sre.org",
       "repository": "https://github.com/NationalSecurityAgency/ghidra",
       "license": "Apache-2.0",
@@ -4738,9 +4996,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "radare2"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -4770,6 +5025,7 @@
         "id": "git"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "git --version",
       "versionCommand": "git --version",
       "repair": "brew reinstall git",
@@ -4829,6 +5085,7 @@
       "dependencies": [
         "git"
       ],
+      "conflicts": [],
       "validate": "delta --version",
       "versionCommand": "delta --version",
       "repair": "brew reinstall git-delta",
@@ -4838,6 +5095,9 @@
         "id": "git-delta"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "difftastic"
+      ],
       "homepage": "https://github.com/dandavison/delta",
       "repository": "https://github.com/dandavison/delta",
       "license": "MIT",
@@ -4853,9 +5113,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-06",
-      "recommendedAlternatives": [
-        "difftastic"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -4887,6 +5144,7 @@
       "dependencies": [
         "git"
       ],
+      "conflicts": [],
       "validate": "gh auth status",
       "versionCommand": "gh --version",
       "repair": "gh auth login",
@@ -4896,6 +5154,10 @@
         "id": "gh"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "act",
+        "gitlab-runner"
+      ],
       "homepage": "https://cli.github.com",
       "repository": "https://github.com/cli/cli",
       "license": "MIT",
@@ -4911,10 +5173,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "act",
-        "gitlab-runner"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -4949,6 +5207,7 @@
         "id": "gitlab-runner"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "gitlab-runner --version",
       "versionCommand": "gitlab-runner --version",
       "repair": "brew reinstall gitlab-runner",
@@ -4958,6 +5217,10 @@
         "id": "gitlab-runner"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "circleci",
+        "buildkite-agent"
+      ],
       "homepage": "https://docs.gitlab.com/runner",
       "repository": "https://gitlab.com/gitlab-org/gitlab-runner",
       "license": "MIT",
@@ -4972,10 +5235,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "circleci",
-        "buildkite-agent"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -5002,6 +5261,7 @@
         "id": "glances"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "glances --version",
       "versionCommand": "glances --version",
       "repair": "brew reinstall glances",
@@ -5011,6 +5271,10 @@
         "id": "glances"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "htop",
+        "btop"
+      ],
       "homepage": "https://nicolargo.github.io/glances",
       "repository": "https://github.com/nicolargo/glances",
       "license": "LGPL-3.0",
@@ -5026,10 +5290,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "htop",
-        "btop"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -5056,6 +5316,7 @@
         "id": "glow"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "glow --version",
       "versionCommand": "glow --version",
       "repair": "brew reinstall glow",
@@ -5065,6 +5326,9 @@
         "id": "glow"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "bat"
+      ],
       "homepage": "https://github.com/charmbracelet/glow",
       "repository": "https://github.com/charmbracelet/glow",
       "license": "MIT",
@@ -5080,9 +5344,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "bat"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -5112,6 +5373,7 @@
         "id": "make"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "gmake --version",
       "versionCommand": "make --version",
       "repair": "brew reinstall make",
@@ -5121,6 +5383,10 @@
         "id": "make"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "cmake",
+        "ninja"
+      ],
       "homepage": "https://www.gnu.org/software/make",
       "repository": "https://git.savannah.gnu.org/cgit/make.git",
       "license": "GPL-3.0",
@@ -5137,10 +5403,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "cmake",
-        "ninja"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -5175,6 +5437,7 @@
         "id": "gnupg"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "gpg --version",
       "versionCommand": "gpg --version",
       "repair": "brew reinstall gnupg",
@@ -5184,6 +5447,10 @@
         "id": "gnupg"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "age",
+        "openssl"
+      ],
       "homepage": "https://gnupg.org",
       "repository": "https://dev.gnupg.org/source/gnupg",
       "license": "GPL-3.0",
@@ -5199,10 +5466,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "age",
-        "openssl"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -5232,6 +5495,7 @@
         "id": "go"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "go version",
       "versionCommand": "go version",
       "repair": "brew reinstall go",
@@ -5241,6 +5505,10 @@
         "id": "go"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "rust",
+        "zig"
+      ],
       "homepage": "https://go.dev",
       "repository": "https://github.com/golang/go",
       "license": "BSD-3-Clause",
@@ -5255,10 +5523,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "rust",
-        "zig"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -5272,6 +5536,11 @@
           "method": "winget",
           "id": "GoLang.Go"
         }
+      },
+      "environment": {
+        "path": [
+          "$HOME/go/bin"
+        ]
       }
     },
     {
@@ -5291,6 +5560,7 @@
         "id": "godot"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Godot.app'",
       "versionCommand": "godot --version",
       "repair": "brew reinstall --cask godot",
@@ -5300,6 +5570,9 @@
         "id": "godot"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "unity-hub"
+      ],
       "homepage": "https://godotengine.org",
       "repository": "https://github.com/godotengine/godot",
       "license": "MIT",
@@ -5314,9 +5587,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "unity-hub"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -5345,6 +5615,7 @@
       "dependencies": [
         "go"
       ],
+      "conflicts": [],
       "validate": "golangci-lint --version",
       "versionCommand": "golangci-lint --version",
       "repair": "brew reinstall golangci-lint",
@@ -5397,6 +5668,7 @@
       "dependencies": [
         "java"
       ],
+      "conflicts": [],
       "validate": "gradle --version",
       "versionCommand": "gradle --version",
       "repair": "brew reinstall gradle",
@@ -5406,6 +5678,9 @@
         "id": "gradle"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "maven"
+      ],
       "homepage": "https://gradle.org",
       "repository": "https://github.com/gradle/gradle",
       "license": "Apache-2.0",
@@ -5422,9 +5697,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "maven"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -5451,6 +5723,7 @@
         "id": "grafana"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "grafana-server -v",
       "versionCommand": "grafana-server -v",
       "repair": "brew reinstall grafana",
@@ -5461,6 +5734,10 @@
       },
       "post_install": [
         "brew services start grafana"
+      ],
+      "recommendedAlternatives": [
+        "prometheus",
+        "netdata"
       ],
       "homepage": "https://grafana.com",
       "repository": "https://github.com/grafana/grafana",
@@ -5477,10 +5754,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "prometheus",
-        "netdata"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -5507,6 +5780,7 @@
         "id": "grpcurl"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "grpcurl --version",
       "versionCommand": "grpcurl --version",
       "repair": "brew reinstall grpcurl",
@@ -5556,6 +5830,7 @@
         "id": "gum"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "gum --version",
       "versionCommand": "gum --version",
       "repair": "brew reinstall gum",
@@ -5604,6 +5879,7 @@
         "id": "font-hack"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -n \"$(find /Library/Fonts \"$HOME/Library/Fonts\" -iname '*Hack*' -print -quit 2>/dev/null)\"",
       "versionCommand": "ls ~/Library/Fonts | grep -i Hack",
       "repair": "brew reinstall --cask font-hack",
@@ -5651,6 +5927,7 @@
         "id": "font-hack-nerd-font"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -n \"$(find /Library/Fonts \"$HOME/Library/Fonts\" -iname '*HackNerdFont*' -print -quit 2>/dev/null)\"",
       "versionCommand": "ls ~/Library/Fonts | grep -i 'Hack Nerd'",
       "repair": "brew reinstall --cask font-hack-nerd-font",
@@ -5701,6 +5978,7 @@
         "id": "ghc"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "ghc --version",
       "versionCommand": "ghc --version",
       "repair": "brew reinstall ghc",
@@ -5710,6 +5988,10 @@
         "id": "ghc"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "ocaml",
+        "rust"
+      ],
       "homepage": "https://www.haskell.org",
       "repository": "https://gitlab.haskell.org/ghc/ghc",
       "license": "BSD-3-Clause",
@@ -5724,10 +6006,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "ocaml",
-        "rust"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -5754,6 +6032,7 @@
         "id": "helix"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "hx --version",
       "versionCommand": "hx --version",
       "repair": "brew reinstall helix",
@@ -5763,6 +6042,10 @@
         "id": "helix"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "neovim",
+        "micro"
+      ],
       "homepage": "https://helix-editor.com",
       "repository": "https://github.com/helix-editor/helix",
       "license": "MPL-2.0",
@@ -5778,10 +6061,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "neovim",
-        "micro"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -5813,6 +6092,7 @@
       "dependencies": [
         "kubectl"
       ],
+      "conflicts": [],
       "validate": "helm version",
       "versionCommand": "helm version",
       "repair": "brew reinstall helm",
@@ -5871,6 +6151,7 @@
         "id": "heroku"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "heroku --version",
       "versionCommand": "heroku --version",
       "repair": "brew reinstall heroku",
@@ -5880,6 +6161,10 @@
         "id": "heroku"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "vercel",
+        "railway"
+      ],
       "homepage": "https://devcenter.heroku.com/articles/heroku-cli",
       "repository": "https://github.com/heroku/cli",
       "license": "ISC",
@@ -5895,10 +6180,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "vercel",
-        "railway"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -5928,6 +6209,7 @@
         "id": "htop"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "htop --version",
       "versionCommand": "htop --version",
       "repair": "brew reinstall htop",
@@ -5937,6 +6219,10 @@
         "id": "htop"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "btop",
+        "glances"
+      ],
       "homepage": "https://htop.dev",
       "repository": "https://github.com/htop-dev/htop",
       "license": "GPL-2.0",
@@ -5952,10 +6238,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "btop",
-        "glances"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -5978,12 +6260,15 @@
       "category": "web",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -5992,6 +6277,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "http-server --version",
       "versionCommand": "http-server --version",
       "repair": "npm install -g http-server@latest",
@@ -6014,7 +6300,21 @@
         "http-server-cli"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05"
+      "lastVerified": "2026-07-05",
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "http-server"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "http-server"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "http-server"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -6035,6 +6335,7 @@
         "id": "httpie"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "http --version",
       "versionCommand": "http --version",
       "repair": "brew reinstall httpie",
@@ -6044,6 +6345,10 @@
         "id": "httpie"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "curl",
+        "wget"
+      ],
       "homepage": "https://httpie.io",
       "repository": "https://github.com/httpie/cli",
       "license": "BSD-3-Clause",
@@ -6059,10 +6364,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "curl",
-        "wget"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -6077,12 +6378,15 @@
       "category": "ai",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "pip",
@@ -6091,6 +6395,7 @@
       "dependencies": [
         "python"
       ],
+      "conflicts": [],
       "validate": "huggingface-cli --version",
       "versionCommand": "huggingface-cli --version",
       "repair": "pip install --upgrade huggingface_hub[cli]",
@@ -6100,6 +6405,9 @@
         "id": "huggingface_hub"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "ollama"
+      ],
       "homepage": "https://huggingface.co/docs/huggingface_hub",
       "repository": "https://github.com/huggingface/huggingface_hub",
       "license": "Apache-2.0",
@@ -6116,9 +6424,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "ollama"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "pip",
+          "id": "huggingface_hub[cli]"
+        },
+        "linux": {
+          "method": "pip",
+          "id": "huggingface_hub[cli]"
+        },
+        "windows": {
+          "method": "pip",
+          "id": "huggingface_hub[cli]"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -6139,6 +6458,7 @@
         "id": "hugo"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "hugo version",
       "versionCommand": "hugo version",
       "repair": "brew reinstall hugo",
@@ -6148,6 +6468,10 @@
         "id": "hugo"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "mkdocs",
+        "sphinx"
+      ],
       "homepage": "https://gohugo.io",
       "repository": "https://github.com/gohugoio/hugo",
       "license": "Apache-2.0",
@@ -6163,10 +6487,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "mkdocs",
-        "sphinx"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -6193,6 +6513,7 @@
         "id": "hydra"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "hydra -h",
       "versionCommand": "hydra --version",
       "repair": "brew reinstall hydra",
@@ -6243,6 +6564,7 @@
         "id": "hyperfine"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "hyperfine --version",
       "versionCommand": "hyperfine --version",
       "repair": "brew reinstall hyperfine",
@@ -6291,6 +6613,7 @@
         "id": "font-ibm-plex-mono"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -n \"$(find /Library/Fonts \"$HOME/Library/Fonts\" -iname '*IBMPlexMono*' -print -quit 2>/dev/null)\"",
       "versionCommand": "ls ~/Library/Fonts | grep -i 'IBM Plex'",
       "repair": "brew reinstall --cask font-ibm-plex-mono",
@@ -6343,6 +6666,7 @@
         "id": "imagemagick"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "magick --version",
       "versionCommand": "magick --version",
       "repair": "brew reinstall imagemagick",
@@ -6352,6 +6676,9 @@
         "id": "imagemagick"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "ffmpeg"
+      ],
       "homepage": "https://imagemagick.org",
       "repository": "https://github.com/ImageMagick/ImageMagick",
       "license": "ImageMagick",
@@ -6367,9 +6694,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "ffmpeg"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -6402,6 +6726,7 @@
         "id": "influxdb"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "influxd version",
       "versionCommand": "influx version",
       "repair": "brew services restart influxdb",
@@ -6412,6 +6737,9 @@
       },
       "post_install": [
         "brew services start influxdb"
+      ],
+      "recommendedAlternatives": [
+        "prometheus"
       ],
       "homepage": "https://www.influxdata.com",
       "repository": "https://github.com/influxdata/influxdb",
@@ -6427,9 +6755,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "prometheus"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -6454,6 +6779,7 @@
         "id": "insomnia"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Insomnia.app'",
       "versionCommand": "ls /Applications | grep Insomnia",
       "repair": "brew reinstall --cask insomnia",
@@ -6463,6 +6789,10 @@
         "id": "insomnia"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "postman",
+        "newman"
+      ],
       "homepage": "https://insomnia.rest",
       "repository": "https://github.com/Kong/insomnia",
       "license": "Apache-2.0",
@@ -6478,10 +6808,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "postman",
-        "newman"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -6508,6 +6834,7 @@
         "id": "iperf3"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "iperf3 --version",
       "versionCommand": "iperf3 --version",
       "repair": "brew reinstall iperf3",
@@ -6517,6 +6844,9 @@
         "id": "iperf3"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "speedtest-cli"
+      ],
       "homepage": "https://iperf.fr",
       "repository": "https://github.com/esnet/iperf",
       "license": "BSD-3-Clause",
@@ -6532,9 +6862,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "speedtest-cli"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -6559,6 +6886,7 @@
         "id": "iterm2"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/iTerm.app'",
       "versionCommand": "ls /Applications | grep iTerm",
       "repair": "brew reinstall --cask iterm2",
@@ -6568,6 +6896,11 @@
         "id": "iterm2"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "alacritty",
+        "kitty",
+        "wezterm"
+      ],
       "homepage": "https://iterm2.com",
       "repository": "https://github.com/gnachman/iTerm2",
       "license": "GPL-2.0",
@@ -6582,11 +6915,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "alacritty",
-        "kitty",
-        "wezterm"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -6613,6 +6941,7 @@
         "id": "openjdk"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "java --version",
       "versionCommand": "java --version",
       "repair": "brew reinstall openjdk",
@@ -6642,6 +6971,16 @@
           "method": "brew-formula",
           "id": "openjdk"
         }
+      },
+      "environment": {
+        "path": [
+          "$(brew --prefix openjdk)/bin"
+        ],
+        "variables": {
+          "JAVA_HOME": {
+            "command": "echo $(brew --prefix openjdk)/libexec/openjdk.jdk/Contents/Home"
+          }
+        }
       }
     },
     {
@@ -6661,6 +7000,7 @@
         "id": "font-jetbrains-mono"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -n \"$(find /Library/Fonts \"$HOME/Library/Fonts\" -iname '*JetBrainsMono*' -print -quit 2>/dev/null)\"",
       "versionCommand": "ls ~/Library/Fonts | grep -i 'JetBrains Mono'",
       "repair": "brew reinstall --cask font-jetbrains-mono",
@@ -6708,6 +7048,7 @@
         "id": "jetbrains-toolbox"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/JetBrains Toolbox.app'",
       "versionCommand": "ls /Applications | grep 'JetBrains Toolbox'",
       "repair": "brew reinstall --cask jetbrains-toolbox",
@@ -6758,6 +7099,7 @@
         "id": "john"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "john --help",
       "versionCommand": "john --version",
       "repair": "brew reinstall john",
@@ -6811,6 +7153,7 @@
         "id": "jq"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "jq --version",
       "versionCommand": "jq --version",
       "repair": "brew reinstall jq",
@@ -6820,6 +7163,9 @@
         "id": "jq"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "yq"
+      ],
       "homepage": "https://jqlang.org",
       "repository": "https://github.com/jqlang/jq",
       "license": "MIT",
@@ -6835,9 +7181,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "yq"
-      ],
       "ciVerified": true,
       "platformInstall": {
         "macos": {
@@ -6873,6 +7216,7 @@
         "id": "julia"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "julia --version",
       "versionCommand": "julia --version",
       "repair": "brew reinstall julia",
@@ -6882,6 +7226,10 @@
         "id": "julia"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "python",
+        "r"
+      ],
       "homepage": "https://julialang.org",
       "repository": "https://github.com/JuliaLang/julia",
       "license": "MIT",
@@ -6897,10 +7245,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "python",
-        "r"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -6927,6 +7271,7 @@
         "id": "just"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "just --version",
       "versionCommand": "just --version",
       "repair": "brew reinstall just",
@@ -6936,6 +7281,9 @@
         "id": "just"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "gnu-make"
+      ],
       "homepage": "https://github.com/casey/just",
       "repository": "https://github.com/casey/just",
       "license": "CC0-1.0",
@@ -6951,9 +7299,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-06",
-      "recommendedAlternatives": [
-        "gnu-make"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -6980,6 +7325,7 @@
         "id": "k6"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "k6 version",
       "versionCommand": "k6 version",
       "repair": "brew reinstall k6",
@@ -7032,6 +7378,7 @@
       "dependencies": [
         "kubectl"
       ],
+      "conflicts": [],
       "validate": "k9s version",
       "versionCommand": "k9s version",
       "repair": "brew reinstall k9s",
@@ -7041,6 +7388,10 @@
         "id": "k9s"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "kubectl",
+        "kubectx"
+      ],
       "homepage": "https://k9scli.io",
       "repository": "https://github.com/derailed/k9s",
       "license": "Apache-2.0",
@@ -7055,10 +7406,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "kubectl",
-        "kubectx"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -7087,6 +7434,7 @@
       "dependencies": [
         "docker"
       ],
+      "conflicts": [],
       "validate": "kind version",
       "versionCommand": "kind version",
       "repair": "brew reinstall kind",
@@ -7096,6 +7444,9 @@
         "id": "kind"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "minikube"
+      ],
       "homepage": "https://kind.sigs.k8s.io",
       "repository": "https://github.com/kubernetes-sigs/kind",
       "license": "Apache-2.0",
@@ -7111,9 +7462,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "minikube"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -7138,6 +7486,7 @@
         "id": "kitty"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/kitty.app'",
       "versionCommand": "kitty --version",
       "repair": "brew reinstall --cask kitty",
@@ -7147,6 +7496,11 @@
         "id": "kitty"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "alacritty",
+        "wezterm",
+        "iterm2"
+      ],
       "homepage": "https://sw.kovidgoyal.net/kitty",
       "repository": "https://github.com/kovidgoyal/kitty",
       "license": "GPL-3.0",
@@ -7161,11 +7515,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "alacritty",
-        "wezterm",
-        "iterm2"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -7194,6 +7543,7 @@
       "dependencies": [
         "java"
       ],
+      "conflicts": [],
       "validate": "kotlin -version",
       "versionCommand": "kotlin -version",
       "repair": "brew reinstall kotlin",
@@ -7203,6 +7553,10 @@
         "id": "kotlin"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "scala",
+        "java"
+      ],
       "homepage": "https://kotlinlang.org",
       "repository": "https://github.com/JetBrains/kotlin",
       "license": "Apache-2.0",
@@ -7218,10 +7572,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "scala",
-        "java"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -7248,6 +7598,7 @@
         "id": "kubernetes-cli"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "kubectl version --client",
       "versionCommand": "kubectl version --client",
       "repair": "brew reinstall kubernetes-cli",
@@ -7257,6 +7608,10 @@
         "id": "kubernetes-cli"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "k9s",
+        "kubectx"
+      ],
       "homepage": "https://kubernetes.io/docs/reference/kubectl",
       "repository": "https://github.com/kubernetes/kubectl",
       "license": "Apache-2.0",
@@ -7272,10 +7627,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "k9s",
-        "kubectx"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -7304,6 +7655,7 @@
       "dependencies": [
         "kubectl"
       ],
+      "conflicts": [],
       "validate": "command -v kubectx",
       "versionCommand": "kubectx --version",
       "repair": "brew reinstall kubectx",
@@ -7313,6 +7665,10 @@
         "id": "kubectx"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "kubens",
+        "kubectl"
+      ],
       "homepage": "https://github.com/ahmetb/kubectx",
       "repository": "https://github.com/ahmetb/kubectx",
       "license": "Apache-2.0",
@@ -7327,10 +7683,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "kubens",
-        "kubectl"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -7359,6 +7711,7 @@
       "dependencies": [
         "kubectl"
       ],
+      "conflicts": [],
       "validate": "command -v kubens",
       "versionCommand": "kubens --version",
       "repair": "brew reinstall kubectx",
@@ -7410,6 +7763,7 @@
       "dependencies": [
         "kubectl"
       ],
+      "conflicts": [],
       "validate": "kustomize version",
       "versionCommand": "kustomize version",
       "repair": "brew reinstall kustomize",
@@ -7461,6 +7815,7 @@
       "dependencies": [
         "docker"
       ],
+      "conflicts": [],
       "validate": "lazydocker --version",
       "versionCommand": "lazydocker --version",
       "repair": "brew reinstall lazydocker",
@@ -7470,6 +7825,9 @@
         "id": "lazydocker"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "dive"
+      ],
       "homepage": "https://github.com/jesseduffield/lazydocker",
       "repository": "https://github.com/jesseduffield/lazydocker",
       "license": "MIT",
@@ -7486,9 +7844,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-06",
-      "recommendedAlternatives": [
-        "dive"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -7520,6 +7875,7 @@
       "dependencies": [
         "git"
       ],
+      "conflicts": [],
       "validate": "lazygit --version",
       "versionCommand": "lazygit --version",
       "repair": "brew reinstall lazygit",
@@ -7576,6 +7932,7 @@
         "id": "lima"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "limactl --version",
       "versionCommand": "limactl --version",
       "repair": "brew reinstall lima",
@@ -7585,6 +7942,10 @@
         "id": "lima"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "colima",
+        "docker"
+      ],
       "homepage": "https://lima-vm.io",
       "repository": "https://github.com/lima-vm/lima",
       "license": "Apache-2.0",
@@ -7599,10 +7960,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "colima",
-        "docker"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -7629,6 +7986,7 @@
         "id": "linode-cli"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "linode-cli --version",
       "versionCommand": "linode-cli --version",
       "repair": "brew reinstall linode-cli",
@@ -7638,6 +7996,10 @@
         "id": "linode-cli"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "aws-cli",
+        "gcloud"
+      ],
       "homepage": "https://www.linode.com/docs/products/tools/cli",
       "repository": "https://github.com/linode/linode-cli",
       "license": "Apache-2.0",
@@ -7652,10 +8014,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "aws-cli",
-        "gcloud"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -7682,6 +8040,7 @@
         "id": "llama.cpp"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "llama-cli --version",
       "versionCommand": "llama-cli --version",
       "repair": "brew reinstall llama.cpp",
@@ -7691,6 +8050,9 @@
         "id": "llama.cpp"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "ollama"
+      ],
       "homepage": "https://github.com/ggml-org/llama.cpp",
       "repository": "https://github.com/ggml-org/llama.cpp",
       "license": "MIT",
@@ -7705,9 +8067,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "ollama"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -7722,12 +8081,15 @@
       "category": "ai",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "pip",
@@ -7736,6 +8098,7 @@
       "dependencies": [
         "python"
       ],
+      "conflicts": [],
       "validate": "llm --version",
       "versionCommand": "llm --version",
       "repair": "pip install --upgrade llm",
@@ -7745,6 +8108,10 @@
         "id": "llm"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "openai-cli",
+        "gemini-cli"
+      ],
       "homepage": "https://llm.datasette.io",
       "repository": "https://github.com/simonw/llm",
       "license": "Apache-2.0",
@@ -7760,10 +8127,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "openai-cli",
-        "gemini-cli"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "pip",
+          "id": "llm"
+        },
+        "linux": {
+          "method": "pip",
+          "id": "llm"
+        },
+        "windows": {
+          "method": "pip",
+          "id": "llm"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -7782,6 +8159,7 @@
         "id": "love"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/love.app'",
       "versionCommand": "love --version",
       "repair": "brew reinstall --cask love",
@@ -7791,6 +8169,10 @@
         "id": "love"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "raylib",
+        "godot"
+      ],
       "homepage": "https://love2d.org",
       "repository": "https://github.com/love2d/love",
       "license": "zlib",
@@ -7805,10 +8187,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "raylib",
-        "godot"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -7835,6 +8213,7 @@
         "id": "lua"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "lua -v",
       "versionCommand": "lua -v",
       "repair": "brew reinstall lua",
@@ -7844,6 +8223,10 @@
         "id": "lua"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "python",
+        "ruby"
+      ],
       "homepage": "https://www.lua.org",
       "repository": "https://github.com/lua/lua",
       "license": "MIT",
@@ -7859,10 +8242,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "python",
-        "ruby"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -7901,6 +8280,10 @@
       "post_install": [
         "brew services start mariadb"
       ],
+      "recommendedAlternatives": [
+        "mysql",
+        "postgres"
+      ],
       "homepage": "https://mariadb.org",
       "repository": "https://github.com/MariaDB/server",
       "license": "GPL-2.0",
@@ -7916,10 +8299,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "mysql",
-        "postgres"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -7948,6 +8327,7 @@
       "dependencies": [
         "java"
       ],
+      "conflicts": [],
       "validate": "mvn --version",
       "versionCommand": "mvn --version",
       "repair": "brew reinstall maven",
@@ -7957,6 +8337,9 @@
         "id": "maven"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "gradle"
+      ],
       "homepage": "https://maven.apache.org",
       "repository": "https://github.com/apache/maven",
       "license": "Apache-2.0",
@@ -7972,9 +8355,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "gradle"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -7999,6 +8379,7 @@
         "id": "font-meslo-lg-nerd-font"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -n \"$(find /Library/Fonts \"$HOME/Library/Fonts\" -iname '*MesloLGS*' -print -quit 2>/dev/null)\"",
       "versionCommand": "ls ~/Library/Fonts | grep -i 'MesloLGS'",
       "repair": "brew reinstall --cask font-meslo-lg-nerd-font",
@@ -8049,6 +8430,7 @@
         "id": "meson"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "meson --version",
       "versionCommand": "meson --version",
       "repair": "brew reinstall meson",
@@ -8058,6 +8440,10 @@
         "id": "meson"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "cmake",
+        "ninja"
+      ],
       "homepage": "https://mesonbuild.com",
       "repository": "https://github.com/mesonbuild/meson",
       "license": "Apache-2.0",
@@ -8073,10 +8459,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "cmake",
-        "ninja"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -8103,6 +8485,7 @@
         "id": "metasploit"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "msfconsole --version",
       "versionCommand": "msfconsole --version",
       "repair": "brew reinstall metasploit",
@@ -8112,6 +8495,10 @@
         "id": "metasploit"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "burp-suite",
+        "nikto"
+      ],
       "homepage": "https://www.metasploit.com",
       "repository": "https://github.com/rapid7/metasploit-framework",
       "license": "BSD-3-Clause",
@@ -8127,10 +8514,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "burp-suite",
-        "nikto"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -8157,6 +8540,7 @@
         "id": "micro"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "micro --version",
       "versionCommand": "micro --version",
       "repair": "brew reinstall micro",
@@ -8166,6 +8550,9 @@
         "id": "micro"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "neovim"
+      ],
       "homepage": "https://micro-editor.github.io",
       "repository": "https://github.com/zyedidia/micro",
       "license": "MIT",
@@ -8180,9 +8567,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "neovim"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -8209,6 +8593,7 @@
         "id": "miniconda"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "conda --version",
       "versionCommand": "conda --version",
       "repair": "brew reinstall --cask miniconda",
@@ -8261,6 +8646,7 @@
       "dependencies": [
         "docker"
       ],
+      "conflicts": [],
       "validate": "minikube version",
       "versionCommand": "minikube version",
       "repair": "brew reinstall minikube",
@@ -8270,6 +8656,9 @@
         "id": "minikube"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "kind"
+      ],
       "homepage": "https://minikube.sigs.k8s.io",
       "repository": "https://github.com/kubernetes/minikube",
       "license": "Apache-2.0",
@@ -8285,9 +8674,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "kind"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -8314,6 +8700,7 @@
         "id": "minio"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "minio --version",
       "versionCommand": "mc --version",
       "repair": "brew reinstall minio",
@@ -8323,6 +8710,9 @@
         "id": "minio"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "aws-cli"
+      ],
       "homepage": "https://min.io",
       "repository": "https://github.com/minio/minio",
       "license": "AGPL-3.0",
@@ -8339,9 +8729,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "aws-cli"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -8368,6 +8755,7 @@
         "id": "mkcert"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "mkcert --version",
       "versionCommand": "mkcert --version",
       "repair": "brew reinstall mkcert",
@@ -8377,6 +8765,9 @@
         "id": "mkcert"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "certbot"
+      ],
       "homepage": "https://github.com/FiloSottile/mkcert",
       "repository": "https://github.com/FiloSottile/mkcert",
       "license": "BSD-3-Clause",
@@ -8393,9 +8784,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-06",
-      "recommendedAlternatives": [
-        "certbot"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -8410,12 +8798,15 @@
       "category": "documentation",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "pip",
@@ -8424,6 +8815,7 @@
       "dependencies": [
         "python"
       ],
+      "conflicts": [],
       "validate": "mkdocs --version",
       "versionCommand": "mkdocs --version",
       "repair": "pip install --upgrade mkdocs",
@@ -8433,6 +8825,10 @@
         "id": "mkdocs"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "sphinx",
+        "hugo"
+      ],
       "homepage": "https://www.mkdocs.org",
       "repository": "https://github.com/mkdocs/mkdocs",
       "license": "BSD-2-Clause",
@@ -8447,10 +8843,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "sphinx",
-        "hugo"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "pip",
+          "id": "mkdocs"
+        },
+        "linux": {
+          "method": "pip",
+          "id": "mkdocs"
+        },
+        "windows": {
+          "method": "pip",
+          "id": "mkdocs"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -8469,6 +8875,7 @@
         "id": "font-monaspace"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -n \"$(find /Library/Fonts \"$HOME/Library/Fonts\" -iname '*Monaspace*' -print -quit 2>/dev/null)\"",
       "versionCommand": "ls ~/Library/Fonts | grep -i Monaspace",
       "repair": "brew reinstall --cask font-monaspace",
@@ -8520,6 +8927,7 @@
         "tap": "mongodb/brew"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "mongod --version",
       "versionCommand": "mongod --version",
       "repair": "brew services restart mongodb-community",
@@ -8531,6 +8939,10 @@
       },
       "post_install": [
         "brew services start mongodb-community"
+      ],
+      "recommendedAlternatives": [
+        "arangodb",
+        "cassandra"
       ],
       "homepage": "https://www.mongodb.com",
       "repository": "https://github.com/mongodb/mongo",
@@ -8547,10 +8959,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "arangodb",
-        "cassandra"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -8582,6 +8990,7 @@
         "id": "mtr"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "mtr --version",
       "versionCommand": "mtr --version",
       "repair": "brew reinstall mtr",
@@ -8591,6 +9000,9 @@
         "id": "mtr"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "nmap"
+      ],
       "homepage": "https://www.bitwizard.nl/mtr",
       "repository": "https://github.com/traviscross/mtr",
       "license": "GPL-2.0",
@@ -8605,9 +9017,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "nmap"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -8635,6 +9044,7 @@
         "id": "mysql"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "mysqladmin ping --silent",
       "versionCommand": "mysql --version",
       "repair": "brew services restart mysql",
@@ -8645,6 +9055,11 @@
       },
       "post_install": [
         "brew services start mysql"
+      ],
+      "recommendedAlternatives": [
+        "mariadb",
+        "postgres",
+        "sqlite"
       ],
       "homepage": "https://www.mysql.com",
       "repository": "https://github.com/mysql/mysql-server",
@@ -8661,11 +9076,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "mariadb",
-        "postgres",
-        "sqlite"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -8696,6 +9106,7 @@
         "id": "ncdu"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "ncdu --version",
       "versionCommand": "ncdu --version",
       "repair": "brew reinstall ncdu",
@@ -8746,6 +9157,7 @@
       "dependencies": [
         "java"
       ],
+      "conflicts": [],
       "validate": "neo4j --version",
       "versionCommand": "neo4j --version",
       "repair": "brew services restart neo4j",
@@ -8756,6 +9168,9 @@
       },
       "post_install": [
         "brew services start neo4j"
+      ],
+      "recommendedAlternatives": [
+        "arangodb"
       ],
       "homepage": "https://neo4j.com",
       "repository": "https://github.com/neo4j/neo4j",
@@ -8771,9 +9186,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "arangodb"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -8803,6 +9215,7 @@
         "id": "neovim"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "nvim --version",
       "versionCommand": "nvim --version",
       "repair": "brew reinstall neovim",
@@ -8812,6 +9225,10 @@
         "id": "neovim"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "helix",
+        "emacs"
+      ],
       "homepage": "https://neovim.io",
       "repository": "https://github.com/neovim/neovim",
       "license": "Apache-2.0",
@@ -8827,10 +9244,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "helix",
-        "emacs"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -8865,6 +9278,7 @@
         "id": "nerdctl"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "nerdctl --version",
       "versionCommand": "nerdctl --version",
       "repair": "brew reinstall nerdctl",
@@ -8914,6 +9328,7 @@
         "id": "netcat"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "nc -h",
       "versionCommand": "nc -h | head -1",
       "repair": "brew reinstall netcat",
@@ -8963,6 +9378,7 @@
         "id": "netdata"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "netdata -v",
       "versionCommand": "netdata -v",
       "repair": "brew reinstall netdata",
@@ -8973,6 +9389,10 @@
       },
       "post_install": [
         "brew services start netdata"
+      ],
+      "recommendedAlternatives": [
+        "prometheus",
+        "grafana"
       ],
       "homepage": "https://www.netdata.cloud",
       "repository": "https://github.com/netdata/netdata",
@@ -8989,10 +9409,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "prometheus",
-        "grafana"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -9007,12 +9423,15 @@
       "category": "cloud",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -9021,6 +9440,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "netlify --version",
       "versionCommand": "netlify --version",
       "repair": "npm install -g netlify-cli@latest",
@@ -9030,6 +9450,10 @@
         "id": "netlify-cli"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "vercel",
+        "railway"
+      ],
       "homepage": "https://www.netlify.com",
       "repository": "https://github.com/netlify/cli",
       "license": "MIT",
@@ -9045,10 +9469,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "vercel",
-        "railway"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "netlify-cli"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "netlify-cli"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "netlify-cli"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -9057,12 +9491,15 @@
       "category": "testing",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -9071,6 +9508,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "newman --version",
       "versionCommand": "newman --version",
       "repair": "npm install -g newman@latest",
@@ -9080,6 +9518,10 @@
         "id": "newman"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "postman",
+        "insomnia"
+      ],
       "homepage": "https://github.com/postmanlabs/newman",
       "repository": "https://github.com/postmanlabs/newman",
       "license": "Apache-2.0",
@@ -9094,10 +9536,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "postman",
-        "insomnia"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "newman"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "newman"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "newman"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -9120,6 +9572,7 @@
         "id": "nginx"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "nginx -v",
       "versionCommand": "nginx -v",
       "repair": "brew reinstall nginx",
@@ -9130,6 +9583,9 @@
       },
       "post_install": [
         "brew services start nginx"
+      ],
+      "recommendedAlternatives": [
+        "caddy"
       ],
       "homepage": "https://nginx.org",
       "repository": "https://github.com/nginx/nginx",
@@ -9145,9 +9601,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "caddy"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -9178,6 +9631,7 @@
         "id": "nikto"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "nikto -Version",
       "versionCommand": "nikto -Version",
       "repair": "brew reinstall nikto",
@@ -9187,6 +9641,10 @@
         "id": "nikto"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "nmap",
+        "sqlmap"
+      ],
       "homepage": "https://cirt.net/Nikto2",
       "repository": "https://github.com/sullo/nikto",
       "license": "GPL-2.0",
@@ -9202,10 +9660,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "nmap",
-        "sqlmap"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -9232,6 +9686,7 @@
         "id": "nim"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "nim --version",
       "versionCommand": "nim --version",
       "repair": "brew reinstall nim",
@@ -9241,6 +9696,10 @@
         "id": "nim"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "rust",
+        "zig"
+      ],
       "homepage": "https://nim-lang.org",
       "repository": "https://github.com/nim-lang/Nim",
       "license": "MIT",
@@ -9255,10 +9714,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "rust",
-        "zig"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -9285,6 +9740,7 @@
         "id": "ninja"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "ninja --version",
       "versionCommand": "ninja --version",
       "repair": "brew reinstall ninja",
@@ -9294,6 +9750,10 @@
         "id": "ninja"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "cmake",
+        "meson"
+      ],
       "homepage": "https://ninja-build.org",
       "repository": "https://github.com/ninja-build/ninja",
       "license": "Apache-2.0",
@@ -9309,10 +9769,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "cmake",
-        "meson"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -9341,6 +9797,7 @@
         "id": "nmap"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "nmap --version",
       "versionCommand": "nmap --version",
       "repair": "brew reinstall nmap",
@@ -9396,21 +9853,8 @@
         "method": "mise",
         "id": "node"
       },
-      "platformInstall": {
-        "macos": {
-          "method": "mise",
-          "id": "node"
-        },
-        "linux": {
-          "method": "mise",
-          "id": "node"
-        },
-        "windows": {
-          "method": "winget",
-          "id": "OpenJS.NodeJS"
-        }
-      },
       "dependencies": [],
+      "conflicts": [],
       "validate": "node --version",
       "versionCommand": "node --version",
       "repair": "mise install node",
@@ -9420,6 +9864,9 @@
         "id": "node"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "bun"
+      ],
       "homepage": "https://nodejs.org",
       "repository": "https://github.com/nodejs/node",
       "license": "MIT",
@@ -9435,9 +9882,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "bun"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "mise",
+          "id": "node"
+        },
+        "linux": {
+          "method": "mise",
+          "id": "node"
+        },
+        "windows": {
+          "method": "winget",
+          "id": "OpenJS.NodeJS"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -9459,6 +9917,7 @@
         "tap": "hashicorp/tap"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "nomad version",
       "versionCommand": "nomad version",
       "repair": "brew reinstall hashicorp/tap/nomad",
@@ -9469,6 +9928,10 @@
         "tap": "hashicorp/tap"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "consul",
+        "vault"
+      ],
       "homepage": "https://www.nomadproject.io",
       "repository": "https://github.com/hashicorp/nomad",
       "license": "BUSL-1.1",
@@ -9484,10 +9947,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "consul",
-        "vault"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -9503,12 +9962,15 @@
       "category": "package-managers",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -9517,6 +9979,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "npm --version",
       "versionCommand": "npm --version",
       "repair": "npm install -g npm@latest",
@@ -9526,6 +9989,11 @@
         "command": "echo 'npm ships with Node - remove Node to remove npm'"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "pnpm",
+        "yarn",
+        "bun"
+      ],
       "homepage": "https://www.npmjs.com",
       "repository": "https://github.com/npm/cli",
       "license": "Artistic-2.0",
@@ -9541,11 +10009,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "pnpm",
-        "yarn",
-        "bun"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "npm"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "npm"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "npm"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -9566,6 +10043,7 @@
         "id": "ocaml"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "ocaml --version",
       "versionCommand": "ocaml --version",
       "repair": "brew reinstall ocaml",
@@ -9575,6 +10053,9 @@
         "id": "ocaml"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "haskell"
+      ],
       "homepage": "https://ocaml.org",
       "repository": "https://github.com/ocaml/ocaml",
       "license": "LGPL-2.1",
@@ -9589,9 +10070,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "haskell"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -9618,6 +10096,7 @@
         "id": "ollama"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "ollama --version",
       "versionCommand": "ollama --version",
       "repair": "brew reinstall ollama",
@@ -9628,6 +10107,10 @@
       },
       "post_install": [
         "brew services start ollama"
+      ],
+      "recommendedAlternatives": [
+        "llama-cpp",
+        "huggingface-cli"
       ],
       "homepage": "https://ollama.com",
       "repository": "https://github.com/ollama/ollama",
@@ -9643,10 +10126,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "llama-cpp",
-        "huggingface-cli"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -9661,12 +10140,15 @@
       "category": "ai",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "pip",
@@ -9675,6 +10157,7 @@
       "dependencies": [
         "python"
       ],
+      "conflicts": [],
       "validate": "openai --version",
       "versionCommand": "openai --version",
       "repair": "pip install --upgrade openai",
@@ -9684,6 +10167,10 @@
         "id": "openai"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "gemini-cli",
+        "llm"
+      ],
       "homepage": "https://platform.openai.com/docs/libraries",
       "repository": "https://github.com/openai/openai-python",
       "license": "MIT",
@@ -9698,10 +10185,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "gemini-cli",
-        "llm"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "pip",
+          "id": "openai"
+        },
+        "linux": {
+          "method": "pip",
+          "id": "openai"
+        },
+        "windows": {
+          "method": "pip",
+          "id": "openai"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -9710,12 +10207,15 @@
       "category": "api-development",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -9724,6 +10224,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "openapi-generator-cli version",
       "versionCommand": "openapi-generator-cli --version",
       "repair": "npm install -g @openapitools/openapi-generator-cli@latest",
@@ -9746,7 +10247,21 @@
         "openapi-generator"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05"
+      "lastVerified": "2026-07-05",
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "@openapitools/openapi-generator-cli"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "@openapitools/openapi-generator-cli"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "@openapitools/openapi-generator-cli"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -9767,6 +10282,7 @@
         "id": "open-ocd"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "openocd --version",
       "versionCommand": "openocd --version",
       "repair": "brew reinstall open-ocd",
@@ -9816,6 +10332,7 @@
         "id": "openssl@3"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "openssl version",
       "versionCommand": "openssl version",
       "repair": "brew reinstall openssl@3",
@@ -9825,6 +10342,10 @@
         "id": "openssl@3"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "gnupg",
+        "mkcert"
+      ],
       "homepage": "https://www.openssl.org",
       "repository": "https://github.com/openssl/openssl",
       "license": "Apache-2.0",
@@ -9840,10 +10361,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "gnupg",
-        "mkcert"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -9871,6 +10388,7 @@
         "tap": "hashicorp/tap"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "packer version",
       "versionCommand": "packer --version",
       "repair": "brew reinstall hashicorp/tap/packer",
@@ -9881,6 +10399,10 @@
         "tap": "hashicorp/tap"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "terraform",
+        "ansible"
+      ],
       "homepage": "https://www.packer.io",
       "repository": "https://github.com/hashicorp/packer",
       "license": "BUSL-1.1",
@@ -9896,10 +10418,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "terraform",
-        "ansible"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -9927,6 +10445,7 @@
         "id": "perl"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "perl --version",
       "versionCommand": "perl --version",
       "repair": "brew reinstall perl",
@@ -9936,6 +10455,10 @@
         "id": "perl"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "python",
+        "ruby"
+      ],
       "homepage": "https://www.perl.org",
       "repository": "https://github.com/Perl/perl5",
       "license": "Artistic-1.0-Perl",
@@ -9950,10 +10473,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "python",
-        "ruby"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -9980,6 +10499,7 @@
         "id": "php"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "php --version",
       "versionCommand": "php --version",
       "repair": "brew reinstall php",
@@ -10032,6 +10552,7 @@
       "dependencies": [
         "python"
       ],
+      "conflicts": [],
       "validate": "pip3 --version",
       "versionCommand": "pip --version",
       "repair": "python3 -m pip install --upgrade --force-reinstall pip",
@@ -10041,6 +10562,11 @@
         "command": "echo 'pip ships with Python - remove Python to remove pip'"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "pipx",
+        "poetry",
+        "uv"
+      ],
       "homepage": "https://pip.pypa.io",
       "repository": "https://github.com/pypa/pip",
       "license": "MIT",
@@ -10054,12 +10580,7 @@
         "pip3"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "pipx",
-        "poetry",
-        "uv"
-      ]
+      "lastVerified": "2026-07-05"
     },
     {
       "schemaVersion": 1,
@@ -10082,6 +10603,7 @@
       "dependencies": [
         "python"
       ],
+      "conflicts": [],
       "validate": "pipx --version",
       "versionCommand": "pipx --version",
       "repair": "brew reinstall pipx",
@@ -10091,6 +10613,10 @@
         "id": "pipx"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "poetry",
+        "uv"
+      ],
       "homepage": "https://pipx.pypa.io",
       "repository": "https://github.com/pypa/pipx",
       "license": "MIT",
@@ -10105,10 +10631,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "poetry",
-        "uv"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -10135,6 +10657,7 @@
         "id": "platformio"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "pio --version",
       "versionCommand": "pio --version",
       "repair": "brew reinstall platformio",
@@ -10144,6 +10667,9 @@
         "id": "platformio"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "arduino-cli"
+      ],
       "homepage": "https://platformio.org",
       "repository": "https://github.com/platformio/platformio-core",
       "license": "Apache-2.0",
@@ -10158,9 +10684,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "arduino-cli"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -10175,12 +10698,15 @@
       "category": "testing",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -10189,6 +10715,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "playwright --version",
       "versionCommand": "playwright --version",
       "repair": "npm install -g @playwright/test@latest",
@@ -10198,6 +10725,9 @@
         "id": "@playwright/test"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "cypress"
+      ],
       "homepage": "https://playwright.dev",
       "repository": "https://github.com/microsoft/playwright",
       "license": "Apache-2.0",
@@ -10213,9 +10743,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "cypress"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "@playwright/test"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "@playwright/test"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "@playwright/test"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -10241,6 +10782,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "pnpm --version",
       "versionCommand": "pnpm --version",
       "repair": "brew reinstall pnpm",
@@ -10250,6 +10792,10 @@
         "id": "pnpm"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "npm",
+        "yarn"
+      ],
       "homepage": "https://pnpm.io",
       "repository": "https://github.com/pnpm/pnpm",
       "license": "MIT",
@@ -10265,10 +10811,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "npm",
-        "yarn"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -10303,6 +10845,7 @@
         "id": "podman"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "podman --version",
       "versionCommand": "podman --version",
       "repair": "brew reinstall podman",
@@ -10312,6 +10855,9 @@
         "id": "podman"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "docker"
+      ],
       "homepage": "https://podman.io",
       "repository": "https://github.com/containers/podman",
       "license": "Apache-2.0",
@@ -10326,9 +10872,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "docker"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -10357,6 +10900,7 @@
       "dependencies": [
         "python"
       ],
+      "conflicts": [],
       "validate": "poetry --version",
       "versionCommand": "poetry --version",
       "repair": "brew reinstall poetry",
@@ -10366,6 +10910,11 @@
         "id": "poetry"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "pipx",
+        "uv",
+        "pip"
+      ],
       "homepage": "https://python-poetry.org",
       "repository": "https://github.com/python-poetry/poetry",
       "license": "MIT",
@@ -10380,11 +10929,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "pipx",
-        "uv",
-        "pip"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -10409,6 +10953,7 @@
         "id": "postgresql@17"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "pg_isready",
       "versionCommand": "postgres --version",
       "repair": "brew services restart postgresql@17",
@@ -10419,6 +10964,11 @@
       },
       "post_install": [
         "brew services start postgresql@17"
+      ],
+      "recommendedAlternatives": [
+        "mysql",
+        "sqlite",
+        "cockroachdb"
       ],
       "homepage": "https://www.postgresql.org",
       "repository": "https://github.com/postgres/postgres",
@@ -10436,11 +10986,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "mysql",
-        "sqlite",
-        "cockroachdb"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -10465,6 +11010,7 @@
         "id": "postman"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Postman.app'",
       "versionCommand": "ls /Applications | grep Postman",
       "repair": "brew reinstall --cask postman",
@@ -10474,6 +11020,10 @@
         "id": "postman"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "insomnia",
+        "newman"
+      ],
       "homepage": "https://www.postman.com",
       "repository": "https://www.postman.com",
       "license": "proprietary",
@@ -10488,10 +11038,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "insomnia",
-        "newman"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -10506,12 +11052,15 @@
       "category": "code-quality",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -10520,6 +11069,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "prettier --version",
       "versionCommand": "prettier --version",
       "repair": "npm install -g prettier@latest",
@@ -10542,7 +11092,21 @@
         "prettier-cli"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05"
+      "lastVerified": "2026-07-05",
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "prettier"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "prettier"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "prettier"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -10563,6 +11127,7 @@
         "id": "procs"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "procs --version",
       "versionCommand": "procs --version",
       "repair": "brew reinstall procs",
@@ -10572,6 +11137,10 @@
         "id": "procs"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "htop",
+        "btop"
+      ],
       "homepage": "https://github.com/dalance/procs",
       "repository": "https://github.com/dalance/procs",
       "license": "MIT",
@@ -10587,10 +11156,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "htop",
-        "btop"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -10617,6 +11182,7 @@
         "id": "prometheus"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "prometheus --version",
       "versionCommand": "prometheus --version",
       "repair": "brew reinstall prometheus",
@@ -10627,6 +11193,10 @@
       },
       "post_install": [
         "brew services start prometheus"
+      ],
+      "recommendedAlternatives": [
+        "grafana",
+        "netdata"
       ],
       "homepage": "https://prometheus.io",
       "repository": "https://github.com/prometheus/prometheus",
@@ -10643,10 +11213,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "grafana",
-        "netdata"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -10673,6 +11239,7 @@
         "id": "pulumi"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "pulumi version",
       "versionCommand": "pulumi version",
       "repair": "brew reinstall pulumi",
@@ -10682,6 +11249,9 @@
         "id": "pulumi"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "terraform"
+      ],
       "homepage": "https://www.pulumi.com",
       "repository": "https://github.com/pulumi/pulumi",
       "license": "Apache-2.0",
@@ -10696,9 +11266,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "terraform"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -10713,18 +11280,22 @@
       "category": "languages",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "mise",
         "id": "python"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "python3 --version",
       "versionCommand": "python3 --version",
       "repair": "mise install python",
@@ -10748,7 +11319,21 @@
         "cpython"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05"
+      "lastVerified": "2026-07-05",
+      "platformInstall": {
+        "macos": {
+          "method": "mise",
+          "id": "python"
+        },
+        "linux": {
+          "method": "mise",
+          "id": "python"
+        },
+        "windows": {
+          "method": "mise",
+          "id": "python"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -10769,6 +11354,7 @@
         "id": "qdrant"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "qdrant --version",
       "versionCommand": "qdrant --version",
       "repair": "brew reinstall qdrant",
@@ -10778,6 +11364,9 @@
         "id": "qdrant"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "chromadb"
+      ],
       "homepage": "https://qdrant.tech",
       "repository": "https://github.com/qdrant/qdrant",
       "license": "Apache-2.0",
@@ -10793,9 +11382,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "chromadb"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -10822,6 +11408,7 @@
         "id": "r"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "R --version",
       "versionCommand": "R --version",
       "repair": "brew reinstall r",
@@ -10831,6 +11418,10 @@
         "id": "r"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "python",
+        "julia"
+      ],
       "homepage": "https://www.r-project.org",
       "repository": "https://github.com/r-devel/r-svn",
       "license": "GPL-2.0",
@@ -10846,10 +11437,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "python",
-        "julia"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -10876,6 +11463,7 @@
         "id": "radare2"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "r2 -v",
       "versionCommand": "r2 -v",
       "repair": "brew reinstall radare2",
@@ -10885,6 +11473,9 @@
         "id": "radare2"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "ghidra"
+      ],
       "homepage": "https://www.radare.org",
       "repository": "https://github.com/radareorg/radare2",
       "license": "LGPL-3.0",
@@ -10899,9 +11490,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "ghidra"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -10928,6 +11516,7 @@
         "id": "railway"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "railway --version",
       "versionCommand": "railway version",
       "repair": "brew reinstall railway",
@@ -10937,6 +11526,11 @@
         "id": "railway"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "vercel",
+        "netlify",
+        "flyio"
+      ],
       "homepage": "https://railway.app",
       "repository": "https://github.com/railwayapp/cli",
       "license": "MIT",
@@ -10952,11 +11546,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "vercel",
-        "netlify",
-        "flyio"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -10983,6 +11572,7 @@
         "id": "raylib"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "pkg-config --modversion raylib",
       "versionCommand": "raylib --version",
       "repair": "brew reinstall raylib",
@@ -10992,6 +11582,10 @@
         "id": "raylib"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "love",
+        "godot"
+      ],
       "homepage": "https://www.raylib.com",
       "repository": "https://github.com/raysan5/raylib",
       "license": "zlib",
@@ -11006,10 +11600,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "love",
-        "godot"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -11037,6 +11627,7 @@
         "id": "redis"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "redis-cli ping",
       "versionCommand": "redis-server --version",
       "repair": "brew services restart redis",
@@ -11097,6 +11688,7 @@
         "id": "ripgrep"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "rg --version",
       "versionCommand": "rg --version",
       "repair": "brew reinstall ripgrep",
@@ -11106,6 +11698,9 @@
         "id": "ripgrep"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "fzf"
+      ],
       "homepage": "https://github.com/BurntSushi/ripgrep",
       "repository": "https://github.com/BurntSushi/ripgrep",
       "license": "MIT",
@@ -11121,9 +11716,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "fzf"
-      ],
       "ciVerified": true,
       "platformInstall": {
         "macos": {
@@ -11157,6 +11749,7 @@
         "id": "rive"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Rive.app'",
       "versionCommand": "rive --version",
       "repair": "brew reinstall --cask rive",
@@ -11210,6 +11803,7 @@
         "id": "ruby"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "ruby --version",
       "versionCommand": "ruby --version",
       "repair": "brew reinstall ruby",
@@ -11267,6 +11861,7 @@
         "command": "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "rustc --version",
       "versionCommand": "rustc --version",
       "repair": "rustup update",
@@ -11276,6 +11871,10 @@
         "command": "rustup self uninstall -y"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "go",
+        "zig"
+      ],
       "homepage": "https://www.rust-lang.org",
       "repository": "https://github.com/rust-lang/rust",
       "license": "MIT",
@@ -11290,11 +11889,7 @@
         "rustc"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "go",
-        "zig"
-      ]
+      "lastVerified": "2026-07-05"
     },
     {
       "schemaVersion": 1,
@@ -11317,6 +11912,7 @@
       "dependencies": [
         "java"
       ],
+      "conflicts": [],
       "validate": "scala -version",
       "versionCommand": "scala --version",
       "repair": "brew reinstall scala",
@@ -11326,6 +11922,10 @@
         "id": "scala"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "kotlin",
+        "java"
+      ],
       "homepage": "https://www.scala-lang.org",
       "repository": "https://github.com/scala/scala",
       "license": "Apache-2.0",
@@ -11341,10 +11941,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "kotlin",
-        "java"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -11371,6 +11967,7 @@
         "id": "scrcpy"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "scrcpy --version",
       "versionCommand": "scrcpy --version",
       "repair": "brew reinstall scrcpy",
@@ -11420,6 +12017,7 @@
         "id": "sd"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "sd --version",
       "versionCommand": "sd --version",
       "repair": "brew reinstall sd",
@@ -11429,6 +12027,9 @@
         "id": "sd"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "ripgrep"
+      ],
       "homepage": "https://github.com/chmln/sd",
       "repository": "https://github.com/chmln/sd",
       "license": "MIT",
@@ -11444,9 +12045,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "ripgrep"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -11473,6 +12071,7 @@
         "command": "curl -s \"https://get.sdkman.io\" | bash"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "bash -lc 'source \"$HOME/.sdkman/bin/sdkman-init.sh\" && sdk version'",
       "versionCommand": "sdkman --version",
       "repair": "bash -lc 'source \"$HOME/.sdkman/bin/sdkman-init.sh\" && sdk selfupdate force'",
@@ -11482,6 +12081,9 @@
         "command": "rm -rf \"$HOME/.sdkman\""
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "asdf"
+      ],
       "homepage": "https://sdkman.io",
       "repository": "https://github.com/sdkman/sdkman-cli",
       "license": "Apache-2.0",
@@ -11495,10 +12097,7 @@
         "sdk"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "asdf"
-      ]
+      "lastVerified": "2026-07-05"
     },
     {
       "schemaVersion": 1,
@@ -11522,6 +12121,7 @@
         "id": "shellcheck"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "shellcheck --version",
       "versionCommand": "shellcheck --version",
       "repair": "brew reinstall shellcheck",
@@ -11582,6 +12182,7 @@
       "dependencies": [
         "kubectl"
       ],
+      "conflicts": [],
       "validate": "skaffold version",
       "versionCommand": "skaffold version",
       "repair": "brew reinstall skaffold",
@@ -11631,6 +12232,7 @@
         "id": "skopeo"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "skopeo --version",
       "versionCommand": "skopeo --version",
       "repair": "brew reinstall skopeo",
@@ -11680,6 +12282,7 @@
         "id": "sox"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "sox --version",
       "versionCommand": "sox --version",
       "repair": "brew reinstall sox",
@@ -11689,6 +12292,10 @@
         "id": "sox"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "ffmpeg",
+        "imagemagick"
+      ],
       "homepage": "https://sourceforge.net/projects/sox",
       "repository": "https://github.com/chirlu/sox",
       "license": "GPL-2.0",
@@ -11703,10 +12310,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "ffmpeg",
-        "imagemagick"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -11733,6 +12336,7 @@
         "id": "speedtest-cli"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "speedtest-cli --version",
       "versionCommand": "speedtest-cli --version",
       "repair": "brew reinstall speedtest-cli",
@@ -11742,6 +12346,9 @@
         "id": "speedtest-cli"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "iperf3"
+      ],
       "homepage": "https://github.com/sivel/speedtest-cli",
       "repository": "https://github.com/sivel/speedtest-cli",
       "license": "Apache-2.0",
@@ -11756,9 +12363,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "iperf3"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -11773,12 +12377,15 @@
       "category": "documentation",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "pip",
@@ -11787,6 +12394,7 @@
       "dependencies": [
         "python"
       ],
+      "conflicts": [],
       "validate": "sphinx-build --version",
       "versionCommand": "sphinx-build --version",
       "repair": "pip install --upgrade sphinx",
@@ -11796,6 +12404,10 @@
         "id": "sphinx"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "mkdocs",
+        "hugo"
+      ],
       "homepage": "https://www.sphinx-doc.org",
       "repository": "https://github.com/sphinx-doc/sphinx",
       "license": "BSD-2-Clause",
@@ -11810,10 +12422,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "mkdocs",
-        "hugo"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "pip",
+          "id": "sphinx"
+        },
+        "linux": {
+          "method": "pip",
+          "id": "sphinx"
+        },
+        "windows": {
+          "method": "pip",
+          "id": "sphinx"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -11836,6 +12458,7 @@
         "id": "sqlite"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "sqlite3 --version",
       "versionCommand": "sqlite3 --version",
       "repair": "brew reinstall sqlite",
@@ -11845,6 +12468,11 @@
         "id": "sqlite"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "postgres",
+        "mysql",
+        "duckdb"
+      ],
       "homepage": "https://www.sqlite.org",
       "repository": "https://github.com/sqlite/sqlite",
       "license": "blessing",
@@ -11860,11 +12488,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "postgres",
-        "mysql",
-        "duckdb"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -11895,6 +12518,7 @@
         "id": "sqlmap"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "sqlmap --version",
       "versionCommand": "sqlmap --version",
       "repair": "brew reinstall sqlmap",
@@ -11904,6 +12528,10 @@
         "id": "sqlmap"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "nikto",
+        "metasploit"
+      ],
       "homepage": "https://sqlmap.org",
       "repository": "https://github.com/sqlmapproject/sqlmap",
       "license": "GPL-2.0",
@@ -11919,10 +12547,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "nikto",
-        "metasploit"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -11952,6 +12576,7 @@
         "id": "starship"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "starship --version",
       "versionCommand": "starship --version",
       "repair": "brew reinstall starship",
@@ -12008,6 +12633,7 @@
         "id": "sublime-text"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Sublime Text.app'",
       "versionCommand": "ls /Applications | grep 'Sublime Text'",
       "repair": "brew reinstall --cask sublime-text",
@@ -12017,6 +12643,10 @@
         "id": "sublime-text"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "vscode",
+        "neovim"
+      ],
       "homepage": "https://www.sublimetext.com",
       "repository": "https://www.sublimetext.com",
       "license": "proprietary",
@@ -12031,10 +12661,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "vscode",
-        "neovim"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -12062,6 +12688,7 @@
         "tap": "supabase/tap"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "supabase --version",
       "versionCommand": "supabase --version",
       "repair": "brew reinstall supabase/tap/supabase",
@@ -12072,6 +12699,10 @@
         "tap": "supabase/tap"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "firebase",
+        "netlify"
+      ],
       "homepage": "https://supabase.com/docs/guides/cli",
       "repository": "https://github.com/supabase/cli",
       "license": "MIT",
@@ -12087,10 +12718,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "firebase",
-        "netlify"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -12116,6 +12743,7 @@
         "command": "xcode-select --install"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "swift --version",
       "versionCommand": "swift --version",
       "repair": "xcode-select --install",
@@ -12125,6 +12753,10 @@
         "command": "sudo rm -rf /Library/Developer/CommandLineTools"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "kotlin",
+        "rust"
+      ],
       "homepage": "https://www.swift.org",
       "repository": "https://github.com/swiftlang/swift",
       "license": "Apache-2.0",
@@ -12139,11 +12771,7 @@
         "swift-lang"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "kotlin",
-        "rust"
-      ]
+      "lastVerified": "2026-07-05"
     },
     {
       "schemaVersion": 1,
@@ -12162,6 +12790,7 @@
         "id": "swiftformat"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "swiftformat --version",
       "versionCommand": "swiftformat --version",
       "repair": "brew reinstall swiftformat",
@@ -12210,6 +12839,7 @@
         "id": "swiftlint"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "swiftlint version",
       "versionCommand": "swiftlint version",
       "repair": "brew reinstall swiftlint",
@@ -12248,12 +12878,15 @@
       "category": "desktop",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "cargo",
@@ -12262,6 +12895,7 @@
       "dependencies": [
         "rust"
       ],
+      "conflicts": [],
       "validate": "cargo tauri --version",
       "versionCommand": "tauri --version",
       "repair": "cargo install tauri-cli --force",
@@ -12271,6 +12905,10 @@
         "id": "tauri-cli"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "electron",
+        "flutter"
+      ],
       "homepage": "https://tauri.app",
       "repository": "https://github.com/tauri-apps/tauri",
       "license": "MIT",
@@ -12285,10 +12923,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "electron",
-        "flutter"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "cargo",
+          "id": "tauri-cli"
+        },
+        "linux": {
+          "method": "cargo",
+          "id": "tauri-cli"
+        },
+        "windows": {
+          "method": "cargo",
+          "id": "tauri-cli"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -12311,6 +12959,7 @@
         "id": "tcpdump"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "tcpdump --version",
       "versionCommand": "tcpdump --version",
       "repair": "brew reinstall tcpdump",
@@ -12320,6 +12969,10 @@
         "id": "tcpdump"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "wireshark",
+        "nmap"
+      ],
       "homepage": "https://www.tcpdump.org",
       "repository": "https://github.com/the-tcpdump-group/tcpdump",
       "license": "BSD-3-Clause",
@@ -12335,10 +12988,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "wireshark",
-        "nmap"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -12370,6 +13019,7 @@
         "tap": "hashicorp/tap"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "terraform version",
       "versionCommand": "terraform --version",
       "repair": "brew reinstall hashicorp/tap/terraform",
@@ -12380,6 +13030,10 @@
         "tap": "hashicorp/tap"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "pulumi",
+        "ansible"
+      ],
       "homepage": "https://www.terraform.io",
       "repository": "https://github.com/hashicorp/terraform",
       "license": "BUSL-1.1",
@@ -12395,10 +13049,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "pulumi",
-        "ansible"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -12426,6 +13076,7 @@
         "id": "tlrc"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "tldr --version",
       "versionCommand": "tldr --version",
       "repair": "brew reinstall tlrc",
@@ -12479,6 +13130,7 @@
         "id": "tmux"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "tmux -V",
       "versionCommand": "tmux -V",
       "repair": "brew reinstall tmux",
@@ -12539,6 +13191,7 @@
         "id": "tree"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "tree --version",
       "versionCommand": "tree --version",
       "repair": "brew reinstall tree",
@@ -12585,12 +13238,15 @@
       "category": "documentation",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -12599,6 +13255,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "typedoc --version",
       "versionCommand": "typedoc --version",
       "repair": "npm install -g typedoc@latest",
@@ -12621,7 +13278,21 @@
         "typedoc-ts"
       ],
       "stability": "stable",
-      "lastVerified": "2026-07-05"
+      "lastVerified": "2026-07-05",
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "typedoc"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "typedoc"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "typedoc"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -12640,6 +13311,7 @@
         "id": "unity-hub"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Unity Hub.app'",
       "versionCommand": "ls /Applications | grep 'Unity Hub'",
       "repair": "brew reinstall --cask unity-hub",
@@ -12649,6 +13321,9 @@
         "id": "unity-hub"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "godot"
+      ],
       "homepage": "https://unity.com/unity-hub",
       "repository": "https://unity.com/unity-hub",
       "license": "proprietary",
@@ -12663,9 +13338,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "godot"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -12692,6 +13364,7 @@
         "id": "uv"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "uv --version",
       "versionCommand": "uv --version",
       "repair": "brew reinstall uv",
@@ -12701,6 +13374,11 @@
         "id": "uv"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "poetry",
+        "pipx",
+        "pip"
+      ],
       "homepage": "https://docs.astral.sh/uv",
       "repository": "https://github.com/astral-sh/uv",
       "license": "MIT",
@@ -12715,11 +13393,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "poetry",
-        "pipx",
-        "pip"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -12748,6 +13421,7 @@
         "id": "vagrant"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "vagrant --version",
       "versionCommand": "vagrant --version",
       "repair": "brew reinstall --cask vagrant",
@@ -12757,6 +13431,10 @@
         "id": "vagrant"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "docker",
+        "colima"
+      ],
       "homepage": "https://www.vagrantup.com",
       "repository": "https://github.com/hashicorp/vagrant",
       "license": "BUSL-1.1",
@@ -12772,10 +13450,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "docker",
-        "colima"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -12811,6 +13485,7 @@
         "tap": "hashicorp/tap"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "vault version",
       "versionCommand": "vault version",
       "repair": "brew reinstall hashicorp/tap/vault",
@@ -12821,6 +13496,10 @@
         "tap": "hashicorp/tap"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "consul",
+        "nomad"
+      ],
       "homepage": "https://www.vaultproject.io",
       "repository": "https://github.com/hashicorp/vault",
       "license": "BUSL-1.1",
@@ -12837,10 +13516,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "consul",
-        "nomad"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -12856,12 +13531,15 @@
       "category": "cloud",
       "platforms": [
         "macos",
-        "linux"
+        "linux",
+        "windows"
       ],
       "architectures": [
         "intel",
         "apple-silicon",
-        "linux"
+        "linux",
+        "x64",
+        "arm64"
       ],
       "install": {
         "method": "npm",
@@ -12870,6 +13548,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "vercel --version",
       "versionCommand": "vercel --version",
       "repair": "npm install -g vercel@latest",
@@ -12879,6 +13558,10 @@
         "id": "vercel"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "netlify",
+        "railway"
+      ],
       "homepage": "https://vercel.com",
       "repository": "https://github.com/vercel/vercel",
       "license": "Apache-2.0",
@@ -12895,10 +13578,20 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "netlify",
-        "railway"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "npm",
+          "id": "vercel"
+        },
+        "linux": {
+          "method": "npm",
+          "id": "vercel"
+        },
+        "windows": {
+          "method": "npm",
+          "id": "vercel"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -12917,6 +13610,7 @@
         "id": "font-victor-mono"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -n \"$(find /Library/Fonts \"$HOME/Library/Fonts\" -iname '*VictorMono*' -print -quit 2>/dev/null)\"",
       "versionCommand": "ls ~/Library/Fonts | grep -i 'Victor Mono'",
       "repair": "brew reinstall --cask font-victor-mono",
@@ -12965,6 +13659,7 @@
         "id": "vlc"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/VLC.app'",
       "versionCommand": "vlc --version",
       "repair": "brew reinstall --cask vlc",
@@ -12974,6 +13669,9 @@
         "id": "vlc"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "ffmpeg"
+      ],
       "homepage": "https://www.videolan.org/vlc",
       "repository": "https://github.com/videolan/vlc",
       "license": "GPL-2.0",
@@ -12989,9 +13687,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "ffmpeg"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -13020,6 +13715,7 @@
         "id": "volta"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "volta --version",
       "versionCommand": "volta --version",
       "repair": "brew reinstall volta",
@@ -13029,6 +13725,9 @@
         "id": "volta"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "asdf"
+      ],
       "homepage": "https://volta.sh",
       "repository": "https://github.com/volta-cli/volta",
       "license": "BSD-2-Clause",
@@ -13044,9 +13743,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "asdf"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -13075,6 +13771,7 @@
         "id": "visual-studio-code"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "code --version",
       "versionCommand": "ls /Applications | grep 'Visual Studio'",
       "repair": "brew reinstall --cask visual-studio-code",
@@ -13084,6 +13781,11 @@
         "id": "visual-studio-code"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "cursor",
+        "windsurf",
+        "zed"
+      ],
       "homepage": "https://code.visualstudio.com",
       "repository": "https://github.com/microsoft/vscode",
       "license": "MIT",
@@ -13099,11 +13801,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "cursor",
-        "windsurf",
-        "zed"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -13128,6 +13825,7 @@
         "id": "warp"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Warp.app'",
       "versionCommand": "ls /Applications | grep Warp",
       "repair": "brew reinstall --cask warp",
@@ -13137,6 +13835,10 @@
         "id": "warp"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "iterm2",
+        "alacritty"
+      ],
       "homepage": "https://www.warp.dev",
       "repository": "https://github.com/warpdotdev/Warp",
       "license": "proprietary",
@@ -13151,10 +13853,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "iterm2",
-        "alacritty"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -13181,6 +13879,7 @@
         "id": "watchexec"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "watchexec --version",
       "versionCommand": "watchexec --version",
       "repair": "brew reinstall watchexec",
@@ -13190,6 +13889,9 @@
         "id": "watchexec"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "entr"
+      ],
       "homepage": "https://watchexec.github.io/",
       "repository": "https://github.com/watchexec/watchexec",
       "license": "Apache-2.0",
@@ -13205,9 +13907,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-06",
-      "recommendedAlternatives": [
-        "entr"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -13234,6 +13933,7 @@
         "id": "watchman"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "watchman --version",
       "versionCommand": "watchman --version",
       "repair": "brew reinstall watchman",
@@ -13282,6 +13982,7 @@
         "id": "wezterm"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/WezTerm.app'",
       "versionCommand": "wezterm --version",
       "repair": "brew reinstall --cask wezterm",
@@ -13291,6 +13992,11 @@
         "id": "wezterm"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "alacritty",
+        "kitty",
+        "iterm2"
+      ],
       "homepage": "https://wezterm.org",
       "repository": "https://github.com/wez/wezterm",
       "license": "MIT",
@@ -13306,11 +14012,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "alacritty",
-        "kitty",
-        "iterm2"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -13338,17 +14039,8 @@
         "method": "brew-formula",
         "id": "wget"
       },
-      "platformInstall": {
-        "macos": {
-          "method": "brew-formula",
-          "id": "wget"
-        },
-        "linux": {
-          "method": "apt",
-          "id": "wget"
-        }
-      },
       "dependencies": [],
+      "conflicts": [],
       "validate": "wget --version",
       "versionCommand": "wget --version",
       "repair": "brew reinstall wget",
@@ -13358,6 +14050,10 @@
         "id": "wget"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "curl",
+        "httpie"
+      ],
       "homepage": "https://www.gnu.org/software/wget",
       "repository": "https://git.savannah.gnu.org/cgit/wget.git",
       "license": "GPL-3.0",
@@ -13373,10 +14069,16 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "curl",
-        "httpie"
-      ]
+      "platformInstall": {
+        "macos": {
+          "method": "brew-formula",
+          "id": "wget"
+        },
+        "linux": {
+          "method": "apt",
+          "id": "wget"
+        }
+      }
     },
     {
       "schemaVersion": 1,
@@ -13397,6 +14099,7 @@
         "id": "whisper-cpp"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "whisper-cli --help",
       "versionCommand": "whisper-cli --version",
       "repair": "brew reinstall whisper-cpp",
@@ -13447,6 +14150,7 @@
         "id": "whois"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "whois --version",
       "versionCommand": "whois --version",
       "repair": "brew reinstall whois",
@@ -13494,6 +14198,7 @@
         "id": "windsurf"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Windsurf.app'",
       "versionCommand": "ls /Applications | grep Windsurf",
       "repair": "brew reinstall --cask windsurf",
@@ -13503,6 +14208,11 @@
         "id": "windsurf"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "vscode",
+        "cursor",
+        "zed"
+      ],
       "homepage": "https://windsurf.com",
       "repository": "https://github.com/Exafunction/windsurf.vim",
       "license": "proprietary",
@@ -13518,11 +14228,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "vscode",
-        "cursor",
-        "zed"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -13547,6 +14252,7 @@
         "id": "wireshark"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Wireshark.app'",
       "versionCommand": "ls /Applications | grep Wireshark",
       "repair": "brew reinstall --cask wireshark",
@@ -13556,6 +14262,9 @@
         "id": "wireshark"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "tcpdump"
+      ],
       "homepage": "https://www.wireshark.org",
       "repository": "https://gitlab.com/wireshark/wireshark",
       "license": "GPL-2.0",
@@ -13572,9 +14281,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "tcpdump"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -13599,6 +14305,7 @@
         "id": "xcbeautify"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "xcbeautify --version",
       "versionCommand": "xcbeautify --version",
       "repair": "brew reinstall xcbeautify",
@@ -13647,6 +14354,7 @@
         "tap": "xcodesorg/made"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "xcodebuild -version",
       "versionCommand": "xcodebuild -version",
       "repair": "xcodes install --latest --experimental-unxip",
@@ -13698,6 +14406,7 @@
         "id": "xcodegen"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "xcodegen --version",
       "versionCommand": "xcodegen --version",
       "repair": "brew reinstall xcodegen",
@@ -13707,6 +14416,9 @@
         "id": "xcodegen"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "fastlane"
+      ],
       "homepage": "https://github.com/yonaskolb/XcodeGen",
       "repository": "https://github.com/yonaskolb/XcodeGen",
       "license": "MIT",
@@ -13722,9 +14434,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "fastlane"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -13756,6 +14465,7 @@
       "dependencies": [
         "node"
       ],
+      "conflicts": [],
       "validate": "yarn --version",
       "versionCommand": "yarn --version",
       "repair": "brew reinstall yarn",
@@ -13765,6 +14475,10 @@
         "id": "yarn"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "npm",
+        "pnpm"
+      ],
       "homepage": "https://yarnpkg.com",
       "repository": "https://github.com/yarnpkg/berry",
       "license": "BSD-2-Clause",
@@ -13780,10 +14494,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "npm",
-        "pnpm"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -13821,6 +14531,7 @@
         "id": "yq"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "yq --version",
       "versionCommand": "yq --version",
       "repair": "brew reinstall yq",
@@ -13830,6 +14541,9 @@
         "id": "yq"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "jq"
+      ],
       "homepage": "https://mikefarah.gitbook.io/yq",
       "repository": "https://github.com/mikefarah/yq",
       "license": "MIT",
@@ -13845,9 +14559,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "jq"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -13882,6 +14593,7 @@
         "id": "yt-dlp"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "yt-dlp --version",
       "versionCommand": "yt-dlp --version",
       "repair": "brew reinstall yt-dlp",
@@ -13891,6 +14603,9 @@
         "id": "yt-dlp"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "ffmpeg"
+      ],
       "homepage": "https://github.com/yt-dlp/yt-dlp",
       "repository": "https://github.com/yt-dlp/yt-dlp",
       "license": "Unlicense",
@@ -13907,9 +14622,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "ffmpeg"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -13934,6 +14646,7 @@
         "id": "zed"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Zed.app'",
       "versionCommand": "zed --version",
       "repair": "brew reinstall --cask zed",
@@ -13943,6 +14656,11 @@
         "id": "zed"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "vscode",
+        "cursor",
+        "neovim"
+      ],
       "homepage": "https://zed.dev",
       "repository": "https://github.com/zed-industries/zed",
       "license": "GPL-3.0",
@@ -13957,11 +14675,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "vscode",
-        "cursor",
-        "neovim"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -13986,6 +14699,7 @@
         "id": "zen-browser"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "test -d '/Applications/Zen.app'",
       "versionCommand": "ls /Applications | grep Zen",
       "repair": "brew reinstall --cask zen-browser",
@@ -13995,6 +14709,10 @@
         "id": "zen-browser"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "firefox",
+        "brave"
+      ],
       "homepage": "https://zen-browser.app",
       "repository": "https://github.com/zen-browser/desktop",
       "license": "MPL-2.0",
@@ -14009,10 +14727,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "firefox",
-        "brave"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-cask",
@@ -14039,6 +14753,7 @@
         "id": "zig"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "zig version",
       "versionCommand": "zig version",
       "repair": "brew reinstall zig",
@@ -14048,6 +14763,10 @@
         "id": "zig"
       },
       "post_install": [],
+      "recommendedAlternatives": [
+        "rust",
+        "go"
+      ],
       "homepage": "https://ziglang.org",
       "repository": "https://github.com/ziglang/zig",
       "license": "MIT",
@@ -14062,10 +14781,6 @@
       ],
       "stability": "stable",
       "lastVerified": "2026-07-05",
-      "recommendedAlternatives": [
-        "rust",
-        "go"
-      ],
       "platformInstall": {
         "macos": {
           "method": "brew-formula",
@@ -14095,6 +14810,7 @@
         "id": "zoxide"
       },
       "dependencies": [],
+      "conflicts": [],
       "validate": "zoxide --version",
       "versionCommand": "zoxide --version",
       "repair": "brew reinstall zoxide",
@@ -15836,7 +16552,6 @@
       ],
       "aliases": [
         "dotnet",
-        "csharp",
         "c#"
       ]
     },

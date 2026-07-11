@@ -2,23 +2,40 @@ schemaVersion: 1
 name: electron
 description: A framework for building cross-platform desktop apps with web technologies
 category: desktop
-platforms: [macos, linux]
-architectures: [intel, apple-silicon, linux]
-install: { method: npm, id: electron }
-dependencies: [node]
-validate: "electron --version"
-versionCommand: "electron --version"
-repair: "npm install -g electron@latest"
-update: "npm install -g electron@latest"
-uninstall: { method: npm, id: electron }
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
+install:
+  method: npm
+  id: electron
+dependencies:
+  - node
+conflicts: []
+validate: electron --version
+versionCommand: electron --version
+repair: npm install -g electron@latest
+update: npm install -g electron@latest
+uninstall:
+  method: npm
+  id: electron
 post_install: []
-homepage: "https://www.electronjs.org"
-repository: "https://github.com/electron/electron"
+recommendedAlternatives:
+  - tauri-cli
+homepage: https://www.electronjs.org
+repository: https://github.com/electron/electron
 license: MIT
-documentation: "https://www.electronjs.org/docs/latest/"
+documentation: https://www.electronjs.org/docs/latest/
 maintainer: DevForgeKit Registry
 tags: [desktop, framework]
 aliases: [electronjs]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives: [tauri-cli]
+lastVerified: '2026-07-05'
+platformInstall:
+  macos:
+    method: npm
+    id: electron
+  linux:
+    method: npm
+    id: electron
+  windows:
+    method: npm
+    id: electron

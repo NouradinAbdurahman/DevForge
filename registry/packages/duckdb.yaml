@@ -2,17 +2,13 @@ schemaVersion: 1
 name: duckdb
 description: An in-process analytical SQL database
 category: databases
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: duckdb
 dependencies: []
+conflicts: []
 validate: duckdb --version
 versionCommand: duckdb --version
 repair: brew reinstall duckdb
@@ -21,25 +17,19 @@ uninstall:
   method: brew-formula
   id: duckdb
 post_install: []
+recommendedAlternatives:
+  - sqlite
+  - postgres
 homepage: https://duckdb.org
 repository: https://github.com/duckdb/duckdb
 license: MIT
 documentation: https://duckdb.org/docs/
 maintainer: DevForgeKit Registry
-tags:
-  - database
-  - sql
-  - analytics
-  - embedded
-aliases:
-  - duckdb-db
+tags: [database, sql, analytics, embedded]
+aliases: [duckdb-db]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - sqlite
-  - postgres
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: duckdb
-

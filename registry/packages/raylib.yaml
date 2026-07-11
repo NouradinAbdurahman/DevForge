@@ -2,17 +2,13 @@ schemaVersion: 1
 name: raylib
 description: A simple and easy-to-use library for game programming
 category: game-development
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: raylib
 dependencies: []
+conflicts: []
 validate: pkg-config --modversion raylib
 versionCommand: raylib --version
 repair: brew reinstall raylib
@@ -21,23 +17,19 @@ uninstall:
   method: brew-formula
   id: raylib
 post_install: []
+recommendedAlternatives:
+  - love
+  - godot
 homepage: https://www.raylib.com
 repository: https://github.com/raysan5/raylib
 license: zlib
 documentation: https://github.com/raysan5/raylib/wiki
 maintainer: DevForgeKit Registry
-tags:
-  - game-development
-  - library
-aliases:
-  - raylib-game
+tags: [game-development, library]
+aliases: [raylib-game]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - love
-  - godot
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: raylib
-

@@ -2,20 +2,13 @@ schemaVersion: 1
 name: imagemagick
 description: A software suite to create, edit, and compose bitmap images
 category: media
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: imagemagick
 dependencies: []
+conflicts: []
 validate: magick --version
 versionCommand: magick --version
 repair: brew reinstall imagemagick
@@ -24,21 +17,17 @@ uninstall:
   method: brew-formula
   id: imagemagick
 post_install: []
+recommendedAlternatives:
+  - ffmpeg
 homepage: https://imagemagick.org
 repository: https://github.com/ImageMagick/ImageMagick
 license: ImageMagick
 documentation: https://imagemagick.org/Usage/
 maintainer: DevForgeKit Registry
-tags:
-  - media
-  - image
-aliases:
-  - magick
-  - convert
+tags: [media, image]
+aliases: [magick, convert]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - ffmpeg
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -49,4 +38,3 @@ platformInstall:
   windows:
     method: winget
     id: ImageMagick.ImageMagick
-

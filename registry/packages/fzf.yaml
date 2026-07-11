@@ -2,20 +2,13 @@ schemaVersion: 1
 name: fzf
 description: A general-purpose command-line fuzzy finder
 category: utilities
-platforms:
-  - macos
-  - linux
-  - windows
-architectures:
-  - intel
-  - apple-silicon
-  - linux
-  - x64
-  - arm64
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
 install:
   method: brew-formula
   id: fzf
 dependencies: []
+conflicts: []
 validate: fzf --version
 versionCommand: fzf --version
 repair: brew reinstall fzf
@@ -29,14 +22,10 @@ repository: https://github.com/junegunn/fzf
 license: MIT
 documentation: https://github.com/junegunn/fzf
 maintainer: DevForgeKit Registry
-tags:
-  - utility
-  - fuzzy-finder
-  - cli
-aliases:
-  - fuzzy-finder
+tags: [utility, fuzzy-finder, cli]
+aliases: [fuzzy-finder]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
@@ -47,4 +36,3 @@ platformInstall:
   windows:
     method: winget
     id: junegunn.fzf
-

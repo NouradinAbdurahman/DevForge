@@ -1,7 +1,7 @@
 schemaVersion: 1
 name: ai-engineer
 description: A complete local-first AI engineering environment - Python, Node, Docker, and Ollama for running LLMs locally - installed, configured, and verified in one command
-icon: "🤖"
+icon: 🤖
 tags: [ai, machine-learning, llm]
 collections: [python-ai, machine-learning]
 components: [node, jetbrains-mono]

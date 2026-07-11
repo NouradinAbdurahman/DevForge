@@ -10,7 +10,7 @@ import path from "node:path";
 import { homeDir } from "../paths.js";
 import { captureShellCommand } from "../shell.js";
 import { Platform } from "./base.js";
-import { PlatformNotSupportedError } from "./errors.js";
+import { PlatformNotSupportedError, assertSafePackageId } from "./errors.js";
 
 const APT_PATH = "/usr/bin/apt";
 const DNF_PATH = "/usr/bin/dnf";
@@ -43,6 +43,10 @@ export class LinuxPlatform extends Platform {
 
     defaultShell() {
         return "bash";
+    }
+
+    shells() {
+        return ["bash", "zsh"];
     }
 
     binSearchDirs() {
@@ -83,6 +87,9 @@ export class LinuxPlatform extends Platform {
     }
 
     installCommand(step, action) {
+        if (["apt", "dnf", "pacman"].includes(step.method)) {
+            assertSafePackageId(step.id, `${step.method} package id`);
+        }
         switch (step.method) {
             case "apt":
                 return action === "uninstall"
@@ -157,6 +164,7 @@ export class LinuxPlatform extends Platform {
     }
 
     upgradeCommand(name) {
+        assertSafePackageId(name, "package name");
         const pm = detectPackageManager();
         if (pm === "apt") return `sudo apt update && sudo apt upgrade -y ${name}`;
         if (pm === "dnf") return `sudo dnf upgrade -y ${name}`;

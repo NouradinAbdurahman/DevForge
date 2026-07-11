@@ -2,23 +2,42 @@ schemaVersion: 1
 name: npm
 description: Node's default package manager, bundled with Node but upgradeable independently
 category: package-managers
-platforms: [macos, linux]
-architectures: [intel, apple-silicon, linux]
-install: { method: npm, id: npm }
-dependencies: [node]
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
+install:
+  method: npm
+  id: npm
+dependencies:
+  - node
+conflicts: []
 validate: npm --version
-versionCommand: "npm --version"
-repair: "npm install -g npm@latest"
-update: "npm install -g npm@latest"
-uninstall: { method: shell, command: "echo 'npm ships with Node - remove Node to remove npm'" }
+versionCommand: npm --version
+repair: npm install -g npm@latest
+update: npm install -g npm@latest
+uninstall:
+  method: shell
+  command: echo 'npm ships with Node - remove Node to remove npm'
 post_install: []
-homepage: "https://www.npmjs.com"
-repository: "https://github.com/npm/cli"
+recommendedAlternatives:
+  - pnpm
+  - yarn
+  - bun
+homepage: https://www.npmjs.com
+repository: https://github.com/npm/cli
 license: Artistic-2.0
-documentation: "https://docs.npmjs.com/"
+documentation: https://docs.npmjs.com/
 maintainer: DevForgeKit Registry
 tags: [package-manager, javascript, node]
 aliases: [npm-cli]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives: [pnpm, yarn, bun]
+lastVerified: '2026-07-05'
+platformInstall:
+  macos:
+    method: npm
+    id: npm
+  linux:
+    method: npm
+    id: npm
+  windows:
+    method: npm
+    id: npm

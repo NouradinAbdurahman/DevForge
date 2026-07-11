@@ -2,23 +2,40 @@ schemaVersion: 1
 name: huggingface-cli
 description: The official Hugging Face Hub command-line interface
 category: ai
-platforms: [macos, linux]
-architectures: [intel, apple-silicon, linux]
-install: { method: pip, id: "huggingface_hub[cli]" }
-dependencies: [python]
-validate: "huggingface-cli --version"
-versionCommand: "huggingface-cli --version"
-repair: "pip install --upgrade huggingface_hub[cli]"
-update: "pip install --upgrade huggingface_hub[cli]"
-uninstall: { method: pip, id: huggingface_hub }
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
+install:
+  method: pip
+  id: huggingface_hub[cli]
+dependencies:
+  - python
+conflicts: []
+validate: huggingface-cli --version
+versionCommand: huggingface-cli --version
+repair: pip install --upgrade huggingface_hub[cli]
+update: pip install --upgrade huggingface_hub[cli]
+uninstall:
+  method: pip
+  id: huggingface_hub
 post_install: []
-homepage: "https://huggingface.co/docs/huggingface_hub"
-repository: "https://github.com/huggingface/huggingface_hub"
+recommendedAlternatives:
+  - ollama
+homepage: https://huggingface.co/docs/huggingface_hub
+repository: https://github.com/huggingface/huggingface_hub
 license: Apache-2.0
-documentation: "https://huggingface.co/docs/huggingface_hub"
+documentation: https://huggingface.co/docs/huggingface_hub
 maintainer: DevForgeKit Registry
 tags: [ai, cli, llm, models]
 aliases: [huggingface]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives: [ollama]
+lastVerified: '2026-07-05'
+platformInstall:
+  macos:
+    method: pip
+    id: huggingface_hub[cli]
+  linux:
+    method: pip
+    id: huggingface_hub[cli]
+  windows:
+    method: pip
+    id: huggingface_hub[cli]

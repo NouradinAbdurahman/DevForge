@@ -14,12 +14,43 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
 import { runShellCommand, shellQuote } from "../shell.js";
+import { assertSafeTarArchive } from "../archiveSafety.js";
 import { loadProfiles, loadCollections, loadRecipes, loadPackages } from "../registry.js";
 import { discoverPlugins } from "../plugins.js";
 import { getVersion } from "../../version.js";
 import { DevForgeError } from "../errors.js";
+import { logger } from "../logger.js";
 import { workspaceDir, workspaceExists, getWorkspace, saveWorkspace, WORKSPACE_TRANSFER_EXCLUDES } from "./store.js";
 import { migrateWorkspace, validateWorkspaceDoc, CURRENT_SCHEMA_VERSION } from "./schema.js";
+
+// describeWorkspaceShellRisks(doc) -> string[] human-readable warnings
+// for any workspace.shell.aliases/functions/pathAdditions the document
+// declares. These are legitimate, advertised functionality for a
+// workspace you built yourself, but they also become real, unattended
+// shell code the instant `workspace switch` sources workspace-shell.sh -
+// and workspace bundles are explicitly built for sharing
+// (export/import), so an imported bundle from someone else is the
+// sharpest place this surface matters: nothing else in the import path
+// reviews this content before it starts affecting your real shell.
+// Exported so verification.js's previewBundleImport can surface the
+// same list before anything is even extracted to a real workspace.
+export function describeWorkspaceShellRisks(doc) {
+    const risks = [];
+    const shell = doc.shell || {};
+    const aliasNames = Object.keys(shell.aliases || {});
+    const functionNames = Object.keys(shell.functions || {});
+    const pathAdditions = shell.pathAdditions || [];
+    if (aliasNames.length > 0) {
+        risks.push(`Declares ${aliasNames.length} shell alias(es) that will be sourced into your shell on 'workspace switch': ${aliasNames.join(", ")}`);
+    }
+    if (functionNames.length > 0) {
+        risks.push(`Declares ${functionNames.length} shell function(s) that will be sourced into your shell on 'workspace switch': ${functionNames.join(", ")}`);
+    }
+    if (pathAdditions.length > 0) {
+        risks.push(`Prepends ${pathAdditions.length} director(ies) to PATH ahead of everything else on 'workspace switch': ${pathAdditions.join(", ")}`);
+    }
+    return risks;
+}
 
 function tempDir(prefix) {
     return mkdtempSync(path.join(tmpdir(), prefix));
@@ -117,6 +148,8 @@ export async function importWorkspaceBundle(archivePath, { newName, overwrite = 
         throw new DevForgeError(`No such file: ${archivePath}`);
     }
 
+    await assertSafeTarArchive(archivePath);
+
     const extractDir = tempDir("devforgekit-workspace-import-");
     const code = await runShellCommand(`tar -xzf ${shellQuote(archivePath)} -C ${shellQuote(extractDir)}`, { silent: true });
     if (code !== 0) {
@@ -179,5 +212,11 @@ export async function importWorkspaceBundle(archivePath, { newName, overwrite = 
     rmSync(extractDir, { recursive: true, force: true });
 
     const workspace = saveWorkspace(validateWorkspaceDoc(repaired));
-    return { workspace, bundleMeta, repairs };
+
+    const shellRisks = describeWorkspaceShellRisks(repaired);
+    for (const risk of shellRisks) {
+        logger.warn(`Imported workspace '${finalName}': ${risk}`);
+    }
+
+    return { workspace, bundleMeta, repairs, shellRisks };
 }

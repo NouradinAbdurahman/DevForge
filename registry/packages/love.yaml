@@ -2,15 +2,13 @@ schemaVersion: 1
 name: love
 description: An open-source 2D game development framework (LOVE)
 category: game-development
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-cask
   id: love
 dependencies: []
+conflicts: []
 validate: test -d '/Applications/love.app'
 versionCommand: love --version
 repair: brew reinstall --cask love
@@ -19,23 +17,19 @@ uninstall:
   method: brew-cask
   id: love
 post_install: []
+recommendedAlternatives:
+  - raylib
+  - godot
 homepage: https://love2d.org
 repository: https://github.com/love2d/love
 license: zlib
 documentation: https://love2d.org/wiki/Main_Page
 maintainer: DevForgeKit Registry
-tags:
-  - game-development
-  - engine
-aliases:
-  - love2d
+tags: [game-development, engine]
+aliases: [love2d]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - raylib
-  - godot
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-cask
     id: love
-

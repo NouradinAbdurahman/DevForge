@@ -3,7 +3,9 @@
 `bootstrap.sh`/`scripts/install.sh` install every package in the root
 `Brewfile` by default. Profiles let you install a smaller, purpose-built
 subset instead - useful when you don't need (or don't want to wait for)
-the full workstation.
+the full workstation. On a first-ever, fully interactive install with no
+explicit profile flag, the install wizard (below) offers a choice instead
+of silently defaulting to `full`.
 
 ## Available profiles
 
@@ -11,20 +13,81 @@ the full workstation.
 | --- | --- |
 | `full` (default) | Everything in the root `Brewfile` |
 | `minimal` | git, gh, git-lfs, mise, jq, yq, fzf, ripgrep, GNU coreutils/sed/findutils, wget, tree - no casks, no databases |
+| `recommended` | git, gh, git-lfs, mise, jq, Docker, matching VS Code extensions - no Flutter/Android, no databases |
 | `flutter` | Flutter SDK, Android Studio, CocoaPods, core git tooling, Dart/Flutter VS Code extensions |
 | `backend` | PostgreSQL, MySQL, Redis, Supabase CLI, AWS CLI, kubectl, Helm, Terraform, matching VS Code extensions |
-| `custom` | Empty template - copy lines from the root Brewfile or write your own |
+| `custom` | Empty template - copy lines from the root Brewfile or write your own (the install wizard's own Custom option builds its own temporary Brewfile instead of using this one - see below) |
 
 Each profile lives under `profiles/<name>/` as its own `Brewfile` (except
 `full`, which has no separate file and always resolves to the root
 `Brewfile` - see `profile_brewfile_path()` in `scripts/common.sh`) plus a
 `README.md` describing it.
 
-**Profiles only control which Homebrew formulae/casks/VS Code bundle
-entries get installed.** Dotfiles (`.zshrc`, `.gitconfig`) and editor
-settings/keybindings/extensions (`vscode/`, `cursor/`) are always restored
-in full regardless of profile - splitting those per-profile too is a
-possible future enhancement, not implemented yet.
+**Profiles only control which Homebrew formulae/casks get installed.**
+Dotfiles (`.zshrc`, `.gitconfig`) are always restored in full regardless
+of profile. Editor settings/keybindings (`vscode/`, `cursor/`) are also
+always restored in full; editor *extensions* are restored in full too
+unless you decline them in the install wizard (there's no per-profile
+extension list, just the wizard's one Yes/Skip prompt) - see
+docs/InstallationAudit.md for the full rationale.
+
+## Install wizard
+
+On a first-ever `./bootstrap.sh` / `./devforgekit install` run - no
+`--profile`/`--minimal`/`--full` flag, no `.devprofile` set yet, a real
+terminal, and not `--yes` - you get an interactive wizard instead of
+silently installing everything:
+
+1. **Minimal / Recommended / Full / Custom** - the same profiles as above;
+   Custom opens a category checklist (Languages, Databases, Cloud,
+   Containers, Mobile, ...) built from `profiles/generated/brewfile-categories.txt`,
+   a manifest generated from the registry's own package categories (see
+   "Custom category manifest" below) - not a second, hand-maintained
+   taxonomy.
+2. Install VS Code/Cursor extensions? (Yes/Skip)
+3. Start local services now - PostgreSQL/MySQL/Redis? (All/None/Choose)
+4. A breakdown of exactly what's about to install, grouped by category
+   with each category's own description and a `(1.4 GB)`-style size
+   annotation on heavy packages (300 MB+) - real, measured sizes (see
+   below), never fabricated.
+5. A preview (package/cask/extension counts, services, the real total
+   download size) before anything installs, with a final confirm.
+
+Any explicit `--profile`/`--minimal`/`--full` flag, `--yes`, `--dry-run`,
+or non-interactive stdin (CI, cron, piped input) skips the wizard entirely
+and behaves exactly as before - see `wizard_should_run()` in
+`scripts/install_wizard.sh`.
+
+### Real download sizes, not fabricated
+
+`brew info --json=v2` itself has no `size` field for formulae or casks
+(confirmed against the live API) - but a HEAD request against the
+bottle/cask download URL that same JSON provides returns a real
+`Content-Length`. `_wizard_ensure_size_cache` (`scripts/install_wizard.sh`)
+measures every package in the category manifest once per wizard run (one
+batched `brew info --json=v2` call per type, then parallel HEAD requests
+capped at 8 concurrent), caching results so re-entering the Custom
+checklist or viewing the preview never re-measures. A formula's GHCR
+bottle URL needs `Authorization: Bearer QQ==` for anonymous pull; a cask
+token can be a Homebrew alias (e.g. `docker` → canonical `docker-desktop`,
+only appearing in `.old_tokens`) - matched against both so the size still
+resolves. Anything that can't be measured (no bottle, timed out, brew/jq/
+curl unavailable) is reported as "partial - N unmeasured" or "not
+available" rather than guessed.
+
+### Custom category manifest
+
+`profiles/generated/brewfile-categories.txt` is a **generated artifact**
+(same discipline as `registry/registry.json`/`docs/Registry.md` - never
+hand-edited, regenerated by `devforgekit registry generate`, CI fails if
+it's out of date). It's built from the union of the root `Brewfile` and
+every `profiles/*/Brewfile` (a profile can list a package root doesn't
+have - e.g. `recommended`'s `cask "docker"` - so scanning root alone would
+miss it), cross-referenced against `registry/packages/*.yaml`'s `category`
+field and `registry/categories/*.yaml`'s label/description, so the
+wizard's Custom checklist always reflects the registry's real taxonomy
+instead of a separately-maintained one. A Brewfile package with
+no matching registry manifest is filed under `other` rather than dropped.
 
 ## Usage
 

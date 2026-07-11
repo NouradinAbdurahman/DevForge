@@ -9,6 +9,8 @@ import { captureShellCommand } from "../core/shell.js";
 import { scoreManifest, checkLiveReachability, applyLiveReachability } from "../core/quality.js";
 import { getPackageDiagnostics, INSTALL_STATUS, STATUS_META, RESPONSIBILITY } from "../core/installAudit.js";
 import { getPlatform } from "../core/platform/index.js";
+import { dependentsOf } from "../core/environment/index.js";
+import { loadEnvironmentState } from "../core/environment/state.js";
 import { logger } from "../core/logger.js";
 import { withErrorHandling } from "../core/errors.js";
 
@@ -75,6 +77,24 @@ export function registerInfoCommand(program) {
                 console.log(`  Last Verified:    ${diagnostics.lastVerified}`);
             }
             console.log();
+
+            // ── Environment (observed facts, when DevForgeKit tracks
+            // this package - see core/environment/) ──────────────────
+            const envState = loadEnvironmentState();
+            const tracked = envState.packages[pkg.name];
+            if (tracked) {
+                console.log("  Environment:");
+                if (tracked.provider) console.log(`    Provider:       ${tracked.provider}`);
+                if (tracked.version) console.log(`    Version:        ${tracked.version}`);
+                if (tracked.location) console.log(`    Binary:         ${tracked.location}`);
+                console.log(`    Verified:       ${tracked.verified ? `✓ ${tracked.lastVerified || ""}`.trim() : "✗ binary not found on PATH"}`);
+                if (tracked.declared) console.log("    Declares environment metadata (PATH/variables)");
+                const affected = dependentsOf(pkg.name, envState);
+                if (affected.length > 0) {
+                    console.log(`    Depended on by: ${affected.join(", ")}`);
+                }
+                console.log();
+            }
 
             // ── Platform Support ──────────────────────────────────────
             const plat = diagnostics.platformSupport;

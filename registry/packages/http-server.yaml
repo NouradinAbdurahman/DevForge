@@ -2,22 +2,38 @@ schemaVersion: 1
 name: http-server
 description: A simple zero-configuration command-line static HTTP server
 category: web
-platforms: [macos, linux]
-architectures: [intel, apple-silicon, linux]
-install: { method: npm, id: http-server }
-dependencies: [node]
-validate: "http-server --version"
-versionCommand: "http-server --version"
-repair: "npm install -g http-server@latest"
-update: "npm install -g http-server@latest"
-uninstall: { method: npm, id: http-server }
+platforms: [macos, linux, windows]
+architectures: [intel, apple-silicon, linux, x64, arm64]
+install:
+  method: npm
+  id: http-server
+dependencies:
+  - node
+conflicts: []
+validate: http-server --version
+versionCommand: http-server --version
+repair: npm install -g http-server@latest
+update: npm install -g http-server@latest
+uninstall:
+  method: npm
+  id: http-server
 post_install: []
-homepage: "https://github.com/http-party/http-server"
-repository: "https://github.com/http-party/http-server"
+homepage: https://github.com/http-party/http-server
+repository: https://github.com/http-party/http-server
 license: MIT
-documentation: "https://github.com/http-party/http-server"
+documentation: https://github.com/http-party/http-server
 maintainer: DevForgeKit Registry
 tags: [web, server]
 aliases: [http-server-cli]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
+platformInstall:
+  macos:
+    method: npm
+    id: http-server
+  linux:
+    method: npm
+    id: http-server
+  windows:
+    method: npm
+    id: http-server

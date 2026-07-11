@@ -2,15 +2,13 @@ schemaVersion: 1
 name: colima
 description: Container runtimes on macOS, with minimal setup (built on Lima)
 category: containers
-platforms:
-  - macos
-architectures:
-  - intel
-  - apple-silicon
+platforms: [macos]
+architectures: [intel, apple-silicon]
 install:
   method: brew-formula
   id: colima
 dependencies: []
+conflicts: []
 validate: colima version
 versionCommand: colima version
 repair: brew reinstall colima
@@ -19,24 +17,19 @@ uninstall:
   method: brew-formula
   id: colima
 post_install: []
+recommendedAlternatives:
+  - docker
+  - lima
 homepage: https://github.com/abiosoft/colima
 repository: https://github.com/abiosoft/colima
 license: MIT
 documentation: https://github.com/abiosoft/colima
 maintainer: DevForgeKit Registry
-tags:
-  - containers
-  - devops
-  - virtualization
-aliases:
-  - colima-docker
+tags: [containers, devops, virtualization]
+aliases: [colima-docker]
 stability: stable
-lastVerified: "2026-07-05"
-recommendedAlternatives:
-  - docker
-  - lima
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: colima
-

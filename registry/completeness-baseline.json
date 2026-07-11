@@ -1,0 +1,20 @@
+{
+  "total": 261,
+  "crossPlatform": {
+    "macos": 261,
+    "linux": 68,
+    "windows": 55
+  },
+  "missing": {
+    "install": 0,
+    "validate": 0,
+    "uninstall": 0,
+    "upgrade": 0,
+    "repair": 0,
+    "version": 0,
+    "binary": 0,
+    "dependencies": 0,
+    "conflicts": 0,
+    "environment": 31
+  }
+}

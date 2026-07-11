@@ -2,17 +2,13 @@ schemaVersion: 1
 name: hydra
 description: A parallelized network login/credential auditing tool (THC-Hydra)
 category: security
-platforms:
-  - macos
-  - linux
-architectures:
-  - intel
-  - apple-silicon
-  - linux
+platforms: [macos, linux]
+architectures: [intel, apple-silicon, linux]
 install:
   method: brew-formula
   id: hydra
 dependencies: []
+conflicts: []
 validate: hydra -h
 versionCommand: hydra --version
 repair: brew reinstall hydra
@@ -26,16 +22,11 @@ repository: https://github.com/vanhauser-thc/thc-hydra
 license: AGPL-3.0
 documentation: https://github.com/vanhauser-thc/thc-hydra
 maintainer: DevForgeKit Registry
-tags:
-  - security
-  - penetration-testing
-  - auditing
-aliases:
-  - thc-hydra
+tags: [security, penetration-testing, auditing]
+aliases: [thc-hydra]
 stability: stable
-lastVerified: "2026-07-05"
+lastVerified: '2026-07-05'
 platformInstall:
   macos:
     method: brew-formula
     id: hydra
-

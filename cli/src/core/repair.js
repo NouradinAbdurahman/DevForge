@@ -27,10 +27,10 @@ import { tmpdir, hostname, userInfo } from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
 import { runShellCommand, captureShellCommand, commandExists, shellQuote } from "./shell.js";
-import { userStateDir, userConfigDir, homeDir } from "./paths.js";
+import { userStateDir, userConfigDir, homeDir, repoRoot, scriptPath } from "./paths.js";
 import { loadConfig, getConfigValue } from "./config.js";
 import { loadPackages, getPackage } from "./registry.js";
-import { validate, install, uninstall, repair as repairComponent } from "./installer.js";
+import { validate, install, uninstall, repair as repairComponent, resolveInstallStep } from "./installer.js";
 import { getVersion } from "../version.js";
 import { logger } from "./logger.js";
 import { DevForgeError } from "./errors.js";
@@ -72,6 +72,7 @@ export const REPAIR_CATEGORIES = {
   DISK: "disk",
   SSH: "ssh",
   CACHE: "cache",
+  CLI_INSTALL: "cli-install",
 };
 
 export const CATEGORY_LABELS = {
@@ -102,6 +103,7 @@ export const CATEGORY_LABELS = {
   [REPAIR_CATEGORIES.DISK]: "Disk",
   [REPAIR_CATEGORIES.SSH]: "SSH",
   [REPAIR_CATEGORIES.CACHE]: "Cache",
+  [REPAIR_CATEGORIES.CLI_INSTALL]: "CLI Install",
 };
 
 // ─── Risk Levels (Phase 3) ───────────────────────────────────────────
@@ -386,8 +388,15 @@ export async function validatePrerequisites(action) {
             }
             if (!pkg) {
                 checks.push({ ok: false, check: "registry", message: `Package '${action.package}' not found in registry` });
-            } else if (pkg.install?.method?.startsWith("brew") || pkg.variants?.[0]?.install?.method?.startsWith("brew")) {
-                if (!(await commandExists("brew"))) {
+            } else {
+                // Resolve through the same platformInstall lookup install()
+                // itself uses (resolveInstallStep) rather than reading
+                // pkg.install directly - a package whose top-level install
+                // is brew-formula but whose platformInstall.linux/windows
+                // entry resolves to apt/winget must not be blocked on
+                // "Homebrew is not installed" on those platforms.
+                const step = resolveInstallStep(pkg);
+                if (step?.method?.startsWith("brew") && !(await commandExists("brew"))) {
                     checks.push({ ok: false, check: "package-manager", message: "Homebrew is not installed" });
                 }
             }
@@ -597,6 +606,92 @@ async function scanDockerIssues() {
             confidence: "high",
             action: { type: ACTION_TYPES.SHELL, command: "open -a Docker" }
         }));
+    }
+
+    return issues;
+}
+
+// Scanner: DevForgeKit CLI install health (pre-v3.0.0 "Installation
+// Experience Excellence" milestone) - the global `devforgekit` symlink,
+// cli/node_modules, and any Homebrew packages the last bootstrap.sh run
+// recorded as failed in ~/.config/devforgekit/install-state.json
+// (written by install_brewfile_per_line, scripts/common.sh). Every fix
+// shells back into Layer 1 via scripts/repair_install.sh - the exact
+// bash functions bootstrap.sh itself uses (install_global_command/
+// ensure_cli_dependencies/install_brewfile_per_line), not a
+// reimplementation in JS.
+export async function scanCliInstallIssues() {
+    const issues = [];
+    const repairScript = scriptPath("scripts/repair_install.sh");
+    const dispatcherPath = path.join(repoRoot(), "devforgekit");
+
+    const { code: whichCode, stdout: whichOut } = await captureShellCommand("command -v devforgekit 2>/dev/null");
+    let resolvedTarget = null;
+    if (whichCode === 0 && whichOut.trim()) {
+        const { stdout: linkOut } = await captureShellCommand(`readlink ${shellQuote(whichOut.trim())} 2>/dev/null`);
+        resolvedTarget = linkOut.trim() || whichOut.trim();
+    }
+    if (!resolvedTarget || resolvedTarget !== dispatcherPath) {
+        issues.push(makeIssue({
+            id: "cli-install-symlink",
+            title: "Global 'devforgekit' command is missing or stale",
+            severity: "WARNING",
+            category: REPAIR_CATEGORIES.CLI_INSTALL,
+            subsystem: "cli-install",
+            description: "'devforgekit' does not resolve to this repo's dispatcher",
+            impact: "Running 'devforgekit' from outside this repo fails or runs a stale copy",
+            fix: `Recreate the global command symlink: bash ${repairScript} symlink`,
+            estimatedTime: "5 sec",
+            risk: RISK_LEVELS.NONE,
+            confidence: "high",
+            action: { type: ACTION_TYPES.SHELL, command: `bash ${shellQuote(repairScript)} symlink` }
+        }));
+    }
+
+    if (!existsSync(path.join(repoRoot(), "cli", "node_modules"))) {
+        issues.push(makeIssue({
+            id: "cli-install-deps",
+            title: "DevForgeKit CLI dependencies are not installed",
+            severity: "CRITICAL",
+            category: REPAIR_CATEGORIES.CLI_INSTALL,
+            subsystem: "cli-install",
+            description: "cli/node_modules is missing",
+            impact: "The root 'devforgekit' dispatcher falls back to its bash-only command set",
+            fix: `Install the Node CLI's dependencies: bash ${repairScript} deps`,
+            estimatedTime: "30 sec",
+            risk: RISK_LEVELS.NONE,
+            confidence: "high",
+            action: { type: ACTION_TYPES.SHELL, command: `bash ${shellQuote(repairScript)} deps` }
+        }));
+    }
+
+    const stateFile = path.join(userConfigDir(), "install-state.json");
+    if (existsSync(stateFile)) {
+        try {
+            const state = JSON.parse(readFileSync(stateFile, "utf8"));
+            const failed = Object.entries(state)
+                .filter(([, v]) => typeof v === "string" && v.startsWith("failed:"))
+                .map(([id]) => id);
+            if (failed.length > 0) {
+                issues.push(makeIssue({
+                    id: "cli-install-failed-packages",
+                    title: `${failed.length} package(s) failed during the last install`,
+                    severity: "WARNING",
+                    category: REPAIR_CATEGORIES.CLI_INSTALL,
+                    subsystem: "cli-install",
+                    description: `Recorded as failed in install-state.json: ${failed.join(", ")}`,
+                    impact: "These packages were never successfully installed",
+                    fix: `Retry the failed package(s): bash ${repairScript} packages`,
+                    estimatedTime: "1-5 min",
+                    risk: RISK_LEVELS.LOW,
+                    confidence: "high",
+                    action: { type: ACTION_TYPES.SHELL, command: `bash ${shellQuote(repairScript)} packages` }
+                }));
+            }
+        } catch {
+            // Malformed state file isn't itself a repairable issue here -
+            // a fresh bootstrap.sh run overwrites it via install_state_reset.
+        }
     }
 
     return issues;
@@ -895,7 +990,8 @@ const SCANNERS = [
     { name: "config", run: scanConfigIssues, label: "Configuration" },
     { name: "homebrew", run: scanHomebrewIssues, label: "Homebrew" },
     { name: "ssh", run: scanSSHIssues, label: "SSH" },
-    { name: "cache", run: scanCacheIssues, label: "Caches" }
+    { name: "cache", run: scanCacheIssues, label: "Caches" },
+    { name: "cli-install", run: scanCliInstallIssues, label: "CLI Install" }
 ];
 
 // ─── Scan ─────────────────────────────────────────────────────────────

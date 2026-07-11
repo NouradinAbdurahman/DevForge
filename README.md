@@ -70,7 +70,9 @@ chmod +x bootstrap.sh devforgekit
 
 **Requirements:** macOS (Apple Silicon or Intel), Linux (Ubuntu/Debian, Fedora/RHEL, Arch), or Windows (with WSL recommended). Node.js 18+ for the CLI. Internet connection.
 
-**Flags:** `--profile <name>` (flutter, backend, minimal, full), `--dry-run`, `--skip-services`, `-y/--yes`
+On a first-ever install in a real terminal (no `--profile` flag, no `-y`), you get an interactive wizard — Minimal / Recommended / Full / Custom, then opt-in prompts for VS Code/Cursor extensions and starting local services, then a preview before anything installs. Any flag, `-y`, or non-interactive/CI usage skips the wizard and installs exactly what you specify, unchanged. See [docs/Profiles.md](docs/Profiles.md).
+
+**Flags:** `--profile <name>` (flutter, backend, recommended, minimal, full), `--dry-run`, `--skip-services`, `-y/--yes`
 
 Every script is idempotent — safe to run more than once. Nothing is reinstalled, recopied, or restarted unless it's actually missing or different.
 
@@ -107,7 +109,7 @@ Every script is idempotent — safe to run more than once. Nothing is reinstalle
 
 | Category | Commands |
 | :--- | :--- |
-| **Core** | `install`, `update`, `backup`, `restore`, `self-update`, `check`, `doctor`, `validate`, `inventory`, `report`, `services`, `clean`, `preferences` |
+| **Core** | `install`, `uninstall [--all/--packages/--config/--vscode/--cursor/--services]`, `update`, `backup`, `restore`, `self-update`, `check`, `doctor`, `validate`, `inventory`, `report`, `services`, `clean`, `preferences` |
 | **Registry** | `component install/list`, `search`, `collection install`, `info`, `stats`, `registry generate/stats/verify/doctor/audit` |
 | **Profiles** | `profile list/show/use/install/create/export/import/search` |
 | **Recipes** | `recipe list/show/install/create/import/search` |
@@ -119,7 +121,7 @@ Every script is idempotent — safe to run more than once. Nothing is reinstalle
 | **Graph** | `graph` (`env`/`deps`), `graph open/cache/search/explain/export/verify/stats/path/impact/conflicts/orphan/focus/history` |
 | **Packages** | `package analyze/info/tree/graph/orphan/duplicates/unused/outdated/recommend/impact/search/compare/history/export` |
 | **Benchmark** | `benchmark` (`bench`/`perf`), `benchmark quick/standard/full/compare/history/export/delete/explain/trend/intelligence/report` |
-| **Repair** | `repair` (`fix`/`heal`), `repair scan/plan/explain/explain-issues/verify/rollback/rollback-repair/rollback-list/history/export/delete/clean/benchmark` |
+| **Repair** | `repair` (`fix`/`heal`), `repair install` (fix the CLI's own symlink/deps/failed packages), `repair scan/plan/explain/explain-issues/verify/rollback/rollback-repair/rollback-list/history/export/delete/clean/benchmark` |
 | **Snapshot** | `snapshot create/restore/list/inspect/verify/diff/export/delete/explain` |
 | **Config** | `config`, `config list/set/get`, `theme list/use/preview/random/export/import/gallery` |
 | **TUI** | `devforgekit` (no args), `dashboard [--page <id>]` |
@@ -430,10 +432,13 @@ Yes. The CLI (Layer 2) supports Linux (apt/dnf/pacman) and Windows (winget/choco
 Not silently. `fs_safe_copy` backs up the existing file as `<file>.backup-<timestamp>` before overwriting.
 
 **Is there a lighter install?**
-`./devforgekit install --profile minimal` installs bare-essentials CLI tooling. Or `--profile flutter`/`backend` for stack-specific subsets.
+`./devforgekit install --profile minimal` installs bare-essentials CLI tooling, `--profile recommended` adds everyday tooling without Flutter/Android/databases. Or `--profile flutter`/`backend` for stack-specific subsets. Run `./devforgekit install` with no flags in an interactive terminal for a wizard that walks through these choices.
 
 **Can I use the CLI without the TUI?**
 Yes. Any argument skips the TUI: `devforgekit doctor`. Or set `DEVFORGEKIT_NO_TUI=1`.
+
+**How do I uninstall DevForgeKit?**
+`devforgekit uninstall` (with no flags, in a real terminal) shows a checklist - installed packages, VS Code/Cursor extensions, configuration, services - and always previews before removing anything. Use `--all`/`--packages`/`--config`/`--vscode`/`--cursor`/`--services` for a specific subset non-interactively (requires `--force`/`-y` outside a real terminal - it never runs unattended silently). Configuration files are backed up as `<file>.backup-<timestamp>` before removal, never deleted outright.
 
 **Does the AI Assistant work without an API key?**
 Yes. Every AI command degrades to a clear, actionable message rather than crashing.
