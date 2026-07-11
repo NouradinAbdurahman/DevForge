@@ -2,6 +2,7 @@ name: DevForgeKit ShellCheck
 
 on:
   push:
+    branches: [main]
     paths:
       - "**/*.sh"
       - "bootstrap.sh"

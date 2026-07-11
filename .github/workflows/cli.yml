@@ -1,5 +1,15 @@
 name: DevForgeKit Core CLI
 
+# push and pull_request used to run the identical, full ~6min suite
+# simultaneously for the same commit (a PR branch push triggers both
+# events at once) - wasted Actions minutes and doubled the odds of
+# hitting the TUI suite's timing-sensitive tests under the resulting
+# CPU contention between two concurrent full runs on shared runners
+# (see docs/CommandSafety.md-era PR #16 for two real examples). push
+# now runs a fast, cheap subset (lint + the sub-minute registry
+# consistency checks) for quick feedback on every commit; the full
+# suite (npm test, several minutes) only runs once, on pull_request.
+
 on:
   push:
     paths:
@@ -18,7 +28,53 @@ permissions:
   contents: read
 
 jobs:
+  # Fast feedback on every push: lint + registry consistency checks,
+  # all sub-minute, none of them the timing-sensitive full test suite.
+  quick:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "lts/*"
+
+      - name: Install CLI dependencies
+        run: npm ci
+        working-directory: cli
+
+      - name: Lint
+        run: npm run lint
+        working-directory: cli
+
+      - name: Registry format check (every registry/*.yaml must already be canonically formatted - run 'devforgekit registry format' locally if this fails)
+        run: node bin/devforgekit.js registry format --check
+        working-directory: cli
+
+      - name: Registry lint (schema violations, duplicate IDs/binaries/aliases, cyclic dependencies - errors only, orphans are warnings)
+        run: node bin/devforgekit.js registry lint
+        working-directory: cli
+
+      - name: Registry generate (must produce no diff - commit regenerated files if this fails)
+        run: node bin/devforgekit.js registry generate
+        working-directory: cli
+
+      - name: Fail if registry.json / docs/Registry.md / brewfile-categories.txt are out of date
+        run: git diff --exit-code registry/registry.json docs/Registry.md profiles/generated/brewfile-categories.txt
+
+      - name: Registry Completion audit (required fields - install/validate/uninstall/upgrade - must be fully declared)
+        run: node bin/devforgekit.js registry audit
+        working-directory: cli
+
+      - name: Registry Completion gate (cross-platform coverage must never regress - see registry/completeness-baseline.json)
+        run: node bin/devforgekit.js registry audit --check-regression ../registry/completeness-baseline.json
+        working-directory: cli
+
+  # Full validation, once, on the PR itself: everything quick has plus
+  # the complete test suite (unit tests, TUI rendering tests, etc.).
   test:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

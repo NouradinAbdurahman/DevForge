@@ -10,6 +10,7 @@ name: DevForgeKit Registry Smoke Test
 
 on:
   push:
+    branches: [main]
     paths:
       - "registry/**"
       - ".github/workflows/registry-smoke.yml"
