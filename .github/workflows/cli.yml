@@ -115,6 +115,12 @@ jobs:
       - name: Fail if registry.json / docs/Registry.md / brewfile-categories.txt are out of date
         run: git diff --exit-code registry/registry.json docs/Registry.md profiles/generated/brewfile-categories.txt
 
+      - name: Shell completions generate (must produce no diff - commit regenerated files if this fails)
+        run: node scripts/generate-completions.mjs
+
+      - name: Fail if completions/*.{bash,zsh,fish} are out of date
+        run: git diff --exit-code completions/
+
       - name: Registry Completion audit (required fields - install/validate/uninstall/upgrade - must be fully declared)
         run: node bin/devforgekit.js registry audit
         working-directory: cli
