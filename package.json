@@ -43,6 +43,7 @@
     "scripts",
     "registry",
     "templates",
+    "completions",
     "plugins",
     "profiles",
     "docs",

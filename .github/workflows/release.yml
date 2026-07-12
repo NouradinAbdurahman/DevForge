@@ -1,5 +1,15 @@
 name: DevForgeKit Release
 
+# Pushing a version tag drafts a GitHub Release - it never auto-publishes.
+# Publishing is always a separate, deliberate, manual action:
+#   gh release edit <tag> --draft=false
+# (or the GitHub web UI's "Publish release" button) - see RELEASE.md's
+# "Tag process" section. This workflow's job is to assemble a reviewable
+# draft (every artifact, checksums, an SBOM, release notes, correct
+# prerelease marking) - a human decides when, or whether, it goes live.
+# Re-running against an already-drafted tag just refreshes the assets
+# (gh release upload --clobber) rather than erroring or duplicating.
+
 on:
   push:
     tags:
@@ -14,6 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "lts/*"
+
       - name: Verify VERSION matches tag
         run: |
           tag="${GITHUB_REF_NAME#v}"
@@ -23,13 +37,39 @@ jobs:
             exit 1
           fi
 
+      - name: Determine prerelease status
+        id: prerelease
+        run: |
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            echo "flag=true" >> "$GITHUB_OUTPUT"
+            echo "$GITHUB_REF_NAME is a pre-release tag (has a -suffix) - will be marked prerelease, not 'Latest'."
+          else
+            echo "flag=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install validation tools
         run: brew install shellcheck yq
+
+      - name: Install cli/ dependencies
+        # Needed for the release-readiness gate below, SBOM generation,
+        # and validate.sh's own "Node CLI lint/test" step - which
+        # silently SKIPS (not fails) when cli/node_modules is missing
+        # (see scripts/validate.sh's guard), so this release workflow
+        # was never actually exercising the JS test suite before this
+        # step existed. A real, silent gap - not a hypothetical one.
+        run: npm ci --prefix cli
 
       - name: Validate repository
         run: |
           chmod +x scripts/validate.sh
           ./scripts/validate.sh
+
+      - name: Release readiness gate
+        # Blocks the release outright if version consistency, required
+        # docs, distribution artifacts, registry health, pending-work
+        # markers, git tree cleanliness, or this commit's own CI runs
+        # aren't right - see cli/src/core/releaseCheck.js.
+        run: node cli/bin/devforgekit.js doctor --release-check
 
       - name: Extract changelog section
         run: |
@@ -39,12 +79,26 @@ jobs:
             found && index($0, "## [") == 1 { exit }
             found { print }
           ' CHANGELOG.md > release-notes.md
+          if [[ ! -s release-notes.md ]]; then
+            echo "::warning::No '## [$version]' section found in CHANGELOG.md - release notes will be empty. Add one before publishing this draft."
+          fi
 
       - name: Generate health report to attach to the release
         run: |
           chmod +x scripts/report.sh
           ./scripts/report.sh
           cp reports/system-report.txt health-report.txt
+
+      - name: Generate SBOM
+        # cli/'s real, installed dependency tree - what actually ships
+        # to users, not the root package.json (which has no
+        # dependencies/lockfile of its own; see PR 18's npm distribution
+        # design). Both formats are real npm 9.5+ built-ins, no extra
+        # tooling required.
+        run: |
+          mkdir -p release-assets
+          npm sbom --prefix cli --sbom-format cyclonedx > release-assets/sbom-cyclonedx.json
+          npm sbom --prefix cli --sbom-format spdx > release-assets/sbom-spdx.json
 
       - name: Prepare release assets
         run: |
@@ -55,36 +109,70 @@ jobs:
           cp VERSION release-assets/VERSION
           cp health-report.txt release-assets/health-report.txt
 
-      - name: Create or update GitHub release
+      - name: Generate checksums
+        run: (cd release-assets && shasum -a 256 * > SHA256SUMS.txt)
+
+      - name: Sign release assets
+        # Best-effort: only runs if a signing key is actually configured
+        # (RELEASE_GPG_PRIVATE_KEY repo secret). No such key exists yet
+        # as of this writing - this step exists so signing works the
+        # moment one is added, without a second workflow change, rather
+        # than fabricating "signed" releases today.
+        if: ${{ secrets.RELEASE_GPG_PRIVATE_KEY != '' }}
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.RELEASE_GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.RELEASE_GPG_PASSPHRASE }}
+        run: |
+          command -v gpg >/dev/null || brew install gnupg
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          for f in release-assets/*; do
+            gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --detach-sign --armor "$f"
+          done
+
+      - name: Signing status note
+        if: ${{ secrets.RELEASE_GPG_PRIVATE_KEY == '' }}
+        run: echo "::notice::No RELEASE_GPG_PRIVATE_KEY secret configured - release assets are unsigned this run. See RELEASE.md for how to add one."
+
+      - name: Create or update GitHub release draft
         env:
           GH_TOKEN: ${{ github.token }}
+          IS_PRERELEASE: ${{ steps.prerelease.outputs.flag }}
         run: |
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            echo "Release $GITHUB_REF_NAME already exists — updating assets"
-            gh release upload "$GITHUB_REF_NAME" \
-              release-assets/Brewfile \
-              release-assets/README.md \
-              release-assets/CHANGELOG.md \
-              release-assets/VERSION \
-              release-assets/health-report.txt \
-              --clobber
+            echo "Draft/release $GITHUB_REF_NAME already exists - refreshing assets (rerun-safe, does not change its draft/published state)"
+            gh release upload "$GITHUB_REF_NAME" release-assets/* --clobber
           else
+            extra_flags=()
+            if [[ "$IS_PRERELEASE" == "true" ]]; then
+              extra_flags+=(--prerelease --latest=false)
+            fi
             gh release create "$GITHUB_REF_NAME" \
+              --draft \
+              --verify-tag \
               --title "DevForgeKit $GITHUB_REF_NAME" \
               --notes-file release-notes.md \
-              release-assets/Brewfile \
-              release-assets/README.md \
-              release-assets/CHANGELOG.md \
-              release-assets/VERSION \
-              release-assets/health-report.txt
+              "${extra_flags[@]}" \
+              release-assets/*
           fi
 
       - name: Release summary
         run: |
           {
-            echo "## DevForgeKit $GITHUB_REF_NAME published"
+            echo "## DevForgeKit $GITHUB_REF_NAME - draft ready for review"
             echo
-            echo "Assets attached: Brewfile, README.md, CHANGELOG.md, VERSION, health-report.txt"
+            echo "This release was created (or refreshed) as a **draft** - it is not"
+            echo "publicly visible and nobody is notified. Review it, then publish"
+            echo "deliberately when ready:"
+            echo
+            echo '```'
+            echo "gh release edit $GITHUB_REF_NAME --draft=false"
+            echo '```'
+            echo
+            echo "Assets attached: Brewfile, README.md, CHANGELOG.md, VERSION,"
+            echo "health-report.txt, sbom-cyclonedx.json, sbom-spdx.json, SHA256SUMS.txt"
+            if [[ -f release-assets/SHA256SUMS.txt.asc ]]; then
+              echo "(assets are GPG-signed - .asc detached signatures included)"
+            fi
             echo
             echo "### Release notes"
             echo

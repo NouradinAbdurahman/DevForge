@@ -44,8 +44,53 @@ features.
 - **`RELEASE.md`** - the release checklist, tag process, rollback
   process, publishing order, and verification steps for v3.0.0-rc1 and
   beyond.
+- **`devforgekit doctor --release-check`** - a single-command
+  release-readiness gate: version consistency across `VERSION`/
+  `package.json`/`cli/package.json`/`Formula/devforgekit.rb`, required
+  documentation, distribution artifacts, registry health, outstanding
+  pending-work markers, experimental/debug flags, git tree cleanliness,
+  and the current commit's own CI status. Blocks (non-zero exit) if
+  anything fails.
+- **`devforgekit rc-validate`** (`scripts/rc-validate.sh`) - the full
+  Distribution Verification & RC Validation checklist against real
+  artifacts: GitHub Release, npm (a real scratch-prefix global install/
+  uninstall cycle), Homebrew (a real `brew install --build-from-source`
+  against a local test tap), a fresh-install lifecycle, smoke tests,
+  and the full regression suite - writes `docs/RCValidationReport.md`
+  with a real PASS/FAIL verdict.
+- **Draft-first GitHub Releases** - pushing a version tag now creates a
+  **draft** release rather than auto-publishing: real checksums
+  (`SHA256SUMS.txt`), a real SBOM (CycloneDX and SPDX, via `npm sbom`
+  against `cli/`'s actual dependency tree), and optional GPG signing
+  (if a signing key is configured - none is yet) are attached, plus a
+  `doctor --release-check` gate that blocks the release outright if the
+  commit isn't ready. Publishing is always a separate, deliberate
+  `gh release edit <tag> --draft=false`.
+- **Homebrew `livecheck`** - `Formula/devforgekit.rb` now tracks GitHub
+  releases directly (verified live via `brew livecheck` before adding,
+  not guessed).
 
 ### Fixed
+
+- **`cli/package.json`'s test script had no per-test timeout** -
+  `node --test` defaults to unbounded, so a genuinely hung test worker
+  (found live during this pass: a `tui-reduced-motion.test.js` process
+  stuck for over two hours with near-zero CPU usage) hangs silently
+  forever instead of failing loudly. Added `--test-timeout=180000`,
+  with a regression test guarding the script definition itself.
+- **`docs/DistributionReadiness.md`** - npm and Homebrew were still
+  listed as "Pending" long after both shipped (PRs 18-19); updated to
+  reflect that packaging is done and only real publishing remains,
+  deliberately deferred.
+- **`docs/CommandReference.md`** - `doctor`'s real flag set (`--json`,
+  `--skip-bash`, `--skip-compatibility`, `--export`, `--release-check`)
+  was undocumented (only `--fix` was listed), and the new `rc-validate`
+  command was missing entirely.
+- **README.md/CONTRIBUTING.md test-count badges** - stale at 1,088;
+  the real current count is 1,299.
+- **`gh release download` outside a git working tree** - needs an
+  explicit `-R owner/repo`; a scratch directory has no git context to
+  infer the repository from otherwise.
 
 - **`registry verify` and `workspace benchmark`** - two commands that
   mutated the machine by default despite read-only names. `registry

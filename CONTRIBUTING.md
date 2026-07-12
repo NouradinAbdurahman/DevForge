@@ -18,7 +18,7 @@ After bootstrap, the Node.js CLI is ready:
 cd cli
 npm install               # install dependencies
 npm run lint              # eslint
-npm test                  # node --test test/ (1,088 tests)
+npm test                  # node --test test/ (1,299 tests)
 node bin/devforgekit.js --help
 ```
 

@@ -2,14 +2,17 @@
 
 Single source of truth for what can actually ship where, and why not yet
 for everything else. Verified against real repo state, not assumed -
-see the Evidence column. This is release-engineering scope, the last
-step in the roadmap after RC1 dogfooding, not a pre-RC1 blocker.
+see the Evidence column. npm and Homebrew packaging shipped ahead of
+RC1 (PRs 18-19) rather than waiting for it, since both were entirely
+within this repo's own control and needed real, live verification time
+regardless - see `docs/RCValidationReport.md` for the most recent full
+run's results.
 
 | Channel | Status | Reason | Evidence |
 |---|---|---|---|
-| GitHub Release | **Ready** | Mechanism exists and is already exercised by real prior tags. | `.github/workflows/release.yml` fires on `v*.*.*`, verifies `VERSION` matches the tag, runs `validate.sh`, extracts the matching `CHANGELOG.md` section, generates a health report, and attaches `Brewfile`/`README.md`/`CHANGELOG.md`/`VERSION`/health report to the release. Nothing new to build - just cut the tag. |
-| npm | **Pending** | `cli/package.json` is marked `"private": true` with no `publishConfig` - npm will refuse to publish as-is. Never dry-run tested against the registry. | `cli/package.json`: `"name": "@devforgekit/cli"`, `"private": true`, `"bin": {"devforgekit": "bin/devforgekit.js"}`. The scaffolding (scoped name, `bin` entry) is already correct; publishing itself is not yet configured or tested. |
-| Homebrew | **Pending** | No formula or tap exists anywhere in this repo or a sibling `homebrew-devforgekit` tap. | `find . -iname "Formula*"` returns nothing. |
+| GitHub Release | **Ready** | Mechanism exists and is already exercised by real prior tags. As of the RC1 finalization pass, pushing a tag now creates a **draft** release (never auto-publishes) with checksums and an SBOM attached - see "Tag process" in `RELEASE.md`. | `.github/workflows/release.yml` fires on `v*.*.*`, verifies `VERSION` matches the tag, runs `validate.sh` + `doctor --release-check`, extracts the matching `CHANGELOG.md` section, generates a health report + SBOM + `SHA256SUMS.txt`, and creates a **draft** release (`gh release create --draft`) with all of it attached. Publishing is a separate, manual `gh release edit <tag> --draft=false`. |
+| npm | **Ready** (packaging) - not yet published | Root `package.json` is publishable (`"private": false`, correct `bin`/`files`/`publishConfig`), `npm pack`/`npm publish --dry-run` verified clean, a real scratch-prefix global install verified live and in CI. Publishing to the real npm registry is the one remaining step - a single `npm publish`, deliberately deferred until RC1 dogfooding confirms there's nothing left to fix. | `package.json` (repo root): `"name": "devforgekit"`, `"private": false`, `"bin": {"devforgekit": "./devforgekit"}`, `"publishConfig": {"access": "public"}`. `.github/workflows/npm-package.yml` verifies pack/dry-run/install on every push. |
+| Homebrew | **Ready** (packaging) - not yet published to a real tap | `Formula/devforgekit.rb` exists, passes `brew style`/`brew audit`/`brew livecheck`, and a real `brew install --build-from-source` has been verified live and in CI. Publishing means creating a real `homebrew-devforgekit` tap repo and pushing the formula there - deliberately deferred, same reasoning as npm. | `Formula/devforgekit.rb` (checksum, `depends_on "node"`, shell completion install, `livecheck`, `test do` block). `.github/workflows/homebrew-formula.yml` verifies style/audit/install/test on every relevant push. |
 | Docker | **Pending** | No `Dockerfile` exists for packaging DevForgeKit itself. | `find . -iname "Dockerfile*"` returns nothing outside `templates/docker*` (those are project-generator templates for *generated* projects, not a package image for DevForgeKit itself). |
 | Winget | **Blocked** | Windows registry coverage. | `registry/completeness-baseline.json`: `windows: 55` of 261 packages (21%) have verified Windows install steps. A Winget manifest that can't actually install most of the registry isn't a real release. |
 | Chocolatey | **Blocked** | Windows registry coverage (same gate as Winget). | Same 55/261 figure. |
@@ -46,8 +49,11 @@ engineering.
 
 ## Ordering
 
-Per the roadmap, distribution work starts only after `v3.0.0-rc1` is cut
-and dogfooded, in this order: **GitHub Release → Website → npm →
-Homebrew → Docker → Winget → Chocolatey → Scoop.** The three
+Per the roadmap, **publishing** (as opposed to packaging, which is
+already done for npm/Homebrew) follows this order: **GitHub Release →
+Website → npm → Homebrew → Docker → Winget → Chocolatey → Scoop.**
+GitHub Release always comes first since it's the source of truth every
+other channel points back to (npm's `homepage`/`repository`, the
+Homebrew formula's `url`, the website's release links). The three
 registry-coverage-blocked channels naturally land last since nothing
 else unblocks them faster than closing that gap.
