@@ -35,7 +35,15 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // to be silently dropped forever (confirmed live: not a timing flake,
 // a deterministic hang, self-inflicted by an earlier version of this
 // exact helper).
-async function waitForCondition(check, { timeout = 2000, interval = 10 } = {}) {
+// timeout default raised 2000 -> 5000 (v3.0.1-rc1): the suite grew from
+// 1,088 to 1,350 tests, and "ScrollList shows a windowed view..." (three
+// waitForFrame calls at the default) started failing under real,
+// concurrent full-suite CI load at 2021-2028ms - a few percent over the
+// old budget, not a real hang. This only widens the ceiling for the
+// contended case; a condition that's already true still resolves after
+// exactly one `interval` regardless of `timeout`, so passing runs are
+// unaffected.
+async function waitForCondition(check, { timeout = 5000, interval = 10 } = {}) {
     const start = Date.now();
     do {
         await delay(interval);
