@@ -110,7 +110,19 @@ jobs:
           cp health-report.txt release-assets/health-report.txt
 
       - name: Generate checksums
-        run: (cd release-assets && shasum -a 256 * > SHA256SUMS.txt)
+        run: (cd release-assets && shasum -a 256 -- * > SHA256SUMS.txt)
+
+      - name: Check for a configured signing key
+        # `secrets` isn't a valid context inside a step's own `if:` -
+        # only env/github/inputs/job/matrix/needs/runner/steps/strategy/
+        # vars are (confirmed live via actionlint, which is exactly how
+        # this workflow file failed GitHub's own validation on push
+        # before this fix). Route it through env + a step output instead,
+        # which is the standard, valid pattern.
+        id: signing
+        env:
+          HAS_KEY: ${{ secrets.RELEASE_GPG_PRIVATE_KEY != '' }}
+        run: echo "has-key=$HAS_KEY" >> "$GITHUB_OUTPUT"
 
       - name: Sign release assets
         # Best-effort: only runs if a signing key is actually configured
@@ -118,7 +130,7 @@ jobs:
         # as of this writing - this step exists so signing works the
         # moment one is added, without a second workflow change, rather
         # than fabricating "signed" releases today.
-        if: ${{ secrets.RELEASE_GPG_PRIVATE_KEY != '' }}
+        if: steps.signing.outputs.has-key == 'true'
         env:
           GPG_PRIVATE_KEY: ${{ secrets.RELEASE_GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.RELEASE_GPG_PASSPHRASE }}
@@ -130,7 +142,7 @@ jobs:
           done
 
       - name: Signing status note
-        if: ${{ secrets.RELEASE_GPG_PRIVATE_KEY == '' }}
+        if: steps.signing.outputs.has-key != 'true'
         run: echo "::notice::No RELEASE_GPG_PRIVATE_KEY secret configured - release assets are unsigned this run. See RELEASE.md for how to add one."
 
       - name: Create or update GitHub release draft
