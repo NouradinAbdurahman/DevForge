@@ -289,3 +289,24 @@ directly and computed: `sha256:
 08420ee92ab13f6974720e09692ef9c514108c1a043fc8fed48265a3ae60f38b`
 (7,222,463 bytes). This is the real, verified checksum used in the
 Formula update below - not guessed, not fabricated.
+
+**2026-07-13** - Second Formula correction: the self-reference problem
+predicted above turned out to be real, not just theoretical. PR #39's
+sha256 was computed against the `v3.0.1` tag as it existed *before* the
+Formula fix landed (pointing at commit `2618c9b`). `scripts/release.sh
+finalize` then correctly deleted and re-pushed `v3.0.1` to point at the
+new merge commit (`1a6767f`) that contains PR #39's own Formula change -
+a genuinely different commit, so a genuinely different archive
+(7,223,473 bytes, not 7,222,463) and a genuinely different sha256.
+Caught by re-downloading the real, now-published `v3.0.1` tag's archive
+and comparing checksums directly rather than assuming the earlier value
+still held: real sha256 is `58e8c3f82edf9301a4697157292c7290aeb0368728fbe048da81957f8f1d19ac`.
+This is expected to be a one-time cost, not a recurring one: `v3.0.1`'s
+tag is now a real, published GitHub Release and won't be re-pointed
+again (per `RELEASE.md`'s rollback guidance, moving a tag that's been
+live "for more than a few minutes" needs explicit confirmation and isn't
+being done here) - this Formula fix lands in a *later* commit on `main`
+that has no effect on what the already-tagged, already-published
+`v3.0.1` archive contains. The circular dependency this surfaces (the
+Formula file lives inside the same repo/tag it describes) is the same
+one already flagged for a v3.1 pipeline redesign, not re-litigated here.
