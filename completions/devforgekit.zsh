@@ -39,6 +39,7 @@ _devforgekit() {
         'report:Generate a system report at reports/system-report.txt'
         'restore:Restore dotfiles/editors from the repo (no packages/services)'
         'services:start|stop|restart|status for local services (PostgreSQL, MySQL, Redis)'
+        'completion|completions:Manage shell completions (zsh/bash/fish) for npm installs'
         'env:Environment Configuration Engine - PATH/variables/shell hooks generated from package metadata, never hand-edited'
         'explain:Why a component is installed, what depends on it, and whether it'\''s safe to remove'
         'hello:Print a greeting from the hello-world example plugin'
@@ -274,6 +275,13 @@ _devforgekit() {
             'create:Interactively build a new recipe'
             'search:Search recipe names/descriptions/tags (local only)'
             'publish:Publish a recipe to the community registry (not yet available)'
+            ;;
+        completion|completions)
+            _values 'subcommand' \
+            'install:Install shell completions - defaults to your current shell ($SHELL)'
+            'uninstall:Remove installed shell completions - defaults to your current shell ($SHELL)'
+            'status:Show completion install status for every supported shell'
+            'doctor:Diagnose completion install issues (stale files, manually edited rc blocks)'
             ;;
         env)
             _values 'subcommand' \
