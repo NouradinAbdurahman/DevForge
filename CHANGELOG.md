@@ -7,6 +7,95 @@ and version numbers follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+Release engineering for v3.0.0-rc1: distribution channels and release
+process, plus the verification work that preceded them. No new product
+features.
+
+### Added
+
+- **npm distribution** - `npm install -g devforgekit` is now a real,
+  verified install path: a publishable root `package.json`, a
+  self-healing `devforgekit` dispatcher (populates `cli/node_modules`
+  on first run if npm's postinstall didn't - confirmed live that npm
+  11.x's allow-scripts gate can skip it silently), and
+  `.github/workflows/npm-package.yml` validating the real packed
+  tarball end-to-end on macOS and Ubuntu.
+- **Homebrew distribution** - `Formula/devforgekit.rb`, verified with a
+  real `brew install`/`brew test`/`brew uninstall` cycle against a
+  local test tap. Installs the launcher only; toolchain provisioning
+  stays `devforgekit install`'s job. `.github/workflows/homebrew-formula.yml`
+  validates it on every change.
+- **Shell completions** - `completions/devforgekit.{bash,zsh,fish}`,
+  generated from the CLI's real command tree
+  (`scripts/generate-completions.mjs`), installed by the Homebrew
+  formula and CI-checked for drift.
+- **`docs/CommandSafety.md`** - every command classified READ ONLY or
+  MUTATING, with the naming rule that drove it: a command without an
+  explicit mutating verb must never modify the machine.
+- **`docs/CompatibilityReport.md`** - a backward compatibility matrix
+  across every public command: exit codes, `--help`, `--json` validity,
+  error paths, mutation status, CI safety.
+- **`docs/ApiFreeze.md`** - every public command, config field, schema,
+  output format, and env var classified Stable/Experimental/Internal.
+  Stable surfaces cannot change before v4.
+- **`docs/ReleaseReadinessReport.md`** and **`docs/DistributionReadiness.md`**
+  - the release-readiness rollup and the per-channel packaging status
+    (what's actually Ready vs. Pending vs. Blocked, and why).
+- **`RELEASE.md`** - the release checklist, tag process, rollback
+  process, publishing order, and verification steps for v3.0.0-rc1 and
+  beyond.
+
+### Fixed
+
+- **`registry verify` and `workspace benchmark`** - two commands that
+  mutated the machine by default despite read-only names. `registry
+  verify` now only attempts an install behind an explicit `--install`
+  flag; `workspace benchmark` no longer switches live git identity
+  unless `--ops` explicitly asks for it. Both fixes shipped with
+  canary-file regression tests.
+- **`check --json` and the `package`/`repair` command family** - four
+  separate instances of the same bug (a full registry scan running
+  strictly sequentially instead of using the shared bounded-concurrency
+  worker pool) made these commands hang indefinitely instead of
+  completing in seconds. Found by actually running the compatibility
+  sweep, not by reading the source.
+- **`repair history --json` and `benchmark history --json`** - both
+  silently broke their own `--json` contract on an empty result,
+  printing a human-readable sentence instead of `[]`.
+- **CI running the full test suite twice per commit** - `push` and
+  `pull_request` both triggering the identical ~7-minute suite for the
+  same commit on a feature branch. `push` now runs a fast subset;
+  the full suite runs once, on the pull request.
+- **Two real, timing-sensitive test bugs** surfaced while investigating
+  a CI failure: a polling helper that could resolve in zero event-loop
+  ticks (starving Ink's raw-mode listener setup and silently dropping
+  the next keypress), and a fixed-delay assertion too short for real
+  CI contention. Both replaced with a poll-until-condition pattern that
+  always yields at least once.
+- **Fish shell completion generation** - incomplete backslash escaping
+  in generated descriptions (caught live by CodeQL), fixed and verified
+  against a synthetic backslash-and-quote input.
+
+### Security
+
+- **Full security audit** - shell-injection, tar zip-slip,
+  unattended-plugin-execution, AES-256-GCM tag-pinning, and TOCTOU
+  fixes across the credential backends, archive handling, and plugin
+  trust system, each with a regression test. See `SECURITY.md`.
+- **`npm audit`**: 0 vulnerabilities. **`gitleaks`**: 0 secrets.
+
+### Performance
+
+- Package/repair size and version lookups (`du -sk`, `which`) gained a
+  real timeout instead of running unbounded - a single large real
+  directory could previously stall an entire scan.
+
+### Breaking Changes
+
+- None.
+
+## [3.0.0] - 2026-07-07
+
 ### Added
 
 - **v3.0.0 First Public GitHub Release** - production-ready first
