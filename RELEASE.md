@@ -1,9 +1,10 @@
 # Release Process
 
 The release checklist, tag process, rollback process, publishing order,
-and verification steps for cutting a DevForgeKit release - starting
-with `v3.0.1-rc1`. This is the top-level entry point; it cross-references
-the documents that already own the detail rather than duplicating them.
+and verification steps for cutting a DevForgeKit release - the first
+stable public release is `v3.0.1`, following the `v3.0.1-rc1` candidate.
+This is the top-level entry point; it cross-references the documents
+that already own the detail rather than duplicating them.
 
 ## Release checklist
 
