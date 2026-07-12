@@ -335,3 +335,23 @@ prefer forward fixes") - added real content to `CHANGELOG.md`'s
 already-published release's body directly (`gh release edit v3.0.1
 --notes-file`, which edits the live release without touching the
 immutable tag or its own tagged snapshot of `CHANGELOG.md`).
+
+**2026-07-13** - Phase 5 (npm verification) found a real bug in
+`package.json`: `bin.devforgekit` was `"./devforgekit"` (leading `./`),
+which this npm client (11.16.0) flags at publish time -
+`npm warn publish "bin[devforgekit]" script name devforgekit was invalid
+and removed` - and auto-corrects rather than rejecting outright. Checked
+whether this had already shipped a broken package: `npm view
+devforgekit@3.0.1-rc1 bin` shows the registry's live copy already has
+the corrected bare form (`"devforgekit": "devforgekit"`), confirming
+npm's auto-correction applied silently and successfully during that
+earlier publish - the already-public `3.0.1-rc1` package is not broken.
+Still fixed forward in `package.json` on `main` (`npm pkg fix`'s own
+suggested correction) rather than left to keep relying on silent
+per-publish auto-correction, which is exactly the kind of behavior a
+future npm version could tighten into a hard failure instead. The
+actual attempted `npm publish` for `3.0.1` failed separately, before
+this bug could matter either way: `npm whoami` returned `401
+Unauthorized` - an expired local npm login session, not a package or
+registry defect. Re-authentication needed before retrying the real
+publish.
