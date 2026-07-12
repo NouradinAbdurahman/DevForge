@@ -14,7 +14,7 @@ The complete local-first development environment platform for building, managing
 
 <div align="center">
 
-**Version 3.0.1-rc1** &middot; **MIT License** &middot; **macOS / Linux / Windows** &middot; **Node.js ESM**
+**Version 3.0.1** &middot; **MIT License** &middot; **macOS / Linux / Windows** &middot; **Node.js ESM**
 
 | | | | |
 | :---: | :---: | :---: | :---: |

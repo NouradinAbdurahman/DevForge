@@ -142,22 +142,30 @@ test("Table renders a header row and aligned data rows", () => {
 // --- ScrollList ------------------------------------------------------------
 
 test("ScrollList shows a windowed view with 'more' indicators and scrolls with j/k", async () => {
+    // Explicit per-call timeout, not just the file default: this exact
+    // test failed twice in a row in real CI (v3.0.1 promotion, PR #38) at
+    // 5019ms and 5025ms - just over the 5000ms default, and reproduces
+    // 0/3 in isolation (~35ms each), confirming it's genuine full-suite
+    // concurrent-load tail latency specific to this test's pattern
+    // (mount + render a 30-item list), not a hang. Widened with real
+    // margin rather than nudged again by a few hundred ms.
+    const SCROLL_TIMEOUT = { timeout: 8000 };
     const items = Array.from({ length: 30 }, (_, i) => `item-${i}`);
     const { lastFrame, stdin, unmount } = render(h(ScrollList, {
         items, isActive: true, height: 5, theme,
         renderItem: (item, index) => h(Text, { key: index }, item)
     }));
-    await waitForFrame(lastFrame, /↓ 25 more/);
+    await waitForFrame(lastFrame, /↓ 25 more/, SCROLL_TIMEOUT);
     assert.match(lastFrame(), /item-0/);
     assert.match(lastFrame(), /↓ 25 more/);
 
     stdin.write("G"); // jump to bottom
-    await waitForFrame(lastFrame, /item-29/);
+    await waitForFrame(lastFrame, /item-29/, SCROLL_TIMEOUT);
     assert.match(lastFrame(), /item-29/);
     assert.match(lastFrame(), /↑ 25 more/);
 
     stdin.write("g"); // jump back to top
-    await waitForFrame(lastFrame, /item-0/);
+    await waitForFrame(lastFrame, /item-0/, SCROLL_TIMEOUT);
     assert.match(lastFrame(), /item-0/);
     unmount();
 });

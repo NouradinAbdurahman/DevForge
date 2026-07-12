@@ -2,10 +2,10 @@
 
 # DevForgeKit RC Validation Report
 
-**Version:** 3.0.1-rc1
-**Commit:** `686199306f6b158ce1afe145fe082c07b05f0d1c` (main)
-**Started:** 2026-07-12T19:12:28Z
-**Finished:** 2026-07-12T19:25:49Z
+**Version:** 3.0.1
+**Commit:** `ac565dd9f40e8d83a45a0a243547afc5ec9b5e8a` (release/v3.0.1)
+**Started:** 2026-07-12T20:38:03Z
+**Finished:** 2026-07-12T20:47:52Z
 
 ## Final recommendation: FAIL
 
@@ -13,25 +13,7 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
 
 ## 1. GitHub Release verification
 
-- ✅ **GitHub Release v3.0.1-rc1 exists**
-  <details><summary>output</summary>
-
-  ```
-  {"assets":[{"apiUrl":"https://api.github.com/repos/NouradinAbdurahman/DevForgeKit/releases/assets/474480167","contentType":"application/octet-stream","createdAt":"2026-07-12T15:03:35Z","digest":"sha256:a9273fa371515697b5923636fc9299325392b39ada9f0e8ebf4d2cdc8c19b7f4","downloadCount":1,"id":"RA_kwDOTNA9s84cR_4n","label":"","name":"Brewfile","size":5891,"state":"uploaded","updatedAt":"2026-07-12T15:03:36Z","url":"https://github.com/NouradinAbdurahman/DevForgeKit/releases/download/untagged-a803720c497fee4d3f99/Brewfile"},{"apiUrl":"https://api.github.com/repos/NouradinAbdurahman/DevForgeKit/releases/assets/474480165","contentType":"application/octet-stream","createdAt":"2026-07-12T15:03:35Z","digest":"sha256:49d57b9cb93ee57877eb1a7371f73606a052f67602f9fbe6864384ff27fe6c14","downloadCount":1,"id":"RA_kwDOTNA9s84cR_4l","label":"","name":"CHANGELOG.md","size":82123,"state":"uploaded","updatedAt":"2026-07-12T15:03:36Z","url":"https://github.com/NouradinAbdurahman/DevForgeKit/releases/download/untagged-a803720c497fee4d3f99/CHANGELOG.md"},{"apiUrl":"https://api.github.com/repos/NouradinAbdurahman/DevForgeKit/releases/assets/474480171","contentType":"text/plain; charset=utf-8","createdAt":"2026-07-12T15:03:36Z","digest":"sha256:fb264e0fd1a36a83e9c23d03a263b7f8df0b0960f994ca1926386eef8d3c32be","downloadCount":1,"id":"RA_kwDOTNA9s84cR_4r","label":"","name":"health-report.txt","size":1582,"state":"uploaded","updatedAt":"2026-07-12T15:03:36Z","url":"https://github.com/NouradinAbdurahman/DevForgeKit/releases/download/untagged-a803720c497fee4d3f99/health-report.txt"},{"apiUrl":"https://api.github.com/repos/NouradinAbdurahman/DevForgeKit/releases/assets/474480172","contentType":"application/octet-stream","createdAt":"2026-07-12T15:03:36Z","digest":"sha256:1ecc76d2f727fb4c6a3da3c45a5715fa625decfef02f13011c307a50036023a3","downloadCount":1,"id":"RA_kwDOTNA9s84cR_4s","label":"","name":"README.md","size":21820,"state":"uploaded","updatedAt":"2026-07-12T15:03:36Z","url":"https://github.com/NouradinAbdurahman/DevForgeKit/releases/download/untagged-a803720c497fee4d3f99/README.md"},{"apiUrl":"https://api.github.com/repos/NouradinAbdurahman/DevForgeKit/releases/assets/474480173","contentType":"application/json","createdAt":"2026-07-12T15:03:36Z","digest":"sha256:3471001632045741cba07b927b724fd89dd2ed935eb659d6d89a9605423e8813","downloadCount":1,"id":"RA_kwDOTNA9s84cR_4t","label":"","name":"sbom-cyclonedx.json","size":150548,"state":"uploaded","updatedAt":"2026-07-12T15:03:36Z","url":"https://github.com/NouradinAbdurahman/DevForgeKit/releases/download/untagged-a803720c497fee4d3f99/sbom-cyclonedx.json"},{"apiUrl":"https://api.github.com/repos/NouradinAbdurahman/DevForgeKit/releases/assets/474480177","contentType":"application/json","createdAt":"2026-07-12T15:03:36Z","digest":"sha256:38262f0d122474936485a66574760ddeb06de294d58459424a0b3efd2d4fb97d","downloadCount":1,"id":"RA_kwDOTNA9s84cR_4x","label":"","name":"sbom-spdx.json","size":150232,"state":"uploaded","updatedAt":"2026-07-12T15:03:36Z","url":"https://github.com/NouradinAbdurahman/DevForgeKit/releases/download/untagged-a803720c497fee4d3f99/sbom-spdx.json"},{"apiUrl":"https://api.github.com/repos/NouradinAbdurahman/DevForgeKit/releases/assets/474480178","contentType":"text/plain; charset=utf-8","createdAt":"2026-07-12T15:03:36Z","digest":"sha256:eb252b9429f83ec11fbaf89ad6e3a9d62ef7de4213a62aab37748dfa274f81e5","downloadCount":1,"id":"RA_kwDOTNA9s84cR_4y","label":"","name":"SHA256SUMS.txt","size":555,"state":"uploaded","updatedAt":"2026-07-12T15:03:36Z","url":"https://github.com/NouradinAbdurahman/DevForgeKit/releases/download/untagged-a803720c497fee4d3f99/SHA256SUMS.txt"},{"apiUrl":"https://api.github.com/repos/NouradinAbdurahman/DevForgeKit/releases/assets/474480179","contentType":"application/octet-stream","createdAt":"2026-07-12T15:03:36Z","digest":"sha256:ff3cac01ee70bb43fca1755ff8433e8856f2f2b625c2eded9a171e708bf09157","downloadCount":1,"id":"RA_kwDOTNA9s84cR_4z","label":"","name":"VERSION","size":10,"state":"uploaded","updatedAt":"2026-07-12T15:03:36Z","url":"https://github.com/NouradinAbdurahman/DevForgeKit/releases/download/untagged-a803720c497fee4d3f99/VERSION"}],"publishedAt":null,"tagName":"v3.0.1-rc1"}
-
-  ```
-  </details>
-
-- ✅ **Download a real release asset (VERSION) and verify its checksum**
-  <details><summary>output</summary>
-
-  ```
-  ff3cac01ee70bb43fca1755ff8433e8856f2f2b625c2eded9a171e708bf09157  release-VERSION
-
-  ```
-  </details>
-
-DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled binary attached to the GitHub Release - the 'run the executable / --version / --help / doctor' checks the checklist calls for are covered against the npm install (section 2) and the Homebrew install (section 3) below, which are the actual executable distribution channels.
+- ⚪ **GitHub Release v3.0.1** - skipped (no release found for v3.0.1 yet (tag not cut))
 
 
 ## 2. npm verification
@@ -71,15 +53,15 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
   npm notice 2.2kB vscode/settings.json
   npm notice Tarball Details
   npm notice name: devforgekit
-  npm notice version: 3.0.1-rc1
-  npm notice filename: devforgekit-3.0.1-rc1.tgz
+  npm notice version: 3.0.1
+  npm notice filename: devforgekit-3.0.1.tgz
   npm notice package size: 1.1 MB
   npm notice unpacked size: 4.2 MB
-  npm notice shasum: 090767a025d4cdb0e24cfe5e092c08b1fde06669
-  npm notice integrity: sha512-1J/gcsAD0Ug+b[...]UnMy3laWrWpsA==
-  npm notice total files: 1019
+  npm notice shasum: 84f709003c70a449f12134f9106643ca2ed4b963
+  npm notice integrity: sha512-TEvlcSJOTPTce[...]JmPOKNqYX6P+A==
+  npm notice total files: 1020
   npm notice
-  devforgekit-3.0.1-rc1.tgz
+  devforgekit-3.0.1.tgz
 
   ```
   </details>
@@ -118,16 +100,16 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
   npm notice 2.2kB vscode/settings.json
   npm notice Tarball Details
   npm notice name: devforgekit
-  npm notice version: 3.0.1-rc1
-  npm notice filename: devforgekit-3.0.1-rc1.tgz
+  npm notice version: 3.0.1
+  npm notice filename: devforgekit-3.0.1.tgz
   npm notice package size: 1.1 MB
   npm notice unpacked size: 4.2 MB
-  npm notice shasum: 090767a025d4cdb0e24cfe5e092c08b1fde06669
-  npm notice integrity: sha512-1J/gcsAD0Ug+b[...]UnMy3laWrWpsA==
-  npm notice total files: 1019
+  npm notice shasum: 84f709003c70a449f12134f9106643ca2ed4b963
+  npm notice integrity: sha512-TEvlcSJOTPTce[...]JmPOKNqYX6P+A==
+  npm notice total files: 1020
   npm notice
-  npm notice Publishing to https://registry.npmjs.org/ with tag next and public access (dry-run)
-  + devforgekit@3.0.1-rc1
+  npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access (dry-run)
+  + devforgekit@3.0.1
 
   ```
   </details>
@@ -167,15 +149,15 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
   npm notice 2.2kB vscode/settings.json
   npm notice Tarball Details
   npm notice name: devforgekit
-  npm notice version: 3.0.1-rc1
-  npm notice filename: devforgekit-3.0.1-rc1.tgz
+  npm notice version: 3.0.1
+  npm notice filename: devforgekit-3.0.1.tgz
   npm notice package size: 1.1 MB
   npm notice unpacked size: 4.2 MB
-  npm notice shasum: 090767a025d4cdb0e24cfe5e092c08b1fde06669
-  npm notice integrity: sha512-1J/gcsAD0Ug+b[...]UnMy3laWrWpsA==
-  npm notice total files: 1019
+  npm notice shasum: 84f709003c70a449f12134f9106643ca2ed4b963
+  npm notice integrity: sha512-TEvlcSJOTPTce[...]JmPOKNqYX6P+A==
+  npm notice total files: 1020
   npm notice
-  devforgekit-3.0.1-rc1.tgz
+  devforgekit-3.0.1.tgz
 
   ```
   </details>
@@ -187,7 +169,7 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
   
   added 1 package in 1s
   npm warn allow-scripts 1 package has install scripts not yet covered by allowScripts:
-  npm warn allow-scripts   devforgekit@3.0.1-rc1 (postinstall: scripts/npm-postinstall.sh)
+  npm warn allow-scripts   devforgekit@3.0.1 (postinstall: scripts/npm-postinstall.sh)
   npm warn allow-scripts
   npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
   Reshimming mise lts...
@@ -408,9 +390,9 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
   eslint    A pluggable linter for JavaScript and TypeScript       
   prettier  An opinionated code formatter                          
   ──────────────────────────────────────────────────────────────────────────────
-  i Generating Next.js project 'demo-npm' in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.E1QBDY/npm-project/...
+  i Generating Next.js project 'demo-npm' in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/npm-project/...
   → Scaffolding Next.js project with the official CLI...
-  Creating a new Next.js app in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.E1QBDY/npm-project/demo-npm.
+  Creating a new Next.js app in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/npm-project/demo-npm.
   
   Using npm.
   
@@ -418,11 +400,11 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
   
   Initialized a git repository.
   
-  Success! Created demo-npm at /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.E1QBDY/npm-project/demo-npm
+  Success! Created demo-npm at /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/npm-project/demo-npm
   
   Project Created
   ──────────────────────────────────────────────────────────────────────────────
-  Location:      /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.E1QBDY/npm-project/demo-npm
+  Location:      /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/npm-project/demo-npm
   Stack:         Next.js
   License:       MIT
   Git:           initialized
@@ -445,7 +427,7 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
 
   ```
   
-  removed 1 package in 246ms
+  removed 1 package in 237ms
 
   ```
   </details>
@@ -515,15 +497,11 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
   ```
   </details>
 
-- ⚠️ **brew upgrade devforgekit (expected no-op at the same version)** (exit 1)
+- ✅ **brew upgrade devforgekit (expected no-op at the same version)**
   <details><summary>output</summary>
 
   ```
-  Error: Formulae found in multiple taps:
-         * local/devforgekit-rc-validate/devforgekit
-         * nouradinabdurahman/devforgekit/devforgekit
-  
-  Please use the fully-qualified name (e.g. local/devforgekit-rc-validate/devforgekit) to refer to a specific formula.
+  Warning: local/devforgekit-rc-validate/devforgekit 3.0.0 already installed
 
   ```
   </details>
@@ -631,7 +609,7 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
   Health Score: 92%
   Machine Ready
   ✔ DevForgeKit installation completed successfully.
-  Execution time: 0m 39s
+  Execution time: 0m 19s
 
   ```
   </details>
@@ -740,13 +718,13 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
   ```
   </details>
 
-- ✅ **devforgekit env snapshot** (id: 2026-07-12T19-14-44-231Z)
+- ✅ **devforgekit env snapshot** (id: 2026-07-12T20-39-39-915Z)
 
-- ✅ **devforgekit env restore 2026-07-12T19-14-44-231Z**
+- ✅ **devforgekit env restore 2026-07-12T20-39-39-915Z**
   <details><summary>output</summary>
 
   ```
-  i Current state saved as safety snapshot 2026-07-12T19-14-44-403Z
+  i Current state saved as safety snapshot 2026-07-12T20-39-40-077Z
   i No packages have registered environment configuration yet - nothing to generate.
 
   ```
@@ -1054,9 +1032,9 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
   eslint    A pluggable linter for JavaScript and TypeScript       
   prettier  An opinionated code formatter                          
   ──────────────────────────────────────────────────────────────────────────────
-  i Generating Next.js project 'demo-smoke' in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.E1QBDY/smoke-project/...
+  i Generating Next.js project 'demo-smoke' in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/smoke-project/...
   → Scaffolding Next.js project with the official CLI...
-  Creating a new Next.js app in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.E1QBDY/smoke-project/demo-smoke.
+  Creating a new Next.js app in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/smoke-project/demo-smoke.
   
   Using npm.
   
@@ -1064,11 +1042,11 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
   
   Initialized a git repository.
   
-  Success! Created demo-smoke at /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.E1QBDY/smoke-project/demo-smoke
+  Success! Created demo-smoke at /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/smoke-project/demo-smoke
   
   Project Created
   ──────────────────────────────────────────────────────────────────────────────
-  Location:      /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.E1QBDY/smoke-project/demo-smoke
+  Location:      /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/smoke-project/demo-smoke
   Stack:         Next.js
   License:       MIT
   Git:           initialized
@@ -1143,15 +1121,15 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
   ```
   
   === Release readiness check ===
-  i ✓ Version consistency: All sources agree on 3.0.1-rc1 (VERSION=3.0.1-rc1, package.json=3.0.1-rc1, cli/package.json=3.0.1-rc1, Formula/devforgekit.rb=3.0.0) (Formula/devforgekit.rb intentionally excluded during a pre-release cycle)
+  ✗ ✗ Version consistency: Version mismatch across sources: VERSION=3.0.1, package.json=3.0.1, cli/package.json=3.0.1, Formula/devforgekit.rb=3.0.0
   i - Release tag: HEAD is not currently on a tag - not a release commit yet
   i ✓ Required documentation: All present: LICENSE, README.md, CHANGELOG.md, RELEASE.md, SECURITY.md
   i ✓ Distribution artifacts: All present: package.json, Formula/devforgekit.rb, scripts/npm-postinstall.sh, completions/devforgekit.bash, completions/devforgekit.zsh, completions/devforgekit.fish
   i ✓ Registry: lint clean, format clean, quality score 89%, 202 orphan/warning notice(s) (non-blocking)
   i ✓ Outstanding pending-work markers: None found in cli/src
   i ✓ No experimental/debug flags enabled: No internal debug env vars set. Note: the ai command family is intentionally Experimental (see docs/ApiFreeze.md) - not a blocker.
-  ✗ ✗ Git working tree: 6 uncommitted change(s): M .github/workflows/homebrew-formula.yml,  M CONTRIBUTING.md,  M RELEASE.md, ...
-  i ✓ CI status: 5 run(s) checked, none failed
+  ✗ ✗ Git working tree: 1 uncommitted change(s): M docs/RCValidationReport.md
+  ✗ ✗ CI status: 1 of 8 run(s) failed for this commit
   i Release check: FAIL - resolve the failing check(s) above before releasing.
 
   ```
@@ -1203,7 +1181,7 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
     ✔ Node CLI lint
     ✔ Node CLI tests
   
-  767 passed, 1 warnings, 0 failed
+  769 passed, 1 warnings, 0 failed
 
   ```
   </details>
@@ -1212,38 +1190,38 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
   <details><summary>output</summary>
 
   ```
-  ✔ createSnapshot records the document verbatim plus metadata, and listSnapshots sorts newest-first (10.771ms)
-  ✔ listSnapshots returns [] for a workspace with no snapshots yet (1.053666ms)
-  ✔ getSnapshotDoc/restoreSnapshot/deleteSnapshot throw a clear error for an unknown id (3.064375ms)
-  ✔ restoreSnapshot reverts fields but always keeps the workspace's real name/createdAt (8.054834ms)
-  ✔ deleteSnapshot removes exactly that snapshot (2.364375ms)
-  ✔ exportSnapshot writes the recorded document to an arbitrary file path (1.882416ms)
-  ✔ compareSnapshots/compareWithCurrent report added/removed/changed top-level keys (2.670708ms)
-  ✔ PROVIDER_DEFAULT_HOSTS exposes the three well-known providers (1.344375ms)
-  ✔ applyWorkspaceSsh writes a Host block per identity, mode 0600, preserving pre-existing config content (2.628291ms)
-  ✔ re-applying the same workspace is idempotent (no duplicate Host blocks) (1.736666ms)
-  ✔ a workspace with no identities removes its own block instead of leaving a stale one (1.566416ms)
-  ✔ two workspaces' SSH blocks coexist independently (2.407209ms)
-  ✔ ensureKnownHost recognizes an already-known host without shelling out to ssh-keyscan (no network) (18.889916ms)
-  ✔ removeWorkspaceSsh returns false when the workspace never had a block (0.677625ms)
-  ✔ createWorkspace persists a workspace.json under ~/.config/devforgekit/workspaces/<name>/ (4.174583ms)
-  ✔ createWorkspace rejects a duplicate name and an invalid name (1.0335ms)
-  ✔ getWorkspace throws a clear error for an unknown workspace (0.295334ms)
-  ✔ saveWorkspace re-validates, persists changes, and stamps a fresh modifiedAt (6.579208ms)
-  ✔ saveWorkspace refuses to save a workspace that was never created (0.988959ms)
-  ✔ listWorkspaces returns every workspace sorted by name, invalid ones included (7.399208ms)
-  ✔ active-workspace pointer: get/set round-trip, and getActiveWorkspace resolves the full document (1.172916ms)
-  ✔ setActiveWorkspaceName rejects an unknown workspace and accepts null to clear (0.862292ms)
-  ✔ deleteWorkspace refuses to delete the active workspace unless forced (1.139042ms)
-  ✔ renameWorkspace moves the directory, updates the document, and follows the active pointer (1.312875ms)
-  ✔ cloneWorkspace copies configuration but never secrets or snapshot history (2.712208ms)
-  ✔ searchWorkspaces matches name, tag, git email, and cloud reference (invalid workspaces excluded) (1.717833ms)
-  ✔ switchToWorkspace applies git identity live, writes the shell-export file, and moves the active pointer (117.687792ms)
-  ✔ switching workspaces re-applies git identity to match the newly-active one (235.914083ms)
-  ✔ switchToWorkspace throws for an unknown workspace without moving the active pointer (70.792792ms)
-  ✔ deactivateWorkspace clears the pointer and resets the shell-export file (65.248916ms)
-  ✔ rollbackToSnapshot on the active workspace restores the document AND re-applies live state, with an automatic safety snapshot first (253.291792ms)
-  ✔ rollbackToSnapshot on an inactive workspace only reverts the stored document, leaving live state untouched (56.319042ms)
+  ✔ createSnapshot records the document verbatim plus metadata, and listSnapshots sorts newest-first (12.829166ms)
+  ✔ listSnapshots returns [] for a workspace with no snapshots yet (1.022542ms)
+  ✔ getSnapshotDoc/restoreSnapshot/deleteSnapshot throw a clear error for an unknown id (2.969916ms)
+  ✔ restoreSnapshot reverts fields but always keeps the workspace's real name/createdAt (6.942ms)
+  ✔ deleteSnapshot removes exactly that snapshot (20.43675ms)
+  ✔ exportSnapshot writes the recorded document to an arbitrary file path (5.611166ms)
+  ✔ compareSnapshots/compareWithCurrent report added/removed/changed top-level keys (2.692708ms)
+  ✔ PROVIDER_DEFAULT_HOSTS exposes the three well-known providers (1.3295ms)
+  ✔ applyWorkspaceSsh writes a Host block per identity, mode 0600, preserving pre-existing config content (2.832167ms)
+  ✔ re-applying the same workspace is idempotent (no duplicate Host blocks) (1.353792ms)
+  ✔ a workspace with no identities removes its own block instead of leaving a stale one (2.00075ms)
+  ✔ two workspaces' SSH blocks coexist independently (1.950833ms)
+  ✔ ensureKnownHost recognizes an already-known host without shelling out to ssh-keyscan (no network) (17.251083ms)
+  ✔ removeWorkspaceSsh returns false when the workspace never had a block (0.623791ms)
+  ✔ createWorkspace persists a workspace.json under ~/.config/devforgekit/workspaces/<name>/ (4.982ms)
+  ✔ createWorkspace rejects a duplicate name and an invalid name (1.908333ms)
+  ✔ getWorkspace throws a clear error for an unknown workspace (0.377584ms)
+  ✔ saveWorkspace re-validates, persists changes, and stamps a fresh modifiedAt (6.987708ms)
+  ✔ saveWorkspace refuses to save a workspace that was never created (0.951333ms)
+  ✔ listWorkspaces returns every workspace sorted by name, invalid ones included (8.438834ms)
+  ✔ active-workspace pointer: get/set round-trip, and getActiveWorkspace resolves the full document (3.966083ms)
+  ✔ setActiveWorkspaceName rejects an unknown workspace and accepts null to clear (2.058666ms)
+  ✔ deleteWorkspace refuses to delete the active workspace unless forced (1.587875ms)
+  ✔ renameWorkspace moves the directory, updates the document, and follows the active pointer (1.79125ms)
+  ✔ cloneWorkspace copies configuration but never secrets or snapshot history (2.943208ms)
+  ✔ searchWorkspaces matches name, tag, git email, and cloud reference (invalid workspaces excluded) (1.878208ms)
+  ✔ switchToWorkspace applies git identity live, writes the shell-export file, and moves the active pointer (146.152041ms)
+  ✔ switching workspaces re-applies git identity to match the newly-active one (341.718708ms)
+  ✔ switchToWorkspace throws for an unknown workspace without moving the active pointer (91.325041ms)
+  ✔ deactivateWorkspace clears the pointer and resets the shell-export file (95.756125ms)
+  ✔ rollbackToSnapshot on the active workspace restores the document AND re-applies live state, with an automatic safety snapshot first (358.568875ms)
+  ✔ rollbackToSnapshot on an inactive workspace only reverts the stored document, leaving live state untouched (91.591125ms)
   ℹ tests 1350
   ℹ suites 8
   ℹ pass 1350
@@ -1251,7 +1229,7 @@ DevForgeKit ships as a git-clone/npm/Homebrew tool, not a standalone compiled bi
   ℹ cancelled 0
   ℹ skipped 0
   ℹ todo 0
-  ℹ duration_ms 236919.402792
+  ℹ duration_ms 212614.846584
 
   ```
   </details>
