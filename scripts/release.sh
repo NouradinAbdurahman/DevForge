@@ -34,8 +34,13 @@
 #   patch|minor|major  Normal semver bump. Drafts a new, auto-generated
 #                       CHANGELOG section from `git log` since the last tag.
 #   rc                  Cuts a release candidate of the *current* VERSION -
-#                       v3.0.0 -> v3.0.0-rc1 -> v3.0.0-rc2, no MAJOR/MINOR/
-#                       PATCH bump. Renames the existing "## [Unreleased]"
+#                       v3.0.1 -> v3.0.1-rc1 -> v3.0.1-rc2, no MAJOR/MINOR/
+#                       PATCH bump. Refuses if the current, clean VERSION
+#                       is already tagged/released on origin (that would
+#                       produce an "rcN" lower than the release it's
+#                       supposedly a candidate for) - run patch/minor/major
+#                       first to bump to the next version, then rc to start
+#                       its RC cycle. Renames the existing "## [Unreleased]"
 #                       CHANGELOG section to the new versioned heading
 #                       (preserving its hand-written content) instead of
 #                       auto-generating a new one, and adds a fresh empty
@@ -180,6 +185,17 @@ run_create() {
             if [[ "$CURRENT_SUFFIX" =~ ^-rc([0-9]+)$ ]]; then
                 NEXT_RC=$(( BASH_REMATCH[1] + 1 ))
             else
+                # Starting a fresh RC cycle from a clean version. If that
+                # clean version is already tagged/released on origin,
+                # "vX.Y.Z-rc1" would be a version *lower* than the release
+                # it's supposedly a candidate for - confirmed live: this is
+                # exactly how v3.0.0-rc1 got cut, after v3.0.0 itself had
+                # already shipped. Refuse instead of guessing which of
+                # major/minor/patch the next release should be.
+                if git ls-remote --exit-code --tags origin "refs/tags/v$CURRENT_VERSION" >/dev/null 2>&1; then
+                    log_error "v$CURRENT_VERSION is already tagged/released on origin - cutting 'rc1' from it would produce $BASE_VERSION-rc1, which is lower than the existing release. Run '$0 patch' (or minor/major) first to bump to the next version, then '$0 rc' to start its RC cycle."
+                    exit 1
+                fi
                 NEXT_RC=1
             fi
             NEW_VERSION="${BASE_VERSION}-rc${NEXT_RC}"
@@ -304,7 +320,23 @@ run_create() {
 
     git checkout -b "$RELEASE_BRANCH"
     echo "$NEW_VERSION" > VERSION
-    git add VERSION CHANGELOG.md
+
+    # package.json/cli/package.json must always agree with VERSION exactly
+    # (doctor --release-check's version-consistency gate requires it, and
+    # correctly failed the v3.0.0-rc1 release for this exact reason - VERSION
+    # was bumped but these two files were silently left behind). Formula/
+    # devforgekit.rb is deliberately NOT touched here: its url/sha256 can
+    # only ever point at a tag with a real, downloadable tarball, so it's
+    # updated by hand once a stable version actually ships, not by this
+    # script - see checkVersionConsistency()'s pre-release exemption.
+    TMP_PKG_JSON="$(mktemp)"
+    jq --indent 2 --arg v "$NEW_VERSION" '.version = $v' package.json > "$TMP_PKG_JSON"
+    mv "$TMP_PKG_JSON" package.json
+    TMP_CLI_PKG_JSON="$(mktemp)"
+    jq --indent 2 --arg v "$NEW_VERSION" '.version = $v' cli/package.json > "$TMP_CLI_PKG_JSON"
+    mv "$TMP_CLI_PKG_JSON" cli/package.json
+
+    git add VERSION CHANGELOG.md package.json cli/package.json
     git commit -m "chore(release): v$NEW_VERSION"
     RELEASE_SHA="$(git rev-parse HEAD)"
     log_success "Committed on $RELEASE_BRANCH ($RELEASE_SHA)"

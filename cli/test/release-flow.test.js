@@ -107,6 +107,12 @@ function buildFixture() {
         path.join(workDir, "CHANGELOG.md"),
         "# Changelog\n\n## [Unreleased]\n\n### Added\n\n- Something real.\n\n## [3.0.0] - 2026-07-07\n\nInitial release.\n"
     );
+    // create() must keep these in sync with VERSION (regression: it used
+    // to bump VERSION alone, leaving these behind - caught for real by
+    // doctor --release-check on the actual v3.0.0-rc1 tag).
+    mkdirSync(path.join(workDir, "cli"), { recursive: true });
+    writeFileSync(path.join(workDir, "package.json"), JSON.stringify({ name: "devforgekit", version: "3.0.0" }, null, 2) + "\n");
+    writeFileSync(path.join(workDir, "cli", "package.json"), JSON.stringify({ name: "@devforgekit/cli", version: "3.0.0" }, null, 2) + "\n");
     // Without this, the state file create() writes shows up as untracked
     // in finalize()'s own dirty-tree check, which is a real, correct
     // reflection of how release.sh behaves - the real repo only stays
@@ -197,6 +203,43 @@ test("release.sh create: refuses when a release for this version is already pend
         const second = runRelease(fixture, ["rc", "-y"]);
         assert.notEqual(second.status, 0);
         assert.match(second.stdout + second.stderr, /already pending/);
+    } finally {
+        cleanup(fixture);
+    }
+});
+
+test("release.sh create: keeps package.json/cli/package.json in sync with VERSION (regression: doctor --release-check caught these silently left behind on the real v3.0.0-rc1 tag)", () => {
+    const fixture = buildFixture();
+    try {
+        const result = runRelease(fixture, ["rc", "-y"], { FAKE_GH_PR_NUMBER: "42" });
+        assert.equal(result.status, 0, result.stdout + result.stderr);
+
+        const branchPkg = execFileSync(
+            "git", ["show", "release/v3.0.0-rc1:package.json"],
+            { cwd: fixture.workDir, encoding: "utf8" }
+        );
+        assert.equal(JSON.parse(branchPkg).version, "3.0.0-rc1");
+
+        const branchCliPkg = execFileSync(
+            "git", ["show", "release/v3.0.0-rc1:cli/package.json"],
+            { cwd: fixture.workDir, encoding: "utf8" }
+        );
+        assert.equal(JSON.parse(branchCliPkg).version, "3.0.0-rc1");
+    } finally {
+        cleanup(fixture);
+    }
+});
+
+test("release.sh rc: refuses to cut an rc from a clean version that's already tagged on origin (regression: this is exactly how v3.0.0-rc1 got cut lower than the already-shipped v3.0.0)", () => {
+    const fixture = buildFixture();
+    try {
+        execFileSync("git", ["tag", "-a", "v3.0.0", "-m", "already released"], { cwd: fixture.workDir });
+        execFileSync("git", ["push", "origin", "v3.0.0"], { cwd: fixture.workDir });
+
+        const result = runRelease(fixture, ["rc", "-y"]);
+        assert.notEqual(result.status, 0);
+        assert.match(result.stdout + result.stderr, /already tagged\/released on origin/);
+        assert.match(result.stdout + result.stderr, /Run.*patch.*first/);
     } finally {
         cleanup(fixture);
     }
