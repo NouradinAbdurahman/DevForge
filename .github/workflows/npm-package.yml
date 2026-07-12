@@ -56,7 +56,19 @@ jobs:
         run: npm pack --dry-run
 
       - name: npm publish (dry run) - verifies package metadata and public access
-        run: npm publish --dry-run
+        # npm refuses to publish a pre-release version (e.g. "3.0.1-rc1")
+        # without an explicit --tag (it won't guess whether to touch
+        # "latest") - confirmed live the first time a real pre-release
+        # VERSION ever flowed through this workflow. "next" is npm's own
+        # conventional dist-tag for pre-releases.
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [[ "$version" == *-* ]]; then
+            npm publish --dry-run --tag next
+          else
+            npm publish --dry-run
+          fi
 
       - name: Pack the real tarball
         run: npm pack
