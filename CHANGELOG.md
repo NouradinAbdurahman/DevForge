@@ -7,6 +7,14 @@ and version numbers follow [Semantic Versioning](https://semver.org/).
 
 ## [3.0.1] - 2026-07-12
 
+First stable public release. Promotes `v3.0.1-rc1` to stable after the
+RC cycle's real-world verification (npm and Homebrew distribution, a
+clean `rc-validate` run, and dogfooding on a real machine) turned up no
+release-blocking issues. No code changes since `v3.0.1-rc1` - see that
+section below for the full release-engineering changelog (npm/Homebrew
+distribution, shell completions, the release-readiness gate, and the
+rest of this cycle's work).
+
 ## [3.0.1-rc1] - 2026-07-12
 
 Release engineering for v3.0.1-rc1: distribution channels and release
