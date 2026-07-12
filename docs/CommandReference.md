@@ -19,7 +19,7 @@ parentheses.
 | Command | Description | Flags |
 | --- | --- | --- |
 | `check` | Fast PASS/WARNING/FAIL sweep + health score | — |
-| `doctor` | Deep diagnostics + PATH manager + health score | `--fix` |
+| `doctor` | Deep diagnostics + PATH manager + health score | `--fix`, `--json`, `--skip-bash`, `--skip-compatibility`, `--export <format>`, `-o/--output <file>`, `--release-check` |
 | `validate` | Shell/JSON/YAML/Brewfile/mise/Markdown validation | — |
 | `inventory` | Write 9 Markdown reports under `reports/` | — |
 | `report` | Write `reports/system-report.txt` | — |
@@ -359,7 +359,8 @@ Fields: `editor`, `shell`, `packageManager`, `fonts`, `browser`,
 
 | Command | Description | Flags |
 | --- | --- | --- |
-| `release <patch\|minor\|major>` | Bump version, draft changelog, tag, push | — |
+| `release <patch\|minor\|major\|rc\|promote>` | Bump version (or cut/promote a release candidate), draft changelog, tag, push | `-y/--yes` |
+| `rc-validate` | Distribution Verification & RC Validation - GitHub Release/npm/Homebrew/install lifecycle/smoke tests/regression suite, writes `docs/RCValidationReport.md` | `--skip-npm`, `--skip-homebrew`, `--skip-github-release`, `--skip-scaffold` |
 
 ## TUI Dashboard
 

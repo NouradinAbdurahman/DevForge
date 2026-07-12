@@ -20,7 +20,7 @@ The complete local-first development environment platform for building, managing
 | :---: | :---: | :---: | :---: |
 | **261** Registry Packages | **17** Project Generators | **20** TUI Themes | **8** Plugin Templates |
 | **50** Environment Profiles | **17** Collections | **8** Recipes | **196** Compatibility Rules |
-| **29** TUI Pages | **1,088** Tests | **7** AI Providers | **12** Benchmark Categories |
+| **29** TUI Pages | **1,299** Tests | **7** AI Providers | **12** Benchmark Categories |
 
 </div>
 
@@ -261,7 +261,7 @@ DevForgeKit/
 │   ├── src/generators/        # 17 project generators
 │   ├── src/tui/               # Interactive dashboard (Ink/React)
 │   ├── src/schemas/           # JSON schemas (AJV)
-│   └── test/                  # 1,088 tests
+│   └── test/                  # 1,299 tests
 ├── registry/                  # Component registry (Layer 4)
 │   ├── packages/              # 261 YAML manifests
 │   ├── collections/           # 17 curated collections
@@ -312,7 +312,7 @@ DevForgeKit/
 | Repair Scanners | 12 |
 | DEV Graph Node Types | 21 |
 | DEV Graph Edge Types | 16 |
-| Tests | 1,088 |
+| Tests | 1,299 |
 | Documentation Files | 44 |
 
 </div>
@@ -388,7 +388,7 @@ cd DevForgeKit
 cd cli && npm install
 
 # Run tests
-npm test                    # 1,088 tests
+npm test                    # 1,299 tests
 
 # Run lint
 npm run lint                # eslint
@@ -456,7 +456,7 @@ Issues and PRs are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for developme
 ./scripts/validate.sh              # shell, JSON, YAML, Markdown validation
 ./bootstrap.sh --dry-run --yes     # preflight without side effects
 cd cli && npm run lint             # eslint
-cd cli && npm test                 # 1,088 tests
+cd cli && npm test                 # 1,299 tests
 ```
 
 ---

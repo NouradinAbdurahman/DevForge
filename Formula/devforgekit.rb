@@ -21,6 +21,15 @@ class Devforgekit < Formula
   sha256 "d1402f4f10e4280f636df63e76923d194453384384c40376e86346606d332500"
   license "MIT"
 
+  # Tracks GitHub releases directly (the same vX.Y.Z tags `url` above
+  # points at) - verified live via `brew livecheck` against this exact
+  # formula before adding, not guessed: correctly reports the current
+  # version as up to date against the real v3.0.0 GitHub release.
+  livecheck do
+    url :stable
+    strategy :github_latest
+  end
+
   depends_on "node"
 
   def install

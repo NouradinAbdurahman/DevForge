@@ -1,8 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
     extractFormulaVersion,
     checkVersionConsistency,
@@ -322,4 +323,21 @@ test("runReleaseCheck's ok is false whenever any check fails, true otherwise", a
     assert.ok(checks.length > 0);
     const anyFail = checks.some((c) => c.status === "fail");
     assert.equal(ok, !anyFail);
+});
+
+// ─── test script has a bounded per-test timeout ──────────────────────────
+//
+// Regression guard for a real, live-observed bug (RC1 finalization pass):
+// `node --test` has no timeout by default, so a genuinely hung test
+// worker (found live: a tui-reduced-motion.test.js process stuck for
+// over two hours with near-zero CPU usage - a real deadlock/starvation,
+// not just slowness) hangs silently forever instead of failing loudly.
+// This only checks the test script's own definition doesn't regress
+// back to unbounded - it can't test the hang itself without
+// reintroducing it.
+
+test("cli/package.json's test script sets a bounded --test-timeout", () => {
+    const cliRoot = path.resolve(fileURLToPath(import.meta.url), "..", "..");
+    const pkg = JSON.parse(readFileSync(path.join(cliRoot, "package.json"), "utf8"));
+    assert.match(pkg.scripts.test, /--test-timeout=\d+/);
 });

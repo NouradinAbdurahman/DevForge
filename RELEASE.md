@@ -59,11 +59,23 @@ header comment for the full command reference. Summary:
 | `./scripts/release.sh promote` | Finishes an RC cycle: strips the `-rcN` suffix (`3.0.0-rc3` -> `3.0.0`) for the final release. Same CHANGELOG rename, no fresh `## [Unreleased]` added. |
 | `./scripts/release.sh patch\|minor\|major` | A normal semver bump for a routine release once `3.0.0` has shipped. Auto-generates a new CHANGELOG section from `git log` since the last tag (unchanged, original behavior) - refuses to run while the current version is a pre-release. |
 
-Pushing the tag is what actually publishes anything: `.github/workflows/release.yml`
-fires on any `v*.*.*` push, verifies `VERSION` matches the tag,
-re-runs `validate.sh`, extracts the matching CHANGELOG section, and
-creates the GitHub Release with `Brewfile`/`README.md`/`CHANGELOG.md`/
-`VERSION`/a fresh health report attached.
+Pushing the tag drafts the release - it does not publish anything.
+`.github/workflows/release.yml` fires on any `v*.*.*` push, verifies
+`VERSION` matches the tag, re-runs `validate.sh` and
+`doctor --release-check` (blocking the workflow if either fails),
+extracts the matching CHANGELOG section, and creates a **draft**
+GitHub Release with `Brewfile`/`README.md`/`CHANGELOG.md`/`VERSION`/a
+fresh health report/an SBOM (CycloneDX + SPDX)/`SHA256SUMS.txt`
+attached - correctly marked prerelease (and not "Latest") for an
+`-rcN` tag. Publishing is always a separate, deliberate action:
+
+```bash
+gh release edit vX.Y.Z --draft=false
+```
+
+or the "Publish release" button on the draft's GitHub page. Re-running
+the workflow against an already-drafted tag just refreshes the assets
+(rerun-safe), it never re-publishes or duplicates.
 
 For `v3.0.0-rc1` specifically: the existing `v3.0.0` tag was cut on
 2026-07-07, before the security audit, Command Safety Audit, Backward
@@ -80,9 +92,18 @@ verification.
 the local tag and commit (`git tag -d vX.Y.Z`, `git reset --hard
 HEAD~1` if the release commit needs undoing too) and start over.
 
-**After pushing a tag**, treat it as public: other people and tools
-(Homebrew, npm, direct git users) may already reference it. Prefer
-*forward* fixes over rewriting history:
+**After pushing a tag but before publishing the draft**, still nothing
+public has happened - a draft release isn't visible to anyone without
+write access to the repo, and the tag itself is a normal git ref like
+any other. Delete the draft (`gh release delete vX.Y.Z`) and the tag
+(`git push origin :refs/tags/vX.Y.Z`), fix the issue, and push a new
+tag - no different from the "before pushing a tag" case above in
+practice, just with a cleanup step first.
+
+**After publishing the draft** (`gh release edit --draft=false` or the
+web UI), treat it as public: other people and tools (Homebrew, npm,
+direct git users) may already reference it. Prefer *forward* fixes over
+rewriting history:
 
 1. **A real bug is found in a published release** - fix it, cut a new
    patch release (`./scripts/release.sh patch` once past RC, or
