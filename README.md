@@ -78,6 +78,55 @@ Every script is idempotent — safe to run more than once. Nothing is reinstalle
 
 ---
 
+## Shell Completions
+
+Tab-completion for `devforgekit` commands and subcommands, for zsh, bash, and fish.
+
+**Homebrew installs** get completions automatically — the formula registers them, nothing to do.
+
+**npm installs** (`npm install -g devforgekit`) ship the completion scripts in the package but don't wire them into your shell by default, since there's no npm equivalent of Homebrew's completion directories. Enable them with one command:
+
+```bash
+devforgekit completion install
+```
+
+This detects your current shell from `$SHELL` and installs for it. Restart your shell (or run `exec $SHELL`) to pick it up.
+
+**Install for a specific shell**, or every shell on your machine:
+
+```bash
+devforgekit completion install --shell zsh
+devforgekit completion install --shell bash
+devforgekit completion install --shell fish
+devforgekit completion install --all
+```
+
+**Manual install**, if you'd rather not have `devforgekit` touch your shell config — source the packaged script directly. Find its real location with `npm root -g`:
+
+```bash
+# zsh / bash
+source "$(npm root -g)/devforgekit/completions/devforgekit.zsh"   # or .bash
+
+# fish (auto-loads anything placed here, no sourcing needed)
+cp "$(npm root -g)/devforgekit/completions/devforgekit.fish" ~/.config/fish/completions/
+```
+
+**Uninstall:**
+
+```bash
+devforgekit completion uninstall          # your current shell
+devforgekit completion uninstall --all    # every shell
+```
+
+**Check status, or diagnose a broken install** (stale after an update, or a manually edited rc block):
+
+```bash
+devforgekit completion status
+devforgekit completion doctor
+```
+
+---
+
 ## Quick Start
 
 ```bash

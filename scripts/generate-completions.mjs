@@ -82,7 +82,19 @@ ${topEntries}
 ${subFunctions}
     esac
 }
-_devforgekit
+# Works two ways: (1) autoloaded via fpath, the standard #compdef
+# mechanism (Homebrew's formula installs this file renamed to
+# "_devforgekit" on fpath for exactly this path); (2) sourced directly
+# into an interactive shell (e.g. \`devforgekit completion install\`'s
+# npm-install path), in which case $funcstack[1] is NOT "_devforgekit"
+# (we're not being invoked as a completion widget), so this instead
+# self-registers via compdef - the standard idiom generated completion
+# scripts use to support both loading mechanisms from one file.
+if [ "\${funcstack[1]}" = "_devforgekit" ]; then
+    _devforgekit "$@"
+else
+    compdef _devforgekit devforgekit
+fi
 `;
 }
 
