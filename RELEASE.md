@@ -2,7 +2,7 @@
 
 The release checklist, tag process, rollback process, publishing order,
 and verification steps for cutting a DevForgeKit release - starting
-with `v3.0.0-rc1`. This is the top-level entry point; it cross-references
+with `v3.0.1-rc1`. This is the top-level entry point; it cross-references
 the documents that already own the detail rather than duplicating them.
 
 ## Release checklist
@@ -48,17 +48,30 @@ At a glance, before tagging any release:
 
 ## Tag process
 
-All tagging goes through `scripts/release.sh` - it runs the preflight
-checks above, drafts (or renames) the CHANGELOG.md section, bumps
-`VERSION`, commits, tags, and optionally pushes. See the script's own
-header comment for the full command reference. Summary:
+Tagging is a **two-phase process** - see
+[`docs/ReleaseArchitecture.md`](docs/ReleaseArchitecture.md) for the
+full reasoning (branch protection on `main` means nothing can push a
+release commit directly, so the release itself has to go through a PR
+like any other change). Summary:
 
-| Command | Effect |
+1. **`./scripts/release.sh <rc|promote|patch|minor|major>`** ("create")
+   - runs the preflight checks above, drafts (or renames) the
+   CHANGELOG.md section, bumps `VERSION` and `package.json`'s/
+   `cli/package.json`'s own `"version"` fields, commits on a new
+   `release/vX.Y.Z` branch, pushes it, and opens a PR. Never tags
+   anything, never touches `main` directly.
+2. Review and merge that PR like any other.
+3. **`./scripts/release.sh finalize`** - verifies the PR actually
+   merged, syncs local `main`, tags the merge commit, and pushes only
+   the tag (never `main` - the merge already updated it).
+
+| `create` mode | Effect |
 |---|---|
-| `./scripts/release.sh rc` | Cuts a release candidate of the *current* version: `3.0.0` -> `3.0.0-rc1` -> `3.0.0-rc2` -> ... No version-number bump. Renames the hand-written `## [Unreleased]` CHANGELOG section to the new versioned heading (preserving its content) and adds a fresh empty `## [Unreleased]` above it. |
-| `./scripts/release.sh promote` | Finishes an RC cycle: strips the `-rcN` suffix (`3.0.0-rc3` -> `3.0.0`) for the final release. Same CHANGELOG rename, no fresh `## [Unreleased]` added. |
-| `./scripts/release.sh patch\|minor\|major` | A normal semver bump for a routine release once `3.0.0` has shipped. Auto-generates a new CHANGELOG section from `git log` since the last tag (unchanged, original behavior) - refuses to run while the current version is a pre-release. |
+| `rc` | Cuts a release candidate of the *current* version: `3.0.1` -> `3.0.1-rc1` -> `3.0.1-rc2` -> ... No version-number bump. Refuses if the current, clean version is already tagged/released on origin (run `patch`/`minor`/`major` first in that case). Renames the hand-written `## [Unreleased]` CHANGELOG section to the new versioned heading (preserving its content) and adds a fresh empty `## [Unreleased]` above it. |
+| `promote` | Finishes an RC cycle: strips the `-rcN` suffix (`3.0.1-rc3` -> `3.0.1`) for the final release. Same CHANGELOG rename, no fresh `## [Unreleased]` added. |
+| `patch\|minor\|major` | A normal semver bump for a routine release once the current version has shipped. Auto-generates a new CHANGELOG section from `git log` since the last tag (unchanged, original behavior) - refuses to run while the current version is a pre-release. |
 
+See the script's own header comment for the full command reference.
 Pushing the tag drafts the release - it does not publish anything.
 `.github/workflows/release.yml` fires on any `v*.*.*` push, verifies
 `VERSION` matches the tag, re-runs `validate.sh` and
@@ -77,14 +90,18 @@ or the "Publish release" button on the draft's GitHub page. Re-running
 the workflow against an already-drafted tag just refreshes the assets
 (rerun-safe), it never re-publishes or duplicates.
 
-For `v3.0.0-rc1` specifically: the existing `v3.0.0` tag was cut on
-2026-07-07, before the security audit, Command Safety Audit, Backward
-Compatibility Matrix, API Freeze, npm distribution, and Homebrew
-distribution work in this document's own `## [Unreleased]` section
-(see `CHANGELOG.md`). `v3.0.0-rc1` re-validates that same version number
-through a release-candidate cycle rather than jumping straight to a new
-`v3.0.1`/`v3.1.0` - the product didn't gain new features, it gained
-verification.
+For `v3.0.1-rc1` specifically: `v3.0.0` was already cut and published
+as a real, public GitHub Release on 2026-07-07, before the security
+audit, Command Safety Audit, Backward Compatibility Matrix, API Freeze,
+npm distribution, and Homebrew distribution work in this document's own
+`## [Unreleased]` section (see `CHANGELOG.md`). An earlier attempt at
+this cycle mistakenly cut `v3.0.0-rc1` - a version number *lower* than
+the already-shipped `v3.0.0` - by running `rc` mode against a clean,
+already-released version without bumping it forward first (now fixed:
+`rc` refuses that case outright, see `docs/ReleaseArchitecture.md`).
+That tag never became a consumable release (no GitHub Release was ever
+created from it) and was deleted; `v3.0.1-rc1` is the real release
+candidate for this cycle's verification work.
 
 ## Rollback process
 
@@ -141,7 +158,7 @@ Winget/Chocolatey/Scoop are Blocked on Windows registry coverage and
 APT/Pacman/RPM are Blocked on Linux registry coverage - see that
 document for exactly why and what unblocks them.
 
-For `v3.0.0-rc1`: only the GitHub Release step applies. npm and
+For `v3.0.1-rc1`: only the GitHub Release step applies. npm and
 Homebrew are packaging-*ready* (`package.json`, `Formula/devforgekit.rb`,
 both CI-verified) but real publishing to the npm registry and a
 `homebrew-devforgekit` tap is deliberately out of scope until after RC1
