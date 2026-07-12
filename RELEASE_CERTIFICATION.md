@@ -243,3 +243,49 @@ cleanly; `completion status` correctly reports no completions installed
 on this machine's real shell config (all completion testing this cycle
 ran against isolated scratch `$HOME`s, never this machine's real
 `.zshrc`/`.bashrc`).
+
+**2026-07-12** - First `v3.0.1` tag attempt rolled back. `scripts/
+release.sh finalize` tagged the real merge commit and pushed `v3.0.1`,
+but the release workflow correctly failed at the "Release readiness
+gate": `Formula/devforgekit.rb` still referenced `3.0.0`, and
+`checkVersionConsistency()`'s pre-release exemption (see "Release
+decisions" above) no longer applies once `VERSION` is a clean version
+with no `-rcN` suffix - exact match is required. This is a real
+release-process **ordering** bug, not a validation bug: the gate
+correctly requires the Formula to already be updated before it will
+create the release, but the Formula's `url`/`sha256` can only
+correctly reference a tag once that tag exists - a circular dependency
+in the current pipeline (worth a v3.1 redesign, not fixed here - see
+`docs/Release_3.0.1_Final.md` once written).
+
+Followed `RELEASE.md`'s own documented rollback procedure for exactly
+this situation ("After pushing a tag but before publishing the draft,
+still nothing public has happened"): verified first, then rolled back.
+- `gh release view v3.0.1` → "release not found" - no GitHub Release was ever created.
+- `npm view devforgekit versions` → still only `3.0.1-rc1` - no npm publish occurred.
+- `Formula/devforgekit.rb` still referenced `v3.0.0` - never touched `v3.0.1`.
+- `git push origin :refs/tags/v3.0.1` + `git tag -d v3.0.1` - tag removed, confirmed gone via `git ls-remote --tags origin`.
+- The local release-state file (`.devforgekit-release-state.json`) was left intact - PR #38 is genuinely merged, so a re-run of `finalize` after the Formula fix lands will correctly re-tag the same commit.
+
+**2026-07-13** - Formula fix-forward: re-pushed the `v3.0.1` tag (`git tag
+-a v3.0.1 <commit 2618c9b>` + `git push origin v3.0.1`, not the full
+`release.sh finalize` script) for the sole purpose of making the real,
+GitHub-generated archive fetchable - the Formula's own header comment
+requires `shasum -a 256` against the actual
+`archive/refs/tags/vX.Y.Z.tar.gz`, never a hand-typed or assumed value,
+and no tag means no such archive exists to hash. A commit-SHA-based
+archive URL (`archive/<sha>.tar.gz`) was deliberately not substituted:
+GitHub embeds the ref name into every path inside the generated tarball,
+so a commit-SHA archive is not byte-identical to the tag-named archive
+the Formula actually references - using it would risk shipping a
+checksum that doesn't match what `brew install` really downloads.
+Pushing the tag alone (no `finalize` run) re-triggers `release.yml`,
+which is expected to fail again at the same known gate since the Formula
+still isn't fixed yet - harmless, since the workflow's failure creates no
+GitHub Release, no draft, and no published artifact, matching the same
+rollback-safe window documented above. Fetched
+`https://github.com/NouradinAbdurahman/DevForgeKit/archive/refs/tags/v3.0.1.tar.gz`
+directly and computed: `sha256:
+08420ee92ab13f6974720e09692ef9c514108c1a043fc8fed48265a3ae60f38b`
+(7,222,463 bytes). This is the real, verified checksum used in the
+Formula update below - not guessed, not fabricated.
