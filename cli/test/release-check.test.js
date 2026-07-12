@@ -101,6 +101,28 @@ test("checkVersionConsistency fails when the Formula references a different vers
     });
 });
 
+test("checkVersionConsistency tolerates a stale Formula during a pre-release cycle (regression: this deadlocked the real v3.0.0-rc1 release before this exemption existed)", async () => {
+    await withScratchRoot(async (root) => {
+        // VERSION/package.json/cli/package.json agree on a pre-release;
+        // Formula still legitimately references the last real, stable,
+        // downloadable tag - there is no v3.0.1-rc1 tarball to point at yet.
+        writeVersionSources(root, "3.0.1-rc1", "3.0.0");
+        const result = checkVersionConsistency({ root });
+        assert.equal(result.status, "pass");
+        assert.match(result.message, /excluded during a pre-release cycle/);
+    });
+});
+
+test("checkVersionConsistency still fails during a pre-release cycle if package.json/cli/package.json disagree with VERSION", async () => {
+    await withScratchRoot(async (root) => {
+        writeVersionSources(root, "3.0.1-rc1", "3.0.0");
+        writeFileSync(path.join(root, "cli", "package.json"), JSON.stringify({ name: "@devforgekit/cli", version: "3.0.0" }));
+        const result = checkVersionConsistency({ root });
+        assert.equal(result.status, "fail");
+        assert.match(result.message, /mismatch/i);
+    });
+});
+
 test("checkVersionConsistency fails when VERSION is missing", async () => {
     await withScratchRoot(async (root) => {
         const result = checkVersionConsistency({ root });

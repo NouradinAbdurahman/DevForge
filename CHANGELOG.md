@@ -7,9 +7,9 @@ and version numbers follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [3.0.0-rc1] - 2026-07-12
+## [3.0.1-rc1] - 2026-07-12
 
-Release engineering for v3.0.0-rc1: distribution channels and release
+Release engineering for v3.0.1-rc1: distribution channels and release
 process, plus the verification work that preceded them. No new product
 features.
 
@@ -44,7 +44,7 @@ features.
   - the release-readiness rollup and the per-channel packaging status
     (what's actually Ready vs. Pending vs. Blocked, and why).
 - **`RELEASE.md`** - the release checklist, tag process, rollback
-  process, publishing order, and verification steps for v3.0.0-rc1 and
+  process, publishing order, and verification steps for v3.0.1-rc1 and
   beyond.
 - **`devforgekit doctor --release-check`** - a single-command
   release-readiness gate: version consistency across `VERSION`/
@@ -128,6 +128,40 @@ features.
 - **Fish shell completion generation** - incomplete backslash escaping
   in generated descriptions (caught live by CodeQL), fixed and verified
   against a synthetic backslash-and-quote input.
+- **`scripts/release.sh rc` could produce a version lower than the
+  already-shipped release** - cutting an RC directly from a clean,
+  already-tagged version (e.g. running `rc` against `3.0.0` after
+  `v3.0.0` had already shipped) appended `-rc1` without bumping the base
+  version first, producing `3.0.0-rc1` - semver-*lower* than the real
+  release it was supposedly a candidate for. This is exactly what
+  happened cutting this cycle's first RC tag; corrected to `3.0.1-rc1`
+  and `rc` now refuses outright when the current clean version is
+  already tagged on origin, pointing at `patch`/`minor`/`major` instead
+  of guessing which bump was intended.
+- **`scripts/release.sh create` never synced `package.json`'s or
+  `cli/package.json`'s own `"version"` field with `VERSION`** - caught
+  for real by `doctor --release-check`'s version-consistency gate
+  failing the release workflow on the actual RC tag. `create` now bumps
+  all three together; `Formula/devforgekit.rb` is deliberately left
+  alone (its `url`/`sha256` can't reference a tag that doesn't have a
+  real tarball yet) and `checkVersionConsistency()` now excludes it from
+  the comparison for the whole lifetime of a pre-release cycle instead
+  of deadlocking every RC.
+- **`checkVersionConsistency()`'s `cli/package.json` check ignored its
+  own `root` parameter** - read via `cliRoot()` (always this checkout's
+  real path) instead of the passed-in root, so a test exercising it
+  against a scratch directory was silently checking this repo's actual
+  file instead. Found while adding a regression test for the sync fix
+  above; now reads `path.join(root, "cli", "package.json")`.
+- **`WindowsPlatform.osVersion()` shelled out unconditionally** -
+  `cmd /c ver 2>nul` is cmd.exe syntax, but the command runs through
+  whatever shell is native to the *current* host; on a POSIX host (every
+  CI runner, every dev machine here) `2>nul` is interpreted by `/bin/sh`
+  as a literal file redirect, leaving a stray file named `nul` in `cli/`
+  after every test run. Caught by `doctor --release-check`'s
+  working-tree-clean gate immediately after CI's own test run left the
+  file behind. Now returns `null` immediately on any non-Windows host
+  without spawning a process at all.
 
 ### Security
 

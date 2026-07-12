@@ -82,6 +82,13 @@ export class WindowsPlatform extends Platform {
     }
 
     async osVersion() {
+        // "cmd /c ver 2>nul" is cmd.exe syntax - captureShellCommand runs
+        // it through whatever shell is native to the *current* host, so on
+        // a non-Windows host (this class is deliberately instantiable and
+        // testable off a real Windows machine) it would be handed to
+        // /bin/sh instead, which creates a literal file named "nul" rather
+        // than discarding stderr. Only run it on a real Windows host.
+        if (process.platform !== "win32") return null;
         try {
             const { code, stdout } = await captureShellCommand("cmd /c ver 2>nul");
             if (code === 0 && stdout.trim()) return stdout.trim();

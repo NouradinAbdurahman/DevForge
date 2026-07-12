@@ -1,6 +1,6 @@
 {
   "name": "@devforgekit/cli",
-  "version": "3.0.0",
+  "version": "3.0.1-rc1",
   "private": true,
   "description": "DevForgeKit Core CLI - Layer 2 of the DevForgeKit platform (command parsing, plugins, component registry, diagnostics, configuration).",
   "type": "module",

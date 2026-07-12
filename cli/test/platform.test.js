@@ -4,7 +4,7 @@
 // this suite, rather than mocking os.platform() globally.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
@@ -395,6 +395,15 @@ test("WindowsPlatform: osVersion()/packageManagerCacheDir() are honest (null) of
     const platform = new WindowsPlatform();
     assert.equal(await platform.osVersion(), null);
     assert.equal(platform.packageManagerCacheDir(), null);
+});
+
+test("WindowsPlatform: osVersion() never shells out on a non-Windows host (regression: 'cmd /c ver 2>nul' run through /bin/sh creates a literal stray file named 'nul' instead of discarding stderr - caught for real by doctor --release-check's working-tree gate after a CI test run)", async () => {
+    if (process.platform === "win32") return; // this exact failure mode is POSIX-host-specific
+    const strayFile = path.join(process.cwd(), "nul");
+    rmSync(strayFile, { force: true });
+    const platform = new WindowsPlatform();
+    assert.equal(await platform.osVersion(), null);
+    assert.equal(existsSync(strayFile), false, "osVersion() must not create a stray 'nul' file when run through a POSIX shell");
 });
 
 test("installer resolveInstallStep falls back to top-level install when no platformInstall match", async () => {

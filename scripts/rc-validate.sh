@@ -205,7 +205,14 @@ elif ! command_exists npm; then
     report_skip "npm verification" "npm not available"
 else
     report_check "npm pack --dry-run" npm pack --dry-run
-    report_check "npm publish --dry-run" npm publish --dry-run
+    # npm refuses to publish a pre-release version without an explicit
+    # --tag (it won't guess whether to touch "latest") - "next" is npm's
+    # own conventional dist-tag for pre-releases.
+    if [[ "$RC_VERSION" == *-* ]]; then
+        report_check "npm publish --dry-run" npm publish --dry-run --tag next
+    else
+        report_check "npm publish --dry-run" npm publish --dry-run
+    fi
     report_check "npm pack (real tarball)" npm pack --pack-destination "$RC_SCRATCH"
 
     tarball="$(find "$RC_SCRATCH" -maxdepth 1 -name 'devforgekit-*.tgz' | head -1)"

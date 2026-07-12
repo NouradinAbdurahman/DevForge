@@ -47,7 +47,7 @@ export function checkVersionConsistency({ root = repoRoot() } = {}) {
     }
 
     try {
-        sources["cli/package.json"] = JSON.parse(readFileSync(path.join(cliRoot(), "package.json"), "utf8")).version;
+        sources["cli/package.json"] = JSON.parse(readFileSync(path.join(root, "cli", "package.json"), "utf8")).version;
     } catch {
         return check("Version consistency", "fail", "cli/package.json is missing or unreadable");
     }
@@ -60,14 +60,29 @@ export function checkVersionConsistency({ root = repoRoot() } = {}) {
         return check("Version consistency", "fail", "Formula/devforgekit.rb is missing or unreadable");
     }
 
-    const values = Object.values(sources);
+    // The Homebrew formula's url/sha256 can only ever point at a tag that
+    // already has a real, downloadable tarball, so it's updated by hand,
+    // after the fact, once a *stable* version actually ships (see the
+    // formula's own "Update flow" comment). It intentionally lags behind
+    // VERSION for the whole lifetime of a pre-release/RC cycle - requiring
+    // it to already match a not-yet-tagged "x.y.z-rcN" would deadlock
+    // every RC before it could ever be cut. It's excluded from the
+    // comparison only while VERSION carries a pre-release suffix;
+    // package.json/cli/package.json still have to agree exactly, always.
+    const isPrerelease = sources.VERSION.includes("-");
+    const comparedSources = isPrerelease
+        ? Object.fromEntries(Object.entries(sources).filter(([key]) => key !== "Formula/devforgekit.rb"))
+        : sources;
+
+    const values = Object.values(comparedSources);
     const allMatch = values.every((v) => v === values[0]);
     const summary = Object.entries(sources).map(([k, v]) => `${k}=${v}`).join(", ");
 
     if (!allMatch) {
         return check("Version consistency", "fail", `Version mismatch across sources: ${summary}`);
     }
-    return check("Version consistency", "pass", `All sources agree on ${values[0]} (${summary})`);
+    const note = isPrerelease ? " (Formula/devforgekit.rb intentionally excluded during a pre-release cycle)" : "";
+    return check("Version consistency", "pass", `All sources agree on ${values[0]} (${summary})${note}`);
 }
 
 // --- Release tag ----------------------------------------------------------
