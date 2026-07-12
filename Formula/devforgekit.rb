@@ -17,8 +17,8 @@
 class Devforgekit < Formula
   desc "Local-first development environment and workstation lifecycle manager"
   homepage "https://devforgekit.dev"
-  url "https://github.com/NouradinAbdurahman/DevForgeKit/archive/refs/tags/v3.0.0.tar.gz"
-  sha256 "d1402f4f10e4280f636df63e76923d194453384384c40376e86346606d332500"
+  url "https://github.com/NouradinAbdurahman/DevForgeKit/archive/refs/tags/v3.0.1.tar.gz"
+  sha256 "08420ee92ab13f6974720e09692ef9c514108c1a043fc8fed48265a3ae60f38b"
   license "MIT"
 
   # Tracks GitHub releases directly (the same vX.Y.Z tags `url` above
