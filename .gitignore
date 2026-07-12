@@ -35,3 +35,8 @@ cli/node_modules/
 # when a just-in-time `npm install` in cli/ fails, so it doesn't retry
 # on every command - machine-local, never meant to be committed
 cli/.npm-install-failed
+
+# Pending-release marker written by scripts/release.sh's create phase,
+# consumed and deleted by its finalize phase - machine-local state
+# tracking an in-progress release PR, never meant to be committed
+.devforgekit-release-state.json

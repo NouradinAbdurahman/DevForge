@@ -191,7 +191,7 @@ test("a generously large terminal shows the full banner: logo, tagline, and vers
         assert.ok(frame.includes("______"), "the ASCII logo art should be present"); // distinctive substring from the logo's top row
         assert.match(frame, /DevForgeKit/);
         assert.match(frame, /Developer Environment Platform|Build\. Configure\. Ship\./);
-        assert.match(frame, /Version \d+\.\d+\.\d+ • \d+ Components • \d+ Profiles • \d+ Recipes/);
+        assert.match(frame, /Version \d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)? • \d+ Components • \d+ Profiles • \d+ Recipes/);
         instance.unmount();
     } finally {
         restore();
@@ -206,7 +206,7 @@ test("at the default/minimum-ish size the header collapses to wordmark+tagline, 
         const frame = stdout.lastFrame();
         assert.match(frame, /DevForgeKit/);
         assert.ok(!frame.includes("______"), "the ASCII logo art should be hidden in minimal mode");
-        assert.doesNotMatch(frame, /Version \d+\.\d+\.\d+ •/);
+        assert.doesNotMatch(frame, /Version \d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)? •/);
         instance.unmount();
     } finally {
         restore();
