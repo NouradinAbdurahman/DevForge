@@ -76,8 +76,14 @@ features.
   `node --test` defaults to unbounded, so a genuinely hung test worker
   (found live during this pass: a `tui-reduced-motion.test.js` process
   stuck for over two hours with near-zero CPU usage) hangs silently
-  forever instead of failing loudly. Added `--test-timeout=180000`,
-  with a regression test guarding the script definition itself.
+  forever instead of failing loudly. Added `--test-timeout=600000`
+  (an initial `180000` broke real CI - `package.test.js`'s
+  `analyzePackages()` test already had its own deliberately-set,
+  CI-confirmed 300s internal bound, documented inline from a prior
+  session's own live CI failure; the global timeout needs real margin
+  above the slowest already-known-legitimate test, not just above
+  local timing), with a regression test guarding the script definition
+  itself.
 - **`docs/DistributionReadiness.md`** - npm and Homebrew were still
   listed as "Pending" long after both shipped (PRs 18-19); updated to
   reflect that packaging is done and only real publishing remains,

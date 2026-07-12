@@ -229,22 +229,41 @@ real stall, not contention-driven slowness (contention-driven slowness
 still burns CPU; this wasn't). `node --test` has no default per-test
 timeout, and this repo's `cli/package.json` test script never set one.
 
-**Fix:** `"test": "node --test --test-timeout=180000 ..."` - a 3-minute
-per-test bound, well above the slowest legitimately-long test observed
-this whole session (~40s, the Environment Graph test's own documented
-`delay(40000)`). **Regression test added**
-(`cli/test/release-check.test.js`: `"cli/package.json's test script
-sets a bounded --test-timeout"`) guarding the script definition itself
-- the hang mechanism can't be unit-tested without reintroducing it, but
-a silent regression back to unbounded now fails a real test.
+**Fix (with a real correction along the way):** first attempt was
+`--test-timeout=180000` (3 minutes), based on the slowest test observed
+*locally* this session (~40s, the Environment Graph test's own
+documented `delay(40000)`). **That broke real CI** - PR 22's `test` job
+failed with `analyzePackages() completes in bounded time... test timed
+out after 180000ms`. Investigating found that test already carries its
+own deliberately-set, CI-confirmed 300-second internal assertion bound,
+with an inline comment explaining exactly why: a *prior* session
+measured this same test at 34-61s locally but 154.7s on a real GitHub
+Actions runner, confirmed via a live CI failure at the time, not
+guessed. My 180s outer kill-switch was cutting the test off before its
+own carefully-chosen 300s inner bound ever got a chance to run. Fixed
+by raising the global timeout to `--test-timeout=600000` (10 minutes) -
+comfortably above the slowest *already-documented, CI-confirmed*
+legitimate test time (300s) rather than just above local timing, while
+still catching the actual observed hang (2h14m = 8,040s) with enormous
+margin. **Regression test added** (`cli/test/release-check.test.js`:
+`"cli/package.json's test script sets a bounded --test-timeout"`)
+guarding the script definition itself, deliberately checking only that
+*some* bound exists (not the specific number) so it doesn't fight
+future timeout tuning the way the first attempt fought this one.
 
 **Not root-caused.** This mitigates the *symptom* (a hang now fails
-loudly after 3 minutes instead of silently forever) but not the
+loudly after 10 minutes instead of silently forever) but not the
 *cause* (why did that specific worker stall with near-zero CPU?). It
 was observed twice this session, both times in a TUI test file, both
 times on this heavily-loaded local machine, never once in an actual
 GitHub Actions CI run across many real runs today. Flagged as a known
 limitation, not swept under the rug - see below.
+
+**Lesson applied elsewhere in this same report:** this is exactly why
+Phase F's performance numbers are presented with explicit local-machine
+caveats rather than as clean benchmarks - a number measured once, on
+one machine, under one load condition, is not a safe basis for a bound
+that has to hold on different hardware.
 
 ---
 
