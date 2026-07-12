@@ -60,7 +60,6 @@ jobs:
           mkdir -p "$HOME"
 
           version_output="$(devforgekit --version)"
-          expected="$(cat VERSION)"
           echo "reported: $version_output (tag-referenced version, may lag the working tree's VERSION until the formula is bumped)"
 
           devforgekit --help >/dev/null

@@ -1,5 +1,14 @@
 # Release Candidate Checklist
 
+**Superseded.** This was the gate for tagging `v3.0.0-rc1`, which was
+abandoned - it was mistakenly numbered lower than the already-shipped
+`v3.0.0` (see `docs/ReleaseArchitecture.md`) and was retagged as
+`v3.0.1-rc1`. Kept as historical background only; it is not current
+guidance. The authoritative record for `v3.0.1-rc1` and beyond is
+[`RELEASE_CERTIFICATION.md`](../RELEASE_CERTIFICATION.md).
+
+---
+
 An actual checklist, not documentation — the gate for tagging
 `v3.0.0-rc1`. Nothing here is aspirational; every ✓ below reflects a
 real, verified state as of this writing (see the evidence column).
