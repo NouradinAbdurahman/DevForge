@@ -375,3 +375,25 @@ prefix, confirming the postinstall-skip self-heal fires as documented
 component-health scan) all working against the installed copy - torn
 down afterward (`npm uninstall -g` + prefix removal), leaving no trace
 on this machine.
+
+**2026-07-13** - Phase 6 completed. Updated the real
+`NouradinAbdurahman/homebrew-devforgekit` tap repo's `Formula/
+devforgekit.rb` to `url`/`sha256` for the real, published `v3.0.1` tag
+(the same checksum verified in the main repo's Formula after PR #40's
+correction) - a separate repo from `Formula/devforgekit.rb` in this
+repo, so it needed its own update and push, not just a `main` merge.
+Verified before pushing: `brew style`/`brew audit --strict` clean,
+`brew livecheck` now reports `3.0.1 ==> 3.0.1` (up to date, resolving
+the earlier expected mismatch from before the release was published),
+and a real `brew install --build-from-source` + `brew test` cycle
+against the local, edited tap clone. Pushed
+(`nouradinabdurahman/homebrew-devforgekit@e1520de`). Re-verified against
+a genuinely fresh fetch, not just the local clone that pushed it:
+`brew untap` + `brew tap NouradinAbdurahman/devforgekit` (a real clone
+from GitHub) confirmed the pushed Formula content, then
+`brew install nouradinabdurahman/devforgekit/devforgekit` (bottle build
+from that fresh tap) and `devforgekit --version` -> `3.0.1`, matching
+exactly what a new user's fresh-machine install would see. Dev machine
+restored afterward each time (`devforgekit repair install --yes`,
+matching the established pattern from every prior Homebrew verification
+this cycle).
