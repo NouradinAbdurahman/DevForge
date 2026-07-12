@@ -33,7 +33,7 @@
     "linux"
   ],
   "bin": {
-    "devforgekit": "./devforgekit"
+    "devforgekit": "devforgekit"
   },
   "files": [
     "cli/bin",
