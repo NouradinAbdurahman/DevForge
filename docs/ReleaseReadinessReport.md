@@ -1,10 +1,13 @@
 # Release Readiness Report
 
 A report, not a checklist - the working, granular item-by-item tracker
-lives in `docs/ReleaseCandidateChecklist.md`. This is the rollup: what
-each area's real, current state is, and the evidence behind the verdict.
-Every PASS below is backed by something that was actually executed
-against this repository, not inferred.
+for the current release cycle lives in `RELEASE_CERTIFICATION.md`
+(`docs/ReleaseCandidateChecklist.md` was the equivalent tracker for the
+earlier, abandoned `v3.0.0-rc1` cycle - see that file's own
+superseded-notice). This is the rollup: what each area's real, current
+state is, and the evidence behind the verdict. Every PASS below is
+backed by something that was actually executed against this repository,
+not inferred.
 
 ## Summary
 

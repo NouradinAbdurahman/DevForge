@@ -7,11 +7,14 @@ the documents that already own the detail rather than duplicating them.
 
 ## Release checklist
 
-The authoritative, item-by-item checklist is
-[`docs/ReleaseCandidateChecklist.md`](docs/ReleaseCandidateChecklist.md) -
-**the rule stated there governs**: until every item is green, don't
-release. As of this writing, everything through API Freeze is green;
-real hardware/VM validation and the RC1 tag itself remain.
+The authoritative, item-by-item record for the current release cycle is
+[`RELEASE_CERTIFICATION.md`](RELEASE_CERTIFICATION.md) - **the rule
+stated there governs**: until every item is green, don't promote to
+stable.
+[`docs/ReleaseCandidateChecklist.md`](docs/ReleaseCandidateChecklist.md)
+is the equivalent record for the earlier, abandoned `v3.0.0-rc1` cycle -
+kept as historical background, not current guidance (see that file's own
+superseded-notice).
 
 At a glance, before tagging any release:
 
@@ -158,12 +161,17 @@ Winget/Chocolatey/Scoop are Blocked on Windows registry coverage and
 APT/Pacman/RPM are Blocked on Linux registry coverage - see that
 document for exactly why and what unblocks them.
 
-For `v3.0.1-rc1`: only the GitHub Release step applies. npm and
-Homebrew are packaging-*ready* (`package.json`, `Formula/devforgekit.rb`,
-both CI-verified) but real publishing to the npm registry and a
-`homebrew-devforgekit` tap is deliberately out of scope until after RC1
-dogfooding confirms there's nothing left to fix - see the "What's left"
-section of `docs/ReleaseCandidateChecklist.md`.
+For `v3.0.1-rc1`: npm and Homebrew are both **published** - `next` dist-tag
+on npm, the sole formula revision on the `NouradinAbdurahman/homebrew-devforgekit`
+tap - deliberately ahead of the GitHub Release itself, which is still a
+**draft**. This is a real deviation from the documented order above, made
+deliberately: the whole point of an RC is testing every channel, and
+Homebrew has no `next`/`latest`-style pre-release track the way npm does -
+whatever the formula points at is what every `brew install` gets, so it
+had to point at the RC build being tested, not wait for a "final" GitHub
+Release that doesn't exist yet for a candidate. See
+`RELEASE_CERTIFICATION.md`'s "Release decisions" section for the full
+reasoning, and its "Distribution channels" table for current status.
 
 ## Verification steps
 
@@ -198,8 +206,7 @@ anything the above found):
   for a faster partial run while iterating. Exits non-zero (and the
   report says `FAIL`) if anything required failed.
 
-Manual, once per release candidate (see
-`docs/ReleaseCandidateChecklist.md`'s "Create RC1" item):
+Manual, once per release candidate:
 
 1. Install DevForgeKit fresh on a real machine (not CI) via
    `git clone` + `./devforgekit install`.

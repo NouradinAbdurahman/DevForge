@@ -64,8 +64,8 @@ produced it.
   - `brew upgrade` - correctly reports already up to date (only one formula revision exists yet).
   - `brew reinstall` - clean, no errors, version unchanged.
   - `brew uninstall` - fully clean removal, command no longer resolves.
-  - `brew doctor` - see [Known limitations](#known-limitations) (tap-trust warning, expected).
-  - `brew livecheck` - see [Known limitations](#known-limitations) (reports "behind" due to the still-draft GitHub Release, expected).
+  - `brew doctor` - see [Known RC Limitations](#known-rc-limitations) (tap-trust warning, expected).
+  - `brew livecheck` - see [Known RC Limitations](#known-rc-limitations) (reports "behind" due to the still-draft GitHub Release, expected).
 
 ### New-developer-experience audit
 
@@ -74,7 +74,7 @@ starting from the GitHub repository page, reading only the public README and
 `docs/CommandReference.md`, installing via npm, running the install wizard
 (`--dry-run`, since a real run performs genuine system-wide Homebrew
 installs with no scratch-prefix equivalent - see the note in
-[Known limitations](#known-limitations)), and generating a real first
+[Known RC Limitations](#known-rc-limitations)), and generating a real first
 project end-to-end.
 
 **Found and fixed** (this is the one category of finding that was a genuine
@@ -102,54 +102,70 @@ DevForgeKit-side gap, not a third-party tool quirk):
 - Real project generation (`devforgekit new express my-first-api --license mit --auth --prisma --swagger --docker`): produces a complete, well-structured project (git initialized, README, LICENSE, Dockerfile, CI workflow, tests/), generated code passes `node --check`, `npm install` succeeds, the printed "Next commands" list is accurate.
 - The install wizard's step-numbered (`Step N/8`) dry-run flow is clear and produces an accurate health-score summary.
 
-## Known limitations
+## RELEASE.md checklist verification
 
-Real, observed behaviors of the underlying package managers and GitHub
-itself - not DevForgeKit defects, and not things DevForgeKit's own code can
-suppress. Documented here so they don't get mistaken for bugs during the RC
-period.
+Every item in `RELEASE.md`'s "at a glance" checklist, verified individually
+- nothing left as "unknown."
 
-- **`npm install`/`npm publish` print `allow-scripts` warnings.** npm 11.x's
-  allow-scripts gate can skip a package's `postinstall` script by default,
-  including DevForgeKit's own (which only populates `cli/node_modules` - the
-  `devforgekit` dispatcher self-heals this transparently on first run,
-  printing its own clear "Setting up..." message) and, separately, any
-  generated project that depends on Prisma (whose own postinstall runs
-  `prisma generate`). Both are inherent npm 11.x behavior, not specific to
-  this project.
-- **`brew doctor` reports the tap as "not trusted."** Expected for any new,
-  unofficial Homebrew tap - Homebrew's tap-trust feature, unrelated to this
-  tap's actual content (confirmed: real installs/builds/links/uninstalls all
-  worked correctly despite the warning).
-- **`brew livecheck` reports `3.0.1-rc1 ==> 3.0.0`** - i.e. suggests the
-  formula is "ahead of" the latest available version. This is because the
-  `v3.0.1-rc1` GitHub Release is still a **draft** (not published), so
-  GitHub's own "latest release" marker still points at the real, published
-  `v3.0.0`. `livecheck` is behaving exactly as designed (comparing against
-  GitHub's actual public release marker); the RC's use of an unpublished
-  draft is what creates the mismatch. Resolves once a release is published.
-- **npm's `latest` dist-tag currently also resolves to `3.0.1-rc1`.** npm
-  always assigns `latest` to a package's very first publish, regardless of
-  `--tag` - there was no prior stable version for it to keep pointing at.
-  Deliberately left as-is (see [Release decisions](#release-decisions)) -
-  resolves automatically the moment a real `v3.0.1` stable is published.
-  Documented in detail in `docs/releases/3.0.1-rc1-publish.md`.
+| # | Item | Verdict | Evidence |
+|---|---|---|---|
+| 1 | `scripts/validate.sh` passes | **PASS** | Clean (ShellCheck, `bash -n`, Brewfile, mise.toml, JSON, YAML, Markdown) - both standalone and as part of the full `rc-validate.sh` run. |
+| 2 | `npm test --prefix cli` passes | **PASS** | 1,350/1,350, confirmed multiple times this cycle, most recently inside the full `rc-validate.sh` run. |
+| 3 | No failed GitHub Actions runs on the commit being released | **PASS** | `gh run list --commit <HEAD>`: 5 runs checked (Core CLI, Bootstrap, Lint, Scorecard, CodeQL), all `success`. |
+| 4 | `docs/CompatibilityReport.md`, `docs/ApiFreeze.md`, `docs/ReleaseReadinessReport.md` reflect current state | **PASS with a note** | Underlying content (command behavior contracts, API stability classifications) is substantively unchanged this cycle - no command's stability classification or exit-code/`--json` contract changed. Headers still reference "before v3.0.0-rc1" as a historical marker of when each audit ran; left as-is (accurate for its own time, same reasoning as not rewriting `docs/RC1_Final_Report.md`). `docs/ReleaseReadinessReport.md`'s stale cross-reference to the now-superseded `docs/ReleaseCandidateChecklist.md` was fixed to point at this document. |
+| 5 | Working tree is clean and on `main` | **PASS** | True as of the commit this document itself was merged in. |
+| 6 | `devforgekit doctor --release-check` passes | **PASS** | All checks pass (version consistency, required docs, distribution artifacts, registry, no pending-work markers, no debug flags, CI status) once the working tree is clean - confirmed via a full run; the only failure observed during active editing was the working-tree check itself, which resolves on commit. |
+| 7 | `devforgekit rc-validate` passes | **PASS with 2 documented, non-blocking warnings** | Full run: 36 passed, 2 warnings, 2 failed. Both failures and both warnings trace to the same two already-understood, non-blocking causes: (a) this development machine's own pre-existing, non-Homebrew `devforgekit` on PATH collided with the script's local test-tap install, skipping `brew link` and causing the subsequent `--version` check to read the wrong binary - the Formula itself built correctly into the Cellar, `doctor` against it passed, and the real `homebrew-formula.yml` CI workflow (a genuinely clean runner, no pre-existing install) has passed on `main` and every recent PR; (b) the working-tree/release-check failure from item 6, same cause, same resolution. Full detail in `docs/RCValidationReport.md`. |
+
+## Known RC Limitations
+
+Real, genuine, observed limitations - not speculative, and not DevForgeKit
+defects where the cause is a third-party tool's own behavior. Documented
+here so none of it gets mistaken for a bug during the RC period.
+
+- **The Homebrew tap is unsigned and therefore untrusted until users
+  explicitly tap it.** `brew doctor` reports
+  `nouradinabdurahman/devforgekit` as "not trusted" immediately after
+  tapping - expected for any new, unofficial Homebrew tap (Homebrew's
+  tap-trust feature), unrelated to this tap's actual content. Confirmed
+  live: real installs/builds/links/uninstalls all worked correctly despite
+  the warning.
+- **The still-draft GitHub Release causes `brew livecheck` to report
+  `v3.0.0` as the latest available version**, i.e. that the formula
+  (`3.0.1-rc1`) is "ahead of" latest. `v3.0.1-rc1`'s GitHub Release is a
+  **draft** (not published), so GitHub's own "latest release" marker still
+  points at the real, published `v3.0.0`. `livecheck` is behaving exactly
+  as designed; the RC's use of an unpublished draft is what creates the
+  mismatch. Resolves once a release is published.
+- **npm's first-publication behavior temporarily assigns both `latest` and
+  `next` to the RC.** npm always assigns `latest` to a package's very
+  first publish regardless of `--tag` - there was no prior stable version
+  for it to keep pointing at. Deliberately left as-is (see
+  [Release decisions](#release-decisions)) rather than removed, since
+  removing it would leave a tagless `npm install -g devforgekit` with no
+  default version to resolve at all. Resolves automatically the moment a
+  real `v3.0.1` stable is published. Full detail:
+  `docs/releases/3.0.1-rc1-publish.md`.
+- **Full hardware validation across Intel macOS, Windows, Fedora, and Arch
+  remains outstanding.** Every verification in this document ran on a
+  single machine: macOS, Apple Silicon. npm's package is restricted to
+  darwin/linux (Windows users need WSL or the source install); the
+  Homebrew formula has not been built or installed on Intel macOS or any
+  Linux distribution. This is the one genuinely open item before stable -
+  see [RC period](#rc-period).
+- **`npm install`/`npm publish` print `allow-scripts` warnings** (npm
+  11.x's allow-scripts gate skipping a package's `postinstall` by
+  default) - inherent npm 11.x behavior affecting any package with a
+  postinstall script, not specific to DevForgeKit. DevForgeKit's own
+  dispatcher self-heals this transparently on first run.
 - **The install wizard's real (non-`--dry-run`) run was not exercised
-  end-to-end during this audit.** Homebrew has no scratch-prefix equivalent
-  to npm's - a real run genuinely installs formulae system-wide, so testing
-  it live against the maintainer's own development machine was
-  deliberately avoided rather than risking dozens of unwanted package
-  installs. `--dry-run` was exercised fully instead (accurately reports
-  what would happen, matches documented behavior). A real end-to-end run
-  belongs on an actual clean/disposable machine, called out explicitly as
-  outstanding for the RC feedback period.
-- **The maintainer's own development machine's global `devforgekit` symlink
-  was left pointing at the just-uninstalled Homebrew Cellar path** after
-  Homebrew lifecycle testing (`brew uninstall` removed the pre-existing
-  symlink that pointed at the source checkout; recreating it manually
-  outside the project's own install tooling was correctly declined pending
-  the maintainer's own choice of how to restore it - not something an
-  agent should improvise). Machine-local, not a release-blocking issue.
+  end-to-end during this audit.** Homebrew has no scratch-prefix
+  equivalent to npm's - a real run genuinely installs formulae
+  system-wide, so testing it live against the maintainer's own
+  development machine was deliberately avoided. `--dry-run` was exercised
+  fully instead (accurately reports what would happen, matches documented
+  behavior). A real end-to-end run belongs on the same clean/disposable
+  machines the hardware-validation item above already calls for.
 
 ## Release decisions
 
@@ -213,3 +229,17 @@ Everything else is deferred to v3.1.
 ## Corrections
 
 <!-- Append dated notes below this line as issues are found during the RC period. Never rewrite the sections above. -->
+
+**2026-07-12** - Restored the maintainer's development machine's global
+`devforgekit` command, left pointing at a removed Homebrew Cellar path
+after the Homebrew lifecycle test's `brew uninstall` step. Restored via the project's
+own supported mechanism - `devforgekit repair install --yes` (backed by
+`scripts/repair_install.sh symlink` → `install_global_command` in
+`scripts/common.sh`), not a manual `ln -sf`. Verified afterward:
+`devforgekit --version` → `3.0.1-rc1`; `which devforgekit` →
+`/opt/homebrew/bin/devforgekit`; `readlink` → the source checkout's own
+`devforgekit` dispatcher (the original, correct target); `doctor` runs
+cleanly; `completion status` correctly reports no completions installed
+on this machine's real shell config (all completion testing this cycle
+ran against isolated scratch `$HOME`s, never this machine's real
+`.zshrc`/`.bashrc`).
