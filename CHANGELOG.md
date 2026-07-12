@@ -7,6 +7,8 @@ and version numbers follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.0.0-rc1] - 2026-07-12
+
 Release engineering for v3.0.0-rc1: distribution channels and release
 process, plus the verification work that preceded them. No new product
 features.
