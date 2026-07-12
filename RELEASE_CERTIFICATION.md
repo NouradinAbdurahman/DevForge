@@ -310,3 +310,28 @@ that has no effect on what the already-tagged, already-published
 `v3.0.1` archive contains. The circular dependency this surfaces (the
 Formula file lives inside the same repo/tag it describes) is the same
 one already flagged for a v3.1 pipeline redesign, not re-litigated here.
+
+**2026-07-13** - Phase 4 (GitHub Release verification) found a real,
+separate bug: the published `v3.0.1` release's body was empty.
+`release.yml`'s changelog-extraction step (`awk` between the `## [3.0.1]`
+heading and the next `## [` heading) worked correctly - the actual
+problem was upstream, in `CHANGELOG.md` itself: `scripts/release.sh
+promote` renamed the (empty) `## [Unreleased]` heading straight to
+`## [3.0.1]` with no content added, since promoting an RC to stable is
+genuinely a no-code-change operation - but that left the section
+completely blank, which produced a technically-non-empty-but-effectively-blank
+release body (one bare newline, passing the workflow's own `[[ -s
+release-notes.md ]]` non-empty check without tripping its "no section
+found" warning). Verified real: `shasum -a 256 -c SHA256SUMS.txt`
+against the actual downloaded assets (`gh release download v3.0.1`) - 7/7
+OK; both SBOMs reference `3.0.1` (`sbom-cyclonedx.json`'s
+`metadata.component.version`, `sbom-spdx.json`'s
+`packages[0].versionInfo`); the source archive's sha256 matches the one
+now in the Formula. Fixed forward, not by re-tagging (`RELEASE.md`'s own
+rollback guidance: "After publishing the draft... treat it as public...
+prefer forward fixes") - added real content to `CHANGELOG.md`'s
+`## [3.0.1]` section explaining the promotion and pointing at
+`## [3.0.1-rc1]`'s existing content for the substance, then updated the
+already-published release's body directly (`gh release edit v3.0.1
+--notes-file`, which edits the live release without touching the
+immutable tag or its own tagged snapshot of `CHANGELOG.md`).
