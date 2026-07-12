@@ -39,6 +39,7 @@ _devforgekit() {
         'report:Generate a system report at reports/system-report.txt'
         'restore:Restore dotfiles/editors from the repo (no packages/services)'
         'services:start|stop|restart|status for local services (PostgreSQL, MySQL, Redis)'
+        'completion|completions:Manage shell completions (zsh/bash/fish) for npm installs'
         'env:Environment Configuration Engine - PATH/variables/shell hooks generated from package metadata, never hand-edited'
         'explain:Why a component is installed, what depends on it, and whether it'\''s safe to remove'
         'hello:Print a greeting from the hello-world example plugin'
@@ -275,6 +276,13 @@ _devforgekit() {
             'search:Search recipe names/descriptions/tags (local only)'
             'publish:Publish a recipe to the community registry (not yet available)'
             ;;
+        completion|completions)
+            _values 'subcommand' \
+            'install:Install shell completions - defaults to your current shell ($SHELL)'
+            'uninstall:Remove installed shell completions - defaults to your current shell ($SHELL)'
+            'status:Show completion install status for every supported shell'
+            'doctor:Diagnose completion install issues (stale files, manually edited rc blocks)'
+            ;;
         env)
             _values 'subcommand' \
             'doctor:Validate the generated environment against the real filesystem/shell state'
@@ -291,4 +299,16 @@ _devforgekit() {
             ;;
     esac
 }
-_devforgekit
+# Works two ways: (1) autoloaded via fpath, the standard #compdef
+# mechanism (Homebrew's formula installs this file renamed to
+# "_devforgekit" on fpath for exactly this path); (2) sourced directly
+# into an interactive shell (e.g. `devforgekit completion install`'s
+# npm-install path), in which case $funcstack[1] is NOT "_devforgekit"
+# (we're not being invoked as a completion widget), so this instead
+# self-registers via compdef - the standard idiom generated completion
+# scripts use to support both loading mechanisms from one file.
+if [ "${funcstack[1]}" = "_devforgekit" ]; then
+    _devforgekit "$@"
+else
+    compdef _devforgekit devforgekit
+fi

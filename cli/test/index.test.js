@@ -13,7 +13,7 @@ import { createProgram } from "../src/index.js";
 // installed yet. That list must always match what createProgram() actually
 // registers - otherwise a command can silently stop existing in the Node
 // CLI while the bash wrapper still claims it works (or vice versa).
-const NODE_ONLY_COMMANDS = ["config", "component", "plugin", "recipe", "new", "dashboard", "ui"];
+const NODE_ONLY_COMMANDS = ["config", "component", "plugin", "recipe", "new", "dashboard", "ui", "completion", "completions"];
 
 function commandNames(program) {
     const names = new Set();

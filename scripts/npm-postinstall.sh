@@ -42,4 +42,23 @@ if [[ $status -ne 0 ]]; then
     echo "devforgekit: retry manually with: npm install --omit=dev --prefix \"$CLI_DIR\"" >&2
 fi
 
+# One-time welcome message. npm re-runs this postinstall script on every
+# `npm install`/`npm update`, not just the very first install - a marker
+# file (not "did this script run before in this process") is what makes
+# "only print once" actually mean once, ever, not once per upgrade.
+MARKER="${HOME:-}/.config/devforgekit/.postinstall-message-shown"
+if [[ -n "${HOME:-}" && ! -f "$MARKER" ]]; then
+    mkdir -p "$(dirname "$MARKER")" 2>/dev/null && touch "$MARKER" 2>/dev/null
+    cat <<'EOF' >&2
+
+DevForgeKit installed successfully.
+
+Enable shell completions:
+  devforgekit completion install
+
+Run:
+  devforgekit
+EOF
+fi
+
 exit 0

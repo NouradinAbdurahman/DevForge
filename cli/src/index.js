@@ -49,6 +49,7 @@ import { registerPackageCommand } from "./commands/package.js";
 import { registerGraphCommand } from "./commands/graph.js";
 import { registerEnvironmentCommand } from "./commands/environment.js";
 import { registerExplainCommand } from "./commands/explain.js";
+import { registerCompletionCommand } from "./commands/completion.js";
 
 export function createProgram() {
     const program = new Command();
@@ -185,6 +186,7 @@ Examples:
     registerGraphCommand(program);
     registerEnvironmentCommand(program);
     registerExplainCommand(program);
+    registerCompletionCommand(program);
 
     // Layer 3 extension point: any plugins/*/plugin.yml declaring a
     // command hook gets registered as a live top-level command here, on

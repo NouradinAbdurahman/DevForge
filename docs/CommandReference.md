@@ -256,6 +256,15 @@ See `docs/EnvironmentEngine.md`. Tracks every tool DevForgeKit installs (observe
 | --- | --- | --- |
 | `explain <name>` | Why a component is installed (required-by profiles/collections/dependents), what it depends on, and whether it's safe to remove | `--json` |
 
+## Shell Completions
+
+| Command | Description | Flags |
+| --- | --- | --- |
+| `completion install` | Install zsh/bash/fish completions - defaults to the current shell (`$SHELL`). Homebrew installs already wire these via the formula; this is for npm installs | `--shell <zsh\|bash\|fish>`, `--all` |
+| `completion uninstall` | Remove installed completions - defaults to the current shell | `--shell <zsh\|bash\|fish>`, `--all` |
+| `completion status` | Install status per shell (available/installed/up to date) | `--json` |
+| `completion doctor` | Diagnose stale installs or a manually edited rc block, with the fix command to run | — |
+
 ## Package Intelligence
 
 | Command | Description | Flags |
