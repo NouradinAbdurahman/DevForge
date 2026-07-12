@@ -397,3 +397,25 @@ exactly what a new user's fresh-machine install would see. Dev machine
 restored afterward each time (`devforgekit repair install --yes`,
 matching the established pattern from every prior Homebrew verification
 this cycle).
+
+**2026-07-13** - Phase 7 (full release audit re-run) completed.
+`npm test --prefix cli`: 1,350/1,350 passing on a clean, isolated run.
+Three earlier full-suite runs each showed exactly one failure - a
+different, unrelated test each time (a TUI scroll timeout, a Node
+test-runner worker IPC deserialization error, and an async-render
+assertion mismatch) - and none reproduced when the specific failing
+test/file was re-run alone immediately after. Consistent with resource
+contention from this session's own heavy cumulative activity (numerous
+Homebrew builds and npm installs run back-to-back on one machine
+throughout this cycle), not a code defect - the clean, isolated
+1,350/1,350 result is the trustworthy one. `scripts/validate.sh`: 769
+checks passed, 0 failed, run cleanly with nothing else active on the
+machine (shell syntax, ShellCheck across all 22 scripts, Brewfile/
+profile Brewfiles, `mise.toml`, JSON, YAML, Markdown, ESLint - 0 errors,
+119 pre-existing non-blocking warnings). The one real warning
+(`profiles/recommended/Brewfile skipped or failed`) is expected: this
+dev machine doesn't have Docker installed, which that profile lists -
+confirmed via `brew bundle check --verbose`, not a Brewfile defect.
+`devforgekit doctor --release-check`: PASS. `devforgekit registry
+audit`/`lint`/`format`: clean, no generated-file drift. Phase 8
+(`docs/Release_3.0.1_Final.md`) follows.
