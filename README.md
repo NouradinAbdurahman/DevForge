@@ -14,7 +14,7 @@ The complete local-first development environment platform for building, managing
 
 <div align="center">
 
-**Version 3.0.1** &middot; **MIT License** &middot; **macOS / Linux / Windows** &middot; **Node.js ESM**
+**Version 3.0.1** &middot; **MIT License** &middot; **macOS / Linux / Windows (WSL)** &middot; **Node.js ESM**
 
 | | | | |
 | :---: | :---: | :---: | :---: |
@@ -87,7 +87,10 @@ chmod +x bootstrap.sh devforgekit
 ./devforgekit install
 ```
 
-**Requirements:** macOS (Apple Silicon or Intel) or Linux (Ubuntu/Debian, Fedora/RHEL, Arch) for the npm/Homebrew packages; Node.js 18+; internet connection. Windows: use WSL, or the source install directly.
+**Requirements:** macOS (Apple Silicon or Intel) or Linux (Ubuntu/Debian, Fedora/RHEL, Arch) for the npm/Homebrew packages; Node.js 18+; internet connection.
+
+> [!IMPORTANT]
+> **Native Windows (cmd.exe/PowerShell) is not supported and the npm install will fail with `EBADPLATFORM`.** This isn't a packaging bug - the `devforgekit` command itself is a bash script, so it cannot run without a POSIX shell, which stock Windows doesn't have. **Windows users: install and run DevForgeKit from inside [WSL](https://learn.microsoft.com/windows/wsl/install)** (`wsl --install`, then follow the Linux instructions above from inside your WSL shell), or use the source install from within WSL. Native Windows support (no WSL required) is tracked for v3.1 - see the Roadmap. This is not new in v3.0.2; it clarifies and makes discoverable a limitation that already existed.
 
 `devforgekit install` is a separate, explicit step from installing the `devforgekit` command itself (whichever channel you used) - it provisions your actual workstation: Homebrew, mise, dotfiles, editors, services. On a first-ever run in a real terminal (no `--profile` flag, no `-y`), you get an interactive wizard — Minimal / Recommended / Full / Custom, then opt-in prompts for VS Code/Cursor extensions and starting local services, then a preview before anything installs. Any flag, `-y`, or non-interactive/CI usage skips the wizard and installs exactly what you specify, unchanged. See [docs/Profiles.md](docs/Profiles.md).
 
@@ -235,7 +238,7 @@ graph TB
 
 **Four layers, zero circular dependencies:**
 
-- **Layer 1** (bash 3.2) — `bootstrap.sh`, `scripts/*.sh`, `common.sh`. Must run on stock macOS. No Node dependency. (Linux/Windows support is via the Layer 2 CLI.)
+- **Layer 1** (bash 3.2) — `bootstrap.sh`, `scripts/*.sh`, `common.sh`. Must run on stock macOS. No Node dependency. (Linux support, and per-package Windows install steps for registry components once the CLI is running under WSL, are via the Layer 2 CLI - see the Windows note in Installation. This isn't a route to running `devforgekit` on native Windows itself: the dispatcher requires a POSIX shell.)
 - **Layer 2** (Node.js ESM) — `cli/`. Command framework, core services, TUI dashboard, project generators. No build step, no JSX.
 - **Layer 3** (plugins) — `plugins/` and `~/.devforgekit/plugins/`. Manifest-driven, Ed25519-signed.
 - **Layer 4** (registry) — `registry/`. 261 YAML manifests, AJV-validated, dependency-resolved.
@@ -410,7 +413,7 @@ DevForgeKit/
 | Self-Update System | ✓ |
 | Recipe Engine | ✓ |
 | Profile System | ✓ |
-| Cross-Platform (macOS/Linux/Windows) | ✓ |
+| Cross-Platform (macOS/Linux/Windows via WSL) | ✓ |
 
 ---
 
@@ -445,13 +448,18 @@ DevForgeKit/
 - **v2.2.3** Cross-Platform Implementation — Linux (apt/dnf/pacman), Windows (winget/choco/scoop), WSL detection, `platformInstall` schema field, 222 packages updated with cross-platform install steps
 - **v2.2.4** Final Polish & Production Readiness — Comprehensive audit: cross-platform language, CommandReference completeness, README commands table, keyboard shortcuts, theme list, AI docs, TUI docs, CLI docs, version consistency. No new features.
 - **v3.0.0** First Public Release — Production-ready. Added CODE_OF_CONDUCT.md, PR template, dependabot CLI monitoring. Cleaned up placeholder assets and broken image references.
+- **v3.0.2** Windows Messaging Fix — Documentation-only patch: every public-facing doc (README, website, FAQ) now consistently states that native Windows (npm install outside WSL) is not supported and explains why (the `devforgekit` dispatcher is a bash script; there's no packaging bug to fix). No functional change; the `os` field correctly continues to block a native Windows install that would not run.
+
+### Planned
+
+- **v3.1** Native Windows Support — Replace the bash entry point (`devforgekit`) and postinstall script with cross-platform equivalents, add a real Windows-native provisioning path for `devforgekit install` (winget/choco/scoop-based, replacing the bootstrap.sh-only flow), then remove the `os` restriction once verified working end-to-end on real Windows hardware.
 
 ---
 
 ## Development
 
 ```bash
-# Requirements: macOS/Linux/Windows, Node.js 18+
+# Requirements: macOS/Linux, or Windows via WSL. Node.js 18+
 
 # Clone and install
 git clone https://github.com/NouradinAbdurahman/DevForgeKit.git
@@ -497,7 +505,9 @@ Full guide: [docs/Troubleshooting.md](docs/Troubleshooting.md)
 Yes. `common.sh` detects Apple Silicon vs Intel and adjusts the Homebrew prefix accordingly.
 
 **Does this work on Linux/Windows?**
-Yes. The CLI (Layer 2) supports Linux (apt/dnf/pacman) and Windows (winget/choco/scoop) with runtime package manager detection. The bash bootstrap (Layer 1) is macOS-focused; Linux/Windows users should use the CLI directly.
+Linux: yes, directly - `npm install -g devforgekit` or Homebrew both work natively, and the CLI (Layer 2) supports Linux package managers (apt/dnf/pacman) with runtime detection. The bash bootstrap (Layer 1) is macOS-focused; Linux users should use the CLI directly for provisioning.
+
+Windows: **not natively yet** - `npm install -g devforgekit` fails with `EBADPLATFORM` on stock Windows (cmd.exe/PowerShell), because the `devforgekit` command is a bash script and requires a POSIX shell. Install and run it from inside [WSL](https://learn.microsoft.com/windows/wsl/install) instead, where it behaves exactly like Linux. Once running (under WSL), registry component installs do support Windows package managers (winget/choco/scoop) with runtime detection - that support has existed since v2.2.3, it's just not reachable without WSL for the CLI itself yet. Native Windows support (no WSL required) is tracked for v3.1.
 
 **Will `bootstrap.sh` overwrite my `.zshrc`?**
 Not silently. `fs_safe_copy` backs up the existing file as `<file>.backup-<timestamp>` before overwriting.
@@ -515,7 +525,7 @@ Yes. Any argument skips the TUI: `devforgekit doctor`. Or set `DEVFORGEKIT_NO_TU
 Yes. Every AI command degrades to a clear, actionable message rather than crashing.
 
 **Is this cross-platform?**
-Yes. DevForgeKit supports macOS (Homebrew), Linux (apt/dnf/pacman), and Windows (winget/choco/scoop). WSL is detected automatically.
+Yes, with one caveat: macOS (Homebrew) and Linux (apt/dnf/pacman) both work natively via npm or Homebrew. Windows requires running from inside WSL (native `npm install -g devforgekit` on stock Windows fails with `EBADPLATFORM` - see the FAQ entry above and the Installation section). Once running under WSL, Windows package managers (winget/choco/scoop) are supported for registry component installs.
 
 ---
 

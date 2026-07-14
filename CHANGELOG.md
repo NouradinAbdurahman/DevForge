@@ -5,6 +5,31 @@ All notable changes to this repository are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and version numbers follow [Semantic Versioning](https://semver.org/).
 
+## [3.0.2] - Unreleased
+
+Documentation and messaging patch. No functional/packaging changes -
+the `os: ["darwin", "linux"]` restriction in `package.json` is
+correct and stays as-is; it prevents a native Windows npm install that
+would not run anyway, since the `devforgekit` dispatcher and
+`scripts/npm-postinstall.sh` are both bash scripts requiring a POSIX
+shell that stock Windows (cmd.exe/PowerShell) doesn't provide.
+
+### Changed
+
+- **README.md** - every Windows-related claim now consistently states
+  that native Windows is unsupported and explains why (bash dispatcher,
+  not a packaging bug), with a prominent callout in Installation, a
+  corrected FAQ, and updated badges/tables that previously implied
+  Windows parity with macOS/Linux.
+- **Website** (`devforgekit.dev`) - installation page's Windows journey,
+  platform-recommendation cards, FAQ, feature copy, roadmap copy, and
+  `lib/seo.ts`'s structured-data `operatingSystem` field brought in line
+  with the same Windows-via-WSL messaging.
+- Added a **Planned: v3.1 Native Windows Support** roadmap entry -
+  replacing the bash entry point and postinstall script, adding a real
+  Windows-native provisioning path for `devforgekit install`, then
+  removing the `os` restriction once verified on real hardware.
+
 ## [3.0.1] - 2026-07-12
 
 First stable public release. Promotes `v3.0.1-rc1` to stable after the
