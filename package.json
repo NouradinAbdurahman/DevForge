@@ -1,6 +1,6 @@
 {
   "name": "devforgekit",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "private": false,
   "description": "The complete local-first development environment platform — provision, manage, diagnose, and maintain a professional developer workstation from one CLI.",
   "homepage": "https://devforgekit.dev",

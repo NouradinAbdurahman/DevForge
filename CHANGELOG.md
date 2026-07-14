@@ -5,14 +5,94 @@ All notable changes to this repository are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and version numbers follow [Semantic Versioning](https://semver.org/).
 
-## [3.0.2] - Unreleased
+## [3.0.2] - 2026-07-14
 
-Documentation and messaging patch. No functional/packaging changes -
+### Fixed
+
+- **`npm install -g devforgekit` followed by a plain `devforgekit` could
+  fail permanently on Linux/WSL2** when installed with `sudo` (the
+  common case on a system Node.js install where the global prefix is
+  root-owned, e.g. Ubuntu/Debian's `apt` `nodejs` package). Root cause,
+  confirmed live in a clean Ubuntu 22.04 + npm 11.18 container (full
+  writeup in `docs/NpmGlobalInstallRootCause.md`):
+  1. npm 11.16+'s `allow-scripts` security gate silently skips global
+     installs' lifecycle scripts by default, so `scripts/npm-postinstall.sh`
+     never ran and `cli/node_modules` was never populated at install time.
+  2. The `devforgekit` dispatcher's own self-heal fallback
+     (`self_heal_cli_deps`, added specifically for case 1) then tried to
+     `npm install` into `cli/` on first run - but a `sudo`-installed
+     package leaves that directory root-owned, so the unprivileged user
+     hit `EACCES: permission denied, mkdir '.../cli/node_modules'`. The
+     printed recovery command (`cd ... && npm install`, no `sudo`) failed
+     with the identical error, leaving no working path forward.
+  `self_heal_cli_deps` now falls back a second time to a user-writable
+  mirror of the repo under `~/.cache/devforgekit/cli-fallback/` (real
+  copies of `cli/bin`+`cli/src` so Node's module resolver can't walk
+  symlinks back to the still-unwritable original; every other top-level
+  entry - `registry/`, `docs/`, `profiles/`, `scripts/`, `VERSION`, etc.
+  - is symlinked instead), auto-invalidated after `npm update -g
+  devforgekit` ships new `cli/src`. Reproduced on a clean Ubuntu 22.04 +
+  npm 11.18 container, and confirmed the identical `EACCES` also
+  reproduces on macOS given the same root-owned-directory condition - not
+  WSL- or Linux-specific. Four new regression tests in
+  `cli/test/index.test.js` cover the fallback mirror, `registry/`
+  resolution through it, cache reuse, and stale-mirror invalidation.
+
+Otherwise a documentation and messaging patch. No packaging changes -
 the `os: ["darwin", "linux"]` restriction in `package.json` is
 correct and stays as-is; it prevents a native Windows npm install that
 would not run anyway, since the `devforgekit` dispatcher and
 `scripts/npm-postinstall.sh` are both bash scripts requiring a POSIX
 shell that stock Windows (cmd.exe/PowerShell) doesn't provide.
+
+- **`bootstrap.sh` printed a misleading "Bootstrap aborted unexpectedly"
+  message for its deliberate, by-design non-macOS rejection.** A generic
+  `EXIT` trap (meant for genuinely unexpected failures) fired on this
+  expected early exit too, making a first-time Linux user's `devforgekit
+  install` look like something broke rather than "this is expected, run
+  `devforgekit <command>` directly instead." Found and fixed during real
+  Ubuntu/Debian certification (see below); one-line fix (`trap - EXIT`
+  before the exit), verified live on both distros.
+
+### Certified this release (real evidence, see `docs/PlatformSupport.md`)
+
+Part of the v3.0.2 Platform Stabilization Program
+(`docs/PlatformStabilizationProgram.md`) - systematic, evidence-only
+platform validation with no new features. Every claim below has a real
+command run behind it; nothing is assumed.
+
+- **macOS Apple Silicon** - certified. Full real-hardware lifecycle: the
+  release gate (`scripts/rc-validate.sh`), the complete CLI regression
+  suite, `uninstall`/`services`/`backup`/`preferences` exercised safely
+  (test-mode or an isolated clone/`$HOME`, never mutating the real
+  machine), `check`/`doctor`/`report`/`inventory` for real.
+- **Ubuntu 22.04 and Debian 12** - certified. Real fresh-container
+  first-time-user lifecycle: no Homebrew, Node.js via NodeSource, npm
+  11.18's `allow-scripts` gate, non-sudo and sudo (root-owned) global
+  installs, the full command surface (`profile`, `component`, `plugin`,
+  `recipe`, `graph`, `benchmark`, `repair`, `completion` for bash and
+  zsh), uninstall/reinstall, and source-install-vs-npm-install parity.
+  Debian run side-by-side with Ubuntu specifically to surface any
+  Ubuntu-specific (rather than `apt`-family-generic) assumptions - none
+  found.
+- **Fedora, Arch, macOS Intel** - **not yet certified.** Expected to
+  work (the `dnf`/`pacman` code paths in `cli/src/core/platform/linux.js`
+  are architecturally identical to the certified `apt` path; Intel Mac
+  support is the same `common.sh` logic as Apple Silicon, just a
+  different Homebrew prefix), but genuinely not verified on real
+  hardware/environment yet - Fedora/Arch were blocked by a local Docker
+  Desktop environment issue unrelated to DevForgeKit (see
+  `docs/PlatformStabilizationProgram.md`'s Phase 3 report), Intel Mac by
+  lack of hardware access. Recorded honestly as NOT TESTED rather than
+  assumed.
+- **Windows + WSL2** - a supported installation path with real
+  installation bugs found and fixed (the root-owned npm install fix
+  above reproduces identically under WSL2's Ubuntu userspace). Full
+  platform certification on real Windows/WSL2 hardware is still pending
+  - what's verified so far is the Ubuntu-container equivalent, which
+  cannot check genuinely WSL-specific concerns (Windows PATH leakage,
+  `/mnt/c` interop). Native Windows (no WSL) remains unsupported by
+  design - see below.
 
 ### Changed
 
@@ -20,15 +100,35 @@ shell that stock Windows (cmd.exe/PowerShell) doesn't provide.
   that native Windows is unsupported and explains why (bash dispatcher,
   not a packaging bug), with a prominent callout in Installation, a
   corrected FAQ, and updated badges/tables that previously implied
-  Windows parity with macOS/Linux.
+  Windows parity with macOS/Linux. Also brought in line with the
+  certification results above - no platform claim overstates what's
+  actually been verified (see `docs/PlatformSupport.md`).
 - **Website** (`devforgekit.dev`) - installation page's Windows journey,
   platform-recommendation cards, FAQ, feature copy, roadmap copy, and
   `lib/seo.ts`'s structured-data `operatingSystem` field brought in line
-  with the same Windows-via-WSL messaging.
+  with the same Windows-via-WSL messaging and the certification results.
 - Added a **Planned: v3.1 Native Windows Support** roadmap entry -
   replacing the bash entry point and postinstall script, adding a real
   Windows-native provisioning path for `devforgekit install`, then
   removing the `os` restriction once verified on real hardware.
+- New `docker/platform-certification/` - reusable Dockerfiles (Ubuntu,
+  Debian, Fedora, Arch) for reproducing a real first-time-user lifecycle
+  per distro, kept for reuse in future certification work rather than
+  left as throwaway scripts.
+
+### Known limitations carried into this release
+
+See `docs/PlatformSupport.md`'s "Known limitations" section for the full
+list with root causes. Two new ones found during Ubuntu/Debian
+certification, both investigated and deliberately not papered over with
+a workaround: `npm uninstall -g devforgekit` after a root-owned install
+leaves a harmless orphaned cache directory behind (`allow-scripts` would
+block a `preuninstall` cleanup hook the same way it blocks `postinstall`,
+so a real fix needs a different mechanism than a one-line patch); and
+`commander@15`'s conservative `engines.node: >=22.12.0` prints a cosmetic
+`npm warn EBADENGINE` on Node <22.12 that does not reflect an actual
+incompatibility (DevForgeKit's CLI is pure ESM, not the CommonJS
+`require(esm)` case that floor exists for).
 
 ## [3.0.1] - 2026-07-12
 

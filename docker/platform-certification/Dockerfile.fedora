@@ -1,0 +1,20 @@
+FROM fedora:40
+
+RUN dnf install -y curl ca-certificates gnupg2 sudo git zsh procps-ng which \
+    && dnf clean all
+
+RUN curl -fsSL https://rpm.nodesource.com/setup_20.x | bash - \
+    && dnf install -y nodejs \
+    && dnf clean all
+
+RUN npm install -g npm@11
+
+RUN useradd -m -s /bin/bash testuser && \
+    echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+WORKDIR /home/testuser
+USER testuser
+ENV HOME=/home/testuser
+ENV DEVFORGEKIT_NO_TUI=1
+
+CMD ["sleep", "infinity"]

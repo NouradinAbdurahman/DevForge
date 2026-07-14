@@ -223,11 +223,28 @@ else
         report_check "npm install -g (scratch prefix, never the real global npm)" \
             npm install -g "$tarball" --prefix "$RC_SCRATCH/npm-prefix"
 
+        # Regression check for the root cause documented in
+        # docs/NpmGlobalInstallRootCause.md: `sudo npm install -g
+        # devforgekit` leaves cli/ root-owned, defeating the runtime
+        # self-heal fallback (self_heal_cli_deps in the `devforgekit`
+        # dispatcher) that populates cli/node_modules when npm's
+        # allow-scripts gate skips the postinstall script. A `chmod`
+        # here reproduces the exact same `EACCES`/`-w` failure a
+        # root-owned directory does - no real `sudo` needed in CI - and
+        # is applied *before* any devforgekit invocation, so every check
+        # below is forced through the fallback mirror rather than the
+        # normal in-place install, giving genuine, non-mocked end-to-end
+        # coverage of the actual reported bug via the standard release
+        # gate (the fast, mocked equivalent lives in cli/test/index.test.js).
+        installed_cli_dir="$RC_SCRATCH/npm-prefix/lib/node_modules/devforgekit/cli"
+        rm -rf "$installed_cli_dir/node_modules"
+        chmod a-w "$installed_cli_dir"
+
         export HOME="$RC_SCRATCH/npm-home"
         export PATH="$RC_SCRATCH/npm-prefix/bin:$RC_ORIGINAL_PATH"
         export DEVFORGEKIT_NO_TUI=1
 
-        report_check "devforgekit --version (npm install)" bash -c "[[ \"\$(devforgekit --version)\" == '$RC_VERSION' ]]"
+        report_check "devforgekit --version survives a root-owned/unwritable cli/ (sudo-install simulation)" bash -c "[[ \"\$(devforgekit --version)\" == '$RC_VERSION' ]]"
         report_check "devforgekit --help (npm install)" devforgekit --help
         report_check "devforgekit doctor (npm install)" devforgekit doctor --skip-bash --skip-compatibility --json
         report_check "devforgekit check (npm install)" devforgekit check
@@ -240,6 +257,10 @@ else
         else
             report_skip "devforgekit new nextjs demo-npm (npm install)" "--skip-scaffold passed"
         fi
+
+        # Restore cli/'s write bit (removed above) before uninstall - npm
+        # needs to remove entries from it during cleanup.
+        chmod u+w "$installed_cli_dir"
 
         report_check "npm uninstall -g devforgekit (scratch prefix)" \
             npm uninstall -g devforgekit --prefix "$RC_SCRATCH/npm-prefix"
@@ -322,8 +343,15 @@ else
         report_check "devforgekit doctor (Homebrew install)" \
             env DEVFORGEKIT_NO_TUI=1 "$devforgekit_bin" doctor --skip-bash --skip-compatibility --json
 
+        # Fully-qualified tap name, not just "devforgekit" - a plain
+        # `brew upgrade devforgekit` errors with "Formulae found in
+        # multiple taps" on any machine that also has the real
+        # production tap already added (e.g. a maintainer dogfooding
+        # this exact checkout), since both the local test tap and the
+        # real tap define a same-named formula. Confirmed live on this
+        # repo's own dev machine.
         report_check_optional "brew upgrade devforgekit (expected no-op at the same version)" \
-            brew upgrade devforgekit
+            brew upgrade "$RC_BREW_TAP/devforgekit"
 
         report_check "devforgekit doctor after brew upgrade (Homebrew install)" \
             env DEVFORGEKIT_NO_TUI=1 "$devforgekit_bin" doctor --skip-bash --skip-compatibility --json
