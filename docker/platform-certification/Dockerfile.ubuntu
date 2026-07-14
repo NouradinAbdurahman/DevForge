@@ -1,0 +1,30 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Base tooling a real fresh Ubuntu box needs before it can even get Node -
+# deliberately NOT installing Homebrew here; this container proves the
+# npm/source install paths work without it.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl ca-certificates gnupg sudo git zsh procps lsb-release build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Node.js 20 LTS via NodeSource - the real-world path a fresh Ubuntu user
+# takes (apt's own `nodejs` package is often too old; see engines: >=18).
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# Match the npm 11.16+ allow-scripts gate that triggered the original bug.
+RUN npm install -g npm@11
+
+# Non-root user with passwordless sudo, mirroring a real first-time user.
+RUN useradd -m -s /bin/bash testuser && \
+    echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+WORKDIR /home/testuser
+USER testuser
+ENV HOME=/home/testuser
+ENV DEVFORGEKIT_NO_TUI=1
+
+CMD ["sleep", "infinity"]

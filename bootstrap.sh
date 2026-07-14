@@ -126,7 +126,12 @@ next_step "Preflight checks"
 log_info "Preparing your machine..."
 
 if ! os_is_macos; then
-    log_error "This bootstrap only supports macOS."
+    log_error "This bootstrap only supports macOS (it hardcodes Homebrew for provisioning)."
+    log_info "On Linux, install Node.js (>=18) and npm yourself, then run 'devforgekit <command>' directly - the Node CLI itself (doctor, check, new, component, etc.) is not macOS-only. See docs/PlatformSupport.md."
+    # This is an expected, by-design early exit, not a crash - skip the
+    # generic "aborted unexpectedly" EXIT trap below so a first-time Linux
+    # user isn't left thinking something went wrong.
+    trap - EXIT
     exit 1
 fi
 

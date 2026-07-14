@@ -89,12 +89,36 @@ Examples:
 EOF
 }
 
-# cli_available - true when the Node CLI has been set up (Node itself is
-# on PATH and cli/'s npm dependencies are installed). Checked fresh on
-# every invocation rather than cached, since either can change between
-# runs (e.g. right after `./bootstrap.sh` finishes).
+# CLI_FALLBACK_ROOT - a user-writable mirror of this repo, used only when
+# "$SCRIPT_DIR/cli" itself isn't writable (see self_heal_cli_deps below).
+# Namespaced by the real install location (not just a fixed path) so
+# multiple installs (e.g. a Homebrew copy and an npm copy) on the same
+# machine never collide with each other's fallback.
+CLI_FALLBACK_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/devforgekit/cli-fallback/$(printf '%s' "$SCRIPT_DIR" | cksum | cut -d' ' -f1)"
+
+# cli_available - true when the Node CLI has been set up: Node itself is
+# on PATH, and cli/'s npm dependencies are installed either in place
+# ("$SCRIPT_DIR/cli/node_modules", the normal/preferred case) or in the
+# fallback mirror (see self_heal_cli_deps) and that mirror isn't stale.
+# Checked fresh on every invocation rather than cached, since any of
+# this can change between runs (e.g. right after `./bootstrap.sh`
+# finishes, or after `npm update -g devforgekit`).
 cli_available() {
-    command -v node >/dev/null 2>&1 && [[ -d "$SCRIPT_DIR/cli/node_modules" ]]
+    command -v node >/dev/null 2>&1 || return 1
+    [[ -d "$SCRIPT_DIR/cli/node_modules" ]] && return 0
+    [[ -d "$CLI_FALLBACK_ROOT/cli/node_modules" ]] || return 1
+    [[ "$(cat "$SCRIPT_DIR/VERSION" 2>/dev/null)" == "$(cat "$CLI_FALLBACK_ROOT/.mirrored-version" 2>/dev/null)" ]]
+}
+
+# cli_entrypoint - which devforgekit.js to actually run: the in-place one
+# if its node_modules exists, otherwise the fallback mirror's copy. Only
+# meaningful after cli_available/self_heal_cli_deps has returned success.
+cli_entrypoint() {
+    if [[ -d "$SCRIPT_DIR/cli/node_modules" ]]; then
+        printf '%s\n' "$SCRIPT_DIR/cli/bin/devforgekit.js"
+    else
+        printf '%s\n' "$CLI_FALLBACK_ROOT/cli/bin/devforgekit.js"
+    fi
 }
 
 # self_heal_cli_deps - a one-time-per-failure attempt to install cli/'s
@@ -107,21 +131,82 @@ cli_available() {
 # scripts/common.sh, quiet on success, and writes a marker on failure so
 # a real, ongoing problem (no network, no npm) doesn't retry - and
 # therefore add multi-second latency - on every single command.
+#
+# Two attempts, in order:
+#   1. In place, directly in "$SCRIPT_DIR/cli" - fast, and shared by
+#      every future invocation with zero ongoing overhead. Works
+#      whenever that directory is writable (a repo clone, the Homebrew
+#      Cellar, or an npm global prefix the user already owns).
+#   2. A user-writable mirror at CLI_FALLBACK_ROOT - needed when (1)'s
+#      directory is root-owned, almost always because the package was
+#      installed with `sudo npm install -g` (confirmed live: reproduced
+#      in a clean Ubuntu 22.04 + npm 11.18 container - see
+#      docs/NpmGlobalInstallRootCause.md). Real copies of cli/bin and cli/src
+#      (not symlinks) so Node's module resolver, which resolves a
+#      symlinked module back to its real path before searching for
+#      node_modules, can't walk straight back to the still-missing,
+#      still-unwritable original cli/node_modules. Every *other*
+#      top-level entry (registry/, docs/, profiles/, scripts/, VERSION,
+#      etc. - anything core/paths.js's repoRoot()-relative lookups might
+#      ever reach) is symlinked instead: those are read with plain
+#      fs calls, which follow symlinks correctly, and symlinking keeps
+#      the mirror automatically current with the real install with no
+#      separate sync step. A .mirrored-version marker (compared against
+#      the real VERSION file by cli_available) invalidates the mirror
+#      after `npm update -g devforgekit` ships new cli/src, so the
+#      fallback can't silently keep running stale code forever.
 self_heal_cli_deps() {
     command -v node >/dev/null 2>&1 || return 1
     [[ -d "$SCRIPT_DIR/cli/node_modules" ]] && return 0
     [[ -f "$SCRIPT_DIR/cli/package.json" ]] || return 1
     command -v npm >/dev/null 2>&1 || return 1
-    local marker="$SCRIPT_DIR/cli/.npm-install-failed"
-    [[ -f "$marker" ]] && return 1
 
-    echo "Setting up the DevForgeKit CLI (first run only)..." >&2
-    if (cd "$SCRIPT_DIR/cli" && npm install --omit=dev --no-audit --no-fund >/dev/null 2>&1); then
-        rm -f "$marker"
+    if [[ -d "$CLI_FALLBACK_ROOT/cli/node_modules" ]] \
+        && [[ "$(cat "$SCRIPT_DIR/VERSION" 2>/dev/null)" == "$(cat "$CLI_FALLBACK_ROOT/.mirrored-version" 2>/dev/null)" ]]; then
         return 0
     fi
-    touch "$marker" 2>/dev/null || true
-    echo "Automatic setup failed - run: cd \"$SCRIPT_DIR/cli\" && npm install" >&2
+
+    local marker="$SCRIPT_DIR/cli/.npm-install-failed"
+    local fallback_marker="$CLI_FALLBACK_ROOT/.npm-install-failed"
+
+    if [[ -w "$SCRIPT_DIR/cli" ]] && [[ ! -f "$marker" ]]; then
+        echo "Setting up the DevForgeKit CLI (first run only)..." >&2
+        if (cd "$SCRIPT_DIR/cli" && npm install --omit=dev --no-audit --no-fund >/dev/null 2>&1); then
+            rm -f "$marker"
+            return 0
+        fi
+        touch "$marker" 2>/dev/null || true
+    fi
+
+    [[ -f "$fallback_marker" ]] && return 1
+    [[ -w "$SCRIPT_DIR/cli" ]] && return 1
+
+    [[ -f "$marker" ]] || echo "Setting up the DevForgeKit CLI (first run only)..." >&2
+    rm -rf "$CLI_FALLBACK_ROOT"
+    mkdir -p "$CLI_FALLBACK_ROOT/cli" 2>/dev/null || return 1
+
+    local entry
+    for entry in "$SCRIPT_DIR"/*; do
+        [[ "$(basename "$entry")" == "cli" ]] && continue
+        ln -sfn "$entry" "$CLI_FALLBACK_ROOT/$(basename "$entry")" 2>/dev/null
+    done
+    cp -R "$SCRIPT_DIR/cli/bin" "$CLI_FALLBACK_ROOT/cli/bin" 2>/dev/null
+    cp -R "$SCRIPT_DIR/cli/src" "$CLI_FALLBACK_ROOT/cli/src" 2>/dev/null
+    cp "$SCRIPT_DIR/cli/package.json" "$CLI_FALLBACK_ROOT/cli/package.json" 2>/dev/null
+    [[ -f "$SCRIPT_DIR/cli/package-lock.json" ]] && cp "$SCRIPT_DIR/cli/package-lock.json" "$CLI_FALLBACK_ROOT/cli/package-lock.json" 2>/dev/null
+
+    if (cd "$CLI_FALLBACK_ROOT/cli" && npm install --omit=dev --no-audit --no-fund >/dev/null 2>&1); then
+        cp "$SCRIPT_DIR/VERSION" "$CLI_FALLBACK_ROOT/.mirrored-version" 2>/dev/null || true
+        rm -f "$fallback_marker"
+        return 0
+    fi
+
+    touch "$fallback_marker" 2>/dev/null || true
+    echo "Automatic setup failed." >&2
+    echo "This usually means devforgekit was installed with 'sudo npm install -g'," >&2
+    echo "which leaves \"$SCRIPT_DIR/cli\" owned by root. Fix with one of:" >&2
+    echo "  sudo npm install --omit=dev --prefix \"$SCRIPT_DIR/cli\"" >&2
+    echo "  sudo chown -R \"\$(id -un)\" \"$SCRIPT_DIR/cli\" && devforgekit" >&2
     return 1
 }
 
@@ -131,7 +216,7 @@ self_heal_cli_deps() {
 # Without the Node CLI, the original usage text keeps working unchanged.
 if [[ $# -eq 0 ]]; then
     if cli_available || self_heal_cli_deps; then
-        exec node "$SCRIPT_DIR/cli/bin/devforgekit.js"
+        exec node "$(cli_entrypoint)"
     fi
     usage
     exit 1
@@ -145,7 +230,7 @@ case "$cmd" in
 esac
 
 if cli_available || self_heal_cli_deps; then
-    exec node "$SCRIPT_DIR/cli/bin/devforgekit.js" "$cmd" "$@"
+    exec node "$(cli_entrypoint)" "$cmd" "$@"
 fi
 
 # Legacy fallback: the Node CLI isn't set up yet (fresh clone, before the

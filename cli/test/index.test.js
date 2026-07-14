@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, mkdtempSync, symlinkSync, rmSync } from "node:fs";
+import { readFileSync, mkdtempSync, symlinkSync, rmSync, mkdirSync, cpSync, chmodSync, writeFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -94,5 +94,156 @@ test("root dispatcher delegates a no-args invocation to the Node CLI, even throu
         assert.match(output, /Usage: devforgekit \[options\] \[command\]/);
     } finally {
         rmSync(tmpDir, { recursive: true, force: true });
+    }
+});
+
+// Regression coverage for the root cause documented in
+// docs/NpmGlobalInstallRootCause.md: `sudo npm install -g devforgekit`
+// leaves the installed cli/ directory root-owned (real repro: a clean
+// Ubuntu 22.04 + npm 11.18 container). Combined with npm 11.16+'s
+// allow-scripts gate silently skipping the postinstall script that
+// would normally populate cli/node_modules, the *unprivileged* user who
+// then runs `devforgekit` has no write access to install cli/'s
+// dependencies in place. self_heal_cli_deps()'s fallback mirror
+// (CLI_FALLBACK_ROOT, in the `devforgekit` dispatcher) exists
+// specifically to survive this. These tests simulate the unwritable
+// directory with a plain chmod (no sudo/root needed - the OS enforces
+// the same EACCES either way) and a fake `npm` on PATH that symlinks in
+// this repo's own already-installed cli/node_modules instead of hitting
+// the real network, so the test stays fast and deterministic while
+// still exercising the real chmod/dispatch/exec logic end to end.
+function buildUnwritableCliFixture() {
+    const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
+    const tmpDir = mkdtempSync(join(tmpdir(), "devforgekit-sudo-fixture-"));
+
+    for (const entry of readdirSync(repoRoot, { withFileTypes: true })) {
+        if (["cli", ".git", "node_modules"].includes(entry.name)) continue;
+        cpSync(join(repoRoot, entry.name), join(tmpDir, entry.name), { recursive: true });
+    }
+    mkdirSync(join(tmpDir, "cli"));
+    cpSync(join(repoRoot, "cli", "bin"), join(tmpDir, "cli", "bin"), { recursive: true });
+    cpSync(join(repoRoot, "cli", "src"), join(tmpDir, "cli", "src"), { recursive: true });
+    cpSync(join(repoRoot, "cli", "package.json"), join(tmpDir, "cli", "package.json"));
+    cpSync(join(repoRoot, "cli", "package-lock.json"), join(tmpDir, "cli", "package-lock.json"));
+
+    // Simulate `sudo npm install -g` leaving cli/ unwritable to the
+    // current (unprivileged) user - a plain chmod produces the exact
+    // same `[[ -w "$SCRIPT_DIR/cli" ]]` failure and EACCES-on-mkdir a
+    // real root-owned directory does, without needing actual root/sudo
+    // in a test environment.
+    chmodSync(join(tmpDir, "cli"), 0o555);
+
+    const fakeBin = join(tmpDir, "fake-bin");
+    mkdirSync(fakeBin);
+    const fakeNpmPath = join(fakeBin, "npm");
+    writeFileSync(
+        fakeNpmPath,
+        `#!/usr/bin/env bash\n# Fake npm for tests: "install" links in this repo's own already-\n# installed cli/node_modules instead of touching the real network.\nif [[ "$1" == "install" ]]; then\n    ln -s "${join(repoRoot, "cli", "node_modules")}" node_modules\n    exit 0\nfi\nexit 0\n`
+    );
+    chmodSync(fakeNpmPath, 0o755);
+
+    return { tmpDir, fakeBin };
+}
+
+test("devforgekit falls back to a user-writable mirror and still delegates to the Node CLI when cli/ is not writable (sudo-installed npm package simulation)", () => {
+    const { tmpDir, fakeBin } = buildUnwritableCliFixture();
+    const fakeHome = mkdtempSync(join(tmpdir(), "devforgekit-sudo-fixture-home-"));
+
+    try {
+        const result = spawnSync(join(tmpDir, "devforgekit"), ["--version"], {
+            encoding: "utf8",
+            env: { ...process.env, HOME: fakeHome, PATH: `${fakeBin}:${process.env.PATH}`, DEVFORGEKIT_NO_TUI: "1" }
+        });
+
+        const output = result.stdout + result.stderr;
+        assert.ok(
+            !output.includes("Automatic setup failed"),
+            `expected the fallback mirror to succeed, but self-heal reported failure:\n${output}`
+        );
+        assert.match(result.stdout.trim(), /^\d+\.\d+\.\d+/, `expected a real version number, got:\n${output}`);
+    } finally {
+        // Undo the chmod from buildUnwritableCliFixture() first - removing
+        // cli/'s own children requires write permission on cli/ itself,
+        // which was deliberately revoked above.
+        chmodSync(join(tmpDir, "cli"), 0o755);
+        rmSync(tmpDir, { recursive: true, force: true });
+        rmSync(fakeHome, { recursive: true, force: true });
+    }
+});
+
+test("the fallback mirror correctly resolves repoRoot()-relative lookups (registry/) through symlinks, not just cli/", () => {
+    const { tmpDir, fakeBin } = buildUnwritableCliFixture();
+    const fakeHome = mkdtempSync(join(tmpdir(), "devforgekit-sudo-fixture-home-"));
+
+    try {
+        const result = spawnSync(join(tmpDir, "devforgekit"), ["component", "list"], {
+            encoding: "utf8",
+            env: { ...process.env, HOME: fakeHome, PATH: `${fakeBin}:${process.env.PATH}`, DEVFORGEKIT_NO_TUI: "1" }
+        });
+
+        const output = result.stdout + result.stderr;
+        assert.ok(!output.includes("Automatic setup failed"), `expected self-heal to succeed:\n${output}`);
+        assert.match(output, /DevForgeKit Components \(\d+\)/, `expected the real registry to load through the mirror:\n${output}`);
+    } finally {
+        // Undo the chmod from buildUnwritableCliFixture() first - removing
+        // cli/'s own children requires write permission on cli/ itself,
+        // which was deliberately revoked above.
+        chmodSync(join(tmpDir, "cli"), 0o755);
+        rmSync(tmpDir, { recursive: true, force: true });
+        rmSync(fakeHome, { recursive: true, force: true });
+    }
+});
+
+test("a second invocation reuses the fallback mirror without re-running the setup message", () => {
+    const { tmpDir, fakeBin } = buildUnwritableCliFixture();
+    const fakeHome = mkdtempSync(join(tmpdir(), "devforgekit-sudo-fixture-home-"));
+    const env = { ...process.env, HOME: fakeHome, PATH: `${fakeBin}:${process.env.PATH}`, DEVFORGEKIT_NO_TUI: "1" };
+
+    try {
+        const first = spawnSync(join(tmpDir, "devforgekit"), ["--version"], { encoding: "utf8", env });
+        assert.match(first.stdout.trim(), /^\d+\.\d+\.\d+/, `first run should succeed:\n${first.stdout}${first.stderr}`);
+
+        const second = spawnSync(join(tmpDir, "devforgekit"), ["--version"], { encoding: "utf8", env });
+        assert.ok(
+            !second.stderr.includes("Setting up the DevForgeKit CLI"),
+            `second run should reuse the already-mirrored cache, not re-run setup:\n${second.stdout}${second.stderr}`
+        );
+        assert.match(second.stdout.trim(), /^\d+\.\d+\.\d+/);
+    } finally {
+        // Undo the chmod from buildUnwritableCliFixture() first - removing
+        // cli/'s own children requires write permission on cli/ itself,
+        // which was deliberately revoked above.
+        chmodSync(join(tmpDir, "cli"), 0o755);
+        rmSync(tmpDir, { recursive: true, force: true });
+        rmSync(fakeHome, { recursive: true, force: true });
+    }
+});
+
+test("bumping VERSION invalidates the fallback mirror instead of silently running stale code", () => {
+    const { tmpDir, fakeBin } = buildUnwritableCliFixture();
+    const fakeHome = mkdtempSync(join(tmpdir(), "devforgekit-sudo-fixture-home-"));
+    const env = { ...process.env, HOME: fakeHome, PATH: `${fakeBin}:${process.env.PATH}`, DEVFORGEKIT_NO_TUI: "1" };
+
+    try {
+        const first = spawnSync(join(tmpDir, "devforgekit"), ["--version"], { encoding: "utf8", env });
+        assert.match(first.stdout.trim(), /^\d+\.\d+\.\d+/, `first run should succeed:\n${first.stdout}${first.stderr}`);
+
+        // Simulate `npm update -g devforgekit` bumping VERSION in place
+        // (the one file left writable to the invoking user's ownership
+        // model - only cli/ itself was chmod'd read-only above).
+        writeFileSync(join(tmpDir, "VERSION"), "999.0.0\n");
+
+        const second = spawnSync(join(tmpDir, "devforgekit"), ["--version"], { encoding: "utf8", env });
+        assert.ok(
+            second.stderr.includes("Setting up the DevForgeKit CLI"),
+            `expected the stale mirror to be rebuilt after a VERSION bump:\n${second.stdout}${second.stderr}`
+        );
+    } finally {
+        // Undo the chmod from buildUnwritableCliFixture() first - removing
+        // cli/'s own children requires write permission on cli/ itself,
+        // which was deliberately revoked above.
+        chmodSync(join(tmpDir, "cli"), 0o755);
+        rmSync(tmpDir, { recursive: true, force: true });
+        rmSync(fakeHome, { recursive: true, force: true });
     }
 });

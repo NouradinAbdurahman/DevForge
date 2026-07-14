@@ -1,0 +1,13 @@
+FROM archlinux:latest
+
+RUN pacman -Sy --noconfirm curl ca-certificates gnupg sudo git zsh procps-ng nodejs npm which
+
+RUN useradd -m -s /bin/bash testuser && \
+    echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+WORKDIR /home/testuser
+USER testuser
+ENV HOME=/home/testuser
+ENV DEVFORGEKIT_NO_TUI=1
+
+CMD ["sleep", "infinity"]

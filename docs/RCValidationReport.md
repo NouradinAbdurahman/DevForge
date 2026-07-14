@@ -2,10 +2,10 @@
 
 # DevForgeKit RC Validation Report
 
-**Version:** 3.0.1
-**Commit:** `ac565dd9f40e8d83a45a0a243547afc5ec9b5e8a` (release/v3.0.1)
-**Started:** 2026-07-12T20:38:03Z
-**Finished:** 2026-07-12T20:47:52Z
+**Version:** 3.0.2
+**Commit:** `29ed1c3007c556e8c2c36e3b4aa819e4c61ababd` (main)
+**Started:** 2026-07-14T22:12:28Z
+**Finished:** 2026-07-14T22:24:10Z
 
 ## Final recommendation: FAIL
 
@@ -13,7 +13,7 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
 
 ## 1. GitHub Release verification
 
-- ⚪ **GitHub Release v3.0.1** - skipped (no release found for v3.0.1 yet (tag not cut))
+- ⚪ **GitHub Release verification** - skipped (--skip-github-release passed)
 
 
 ## 2. npm verification
@@ -53,15 +53,15 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   npm notice 2.2kB vscode/settings.json
   npm notice Tarball Details
   npm notice name: devforgekit
-  npm notice version: 3.0.1
-  npm notice filename: devforgekit-3.0.1.tgz
+  npm notice version: 3.0.2
+  npm notice filename: devforgekit-3.0.2.tgz
   npm notice package size: 1.1 MB
-  npm notice unpacked size: 4.2 MB
-  npm notice shasum: 84f709003c70a449f12134f9106643ca2ed4b963
-  npm notice integrity: sha512-TEvlcSJOTPTce[...]JmPOKNqYX6P+A==
-  npm notice total files: 1020
+  npm notice unpacked size: 4.3 MB
+  npm notice shasum: 6a20738c2572bfed6ebea1e23205bb8767fee92f
+  npm notice integrity: sha512-4HKJEidLKk9Xf[...]7+IvDwQaDWEWA==
+  npm notice total files: 1024
   npm notice
-  devforgekit-3.0.1.tgz
+  devforgekit-3.0.2.tgz
 
   ```
   </details>
@@ -100,16 +100,16 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   npm notice 2.2kB vscode/settings.json
   npm notice Tarball Details
   npm notice name: devforgekit
-  npm notice version: 3.0.1
-  npm notice filename: devforgekit-3.0.1.tgz
+  npm notice version: 3.0.2
+  npm notice filename: devforgekit-3.0.2.tgz
   npm notice package size: 1.1 MB
-  npm notice unpacked size: 4.2 MB
-  npm notice shasum: 84f709003c70a449f12134f9106643ca2ed4b963
-  npm notice integrity: sha512-TEvlcSJOTPTce[...]JmPOKNqYX6P+A==
-  npm notice total files: 1020
+  npm notice unpacked size: 4.3 MB
+  npm notice shasum: 6a20738c2572bfed6ebea1e23205bb8767fee92f
+  npm notice integrity: sha512-4HKJEidLKk9Xf[...]7+IvDwQaDWEWA==
+  npm notice total files: 1024
   npm notice
   npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access (dry-run)
-  + devforgekit@3.0.1
+  + devforgekit@3.0.2
 
   ```
   </details>
@@ -149,15 +149,15 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   npm notice 2.2kB vscode/settings.json
   npm notice Tarball Details
   npm notice name: devforgekit
-  npm notice version: 3.0.1
-  npm notice filename: devforgekit-3.0.1.tgz
+  npm notice version: 3.0.2
+  npm notice filename: devforgekit-3.0.2.tgz
   npm notice package size: 1.1 MB
-  npm notice unpacked size: 4.2 MB
-  npm notice shasum: 84f709003c70a449f12134f9106643ca2ed4b963
-  npm notice integrity: sha512-TEvlcSJOTPTce[...]JmPOKNqYX6P+A==
-  npm notice total files: 1020
+  npm notice unpacked size: 4.3 MB
+  npm notice shasum: 6a20738c2572bfed6ebea1e23205bb8767fee92f
+  npm notice integrity: sha512-4HKJEidLKk9Xf[...]7+IvDwQaDWEWA==
+  npm notice total files: 1024
   npm notice
-  devforgekit-3.0.1.tgz
+  devforgekit-3.0.2.tgz
 
   ```
   </details>
@@ -169,7 +169,7 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   
   added 1 package in 1s
   npm warn allow-scripts 1 package has install scripts not yet covered by allowScripts:
-  npm warn allow-scripts   devforgekit@3.0.1 (postinstall: scripts/npm-postinstall.sh)
+  npm warn allow-scripts   devforgekit@3.0.2 (postinstall: scripts/npm-postinstall.sh)
   npm warn allow-scripts
   npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
   Reshimming mise lts...
@@ -177,7 +177,7 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   ```
   </details>
 
-- ✅ **devforgekit --version (npm install)**
+- ✅ **devforgekit --version survives a root-owned/unwritable cli/ (sudo-install simulation)**
   <details><summary>output</summary>
 
   ```
@@ -270,8 +270,8 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
         "description": "Component check: zoxide"
       }
     ],
-    "pass": 68,
-    "warn": 193,
+    "pass": 69,
+    "warn": 192,
     "fail": 0,
     "total": 261,
     "score": 63,
@@ -390,9 +390,9 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   eslint    A pluggable linter for JavaScript and TypeScript       
   prettier  An opinionated code formatter                          
   ──────────────────────────────────────────────────────────────────────────────
-  i Generating Next.js project 'demo-npm' in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/npm-project/...
+  i Generating Next.js project 'demo-npm' in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.VLYPhc/npm-project/...
   → Scaffolding Next.js project with the official CLI...
-  Creating a new Next.js app in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/npm-project/demo-npm.
+  Creating a new Next.js app in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.VLYPhc/npm-project/demo-npm.
   
   Using npm.
   
@@ -400,11 +400,11 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   
   Initialized a git repository.
   
-  Success! Created demo-npm at /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/npm-project/demo-npm
+  Success! Created demo-npm at /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.VLYPhc/npm-project/demo-npm
   
   Project Created
   ──────────────────────────────────────────────────────────────────────────────
-  Location:      /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/npm-project/demo-npm
+  Location:      /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.VLYPhc/npm-project/demo-npm
   Stack:         Next.js
   License:       MIT
   Git:           initialized
@@ -427,7 +427,7 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
 
   ```
   
-  removed 1 package in 237ms
+  removed 1 package in 134ms
 
   ```
   </details>
@@ -485,8 +485,8 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
         "description": "Component check: zoxide"
       }
     ],
-    "pass": 72,
-    "warn": 189,
+    "pass": 73,
+    "warn": 188,
     "fail": 0,
     "total": 261,
     "score": 63,
@@ -501,7 +501,7 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   <details><summary>output</summary>
 
   ```
-  Warning: local/devforgekit-rc-validate/devforgekit 3.0.0 already installed
+  Warning: local/devforgekit-rc-validate/devforgekit 3.0.1 already installed
 
   ```
   </details>
@@ -542,8 +542,8 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
         "description": "Component check: zoxide"
       }
     ],
-    "pass": 72,
-    "warn": 189,
+    "pass": 73,
+    "warn": 188,
     "fail": 0,
     "total": 261,
     "score": 63,
@@ -558,7 +558,7 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   <details><summary>output</summary>
 
   ```
-  Uninstalling /opt/homebrew/Cellar/devforgekit/3.0.0... (6,510 files, 20.7MB)
+  Uninstalling /opt/homebrew/Cellar/devforgekit/3.0.1... (6,548 files, 22.2MB)
 
   ```
   </details>
@@ -609,7 +609,7 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   Health Score: 92%
   Machine Ready
   ✔ DevForgeKit installation completed successfully.
-  Execution time: 0m 19s
+  Execution time: 0m 21s
 
   ```
   </details>
@@ -718,13 +718,13 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   ```
   </details>
 
-- ✅ **devforgekit env snapshot** (id: 2026-07-12T20-39-39-915Z)
+- ✅ **devforgekit env snapshot** (id: 2026-07-14T22-13-56-741Z)
 
-- ✅ **devforgekit env restore 2026-07-12T20-39-39-915Z**
+- ✅ **devforgekit env restore 2026-07-14T22-13-56-741Z**
   <details><summary>output</summary>
 
   ```
-  i Current state saved as safety snapshot 2026-07-12T20-39-40-077Z
+  i Current state saved as safety snapshot 2026-07-14T22-13-56-907Z
   i No packages have registered environment configuration yet - nothing to generate.
 
   ```
@@ -819,8 +819,8 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
         "description": "Component check: zoxide"
       }
     ],
-    "pass": 72,
-    "warn": 189,
+    "pass": 73,
+    "warn": 188,
     "fail": 0,
     "total": 261,
     "score": 63,
@@ -1032,9 +1032,9 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   eslint    A pluggable linter for JavaScript and TypeScript       
   prettier  An opinionated code formatter                          
   ──────────────────────────────────────────────────────────────────────────────
-  i Generating Next.js project 'demo-smoke' in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/smoke-project/...
+  i Generating Next.js project 'demo-smoke' in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.VLYPhc/smoke-project/...
   → Scaffolding Next.js project with the official CLI...
-  Creating a new Next.js app in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/smoke-project/demo-smoke.
+  Creating a new Next.js app in /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.VLYPhc/smoke-project/demo-smoke.
   
   Using npm.
   
@@ -1042,11 +1042,11 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   
   Initialized a git repository.
   
-  Success! Created demo-smoke at /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/smoke-project/demo-smoke
+  Success! Created demo-smoke at /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.VLYPhc/smoke-project/demo-smoke
   
   Project Created
   ──────────────────────────────────────────────────────────────────────────────
-  Location:      /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.9U1LvP/smoke-project/demo-smoke
+  Location:      /private/var/folders/tb/vd1vnhvd03q7rr2z7pd36hcc0000gn/T/devforgekit-rc-validate.VLYPhc/smoke-project/demo-smoke
   Stack:         Next.js
   License:       MIT
   Git:           initialized
@@ -1069,21 +1069,21 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
 
   ```
     {
-      "id": "cache-homebrew-cache",
-      "title": "Cache: Homebrew cache oversized",
+      "id": "cache-npm-cache",
+      "title": "Cache: npm cache oversized",
       "severity": "INFO",
       "category": "cache",
       "categoryLabel": "Cache",
       "subsystem": "filesystem",
       "confidence": "high",
-      "description": "Homebrew cache is 5.2 GB (>5 GB threshold)",
+      "description": "npm cache is 2.1 GB (>2 GB threshold)",
       "impact": "Excessive disk usage from cached files",
-      "fix": "Clear cache: rm -rf '/Users/nouradin/Library/Caches/Homebrew'",
+      "fix": "Clear cache: rm -rf '/Users/nouradin/.npm/_cacache'",
       "action": {
         "type": "shell",
-        "command": "rm -rf '/Users/nouradin/Library/Caches/Homebrew'",
+        "command": "rm -rf '/Users/nouradin/.npm/_cacache'",
         "filesAffected": [
-          "/Users/nouradin/Library/Caches/Homebrew"
+          "/Users/nouradin/.npm/_cacache"
         ]
       },
       "risk": "low",
@@ -1097,9 +1097,9 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
       ],
       "versionIntroduced": "2.1.6",
       "explanation": {
-        "problem": "Homebrew cache is 5.2 GB (>5 GB threshold)",
+        "problem": "npm cache is 2.1 GB (>2 GB threshold)",
         "impact": "Excessive disk usage from cached files",
-        "fix": "Clear cache: rm -rf '/Users/nouradin/Library/Caches/Homebrew'",
+        "fix": "Clear cache: rm -rf '/Users/nouradin/.npm/_cacache'",
         "risk": "Low",
         "estimatedTime": "1 min",
         "rollbackAvailable": true,
@@ -1121,15 +1121,15 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   ```
   
   === Release readiness check ===
-  ✗ ✗ Version consistency: Version mismatch across sources: VERSION=3.0.1, package.json=3.0.1, cli/package.json=3.0.1, Formula/devforgekit.rb=3.0.0
+  ✗ ✗ Version consistency: Version mismatch across sources: VERSION=3.0.2, package.json=3.0.2, cli/package.json=3.0.2, Formula/devforgekit.rb=3.0.1
   i - Release tag: HEAD is not currently on a tag - not a release commit yet
   i ✓ Required documentation: All present: LICENSE, README.md, CHANGELOG.md, RELEASE.md, SECURITY.md
   i ✓ Distribution artifacts: All present: package.json, Formula/devforgekit.rb, scripts/npm-postinstall.sh, completions/devforgekit.bash, completions/devforgekit.zsh, completions/devforgekit.fish
   i ✓ Registry: lint clean, format clean, quality score 89%, 202 orphan/warning notice(s) (non-blocking)
   i ✓ Outstanding pending-work markers: None found in cli/src
   i ✓ No experimental/debug flags enabled: No internal debug env vars set. Note: the ai command family is intentionally Experimental (see docs/ApiFreeze.md) - not a blocker.
-  ✗ ✗ Git working tree: 1 uncommitted change(s): M docs/RCValidationReport.md
-  ✗ ✗ CI status: 1 of 8 run(s) failed for this commit
+  ✗ ✗ Git working tree: 17 uncommitted change(s): M CHANGELOG.md,  M README.md,  M VERSION, ...
+  i ✓ CI status: 5 run(s) checked, none failed
   i Release check: FAIL - resolve the failing check(s) above before releasing.
 
   ```
@@ -1142,12 +1142,6 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   <details><summary>output</summary>
 
   ```
-    ✔ Markdown non-empty: docs/CompatibilityReport.md
-    ✔ Markdown non-empty: docs/CompatibilityRules.md
-    ✔ Markdown non-empty: docs/Security.md
-    ✔ Markdown non-empty: docs/InstallationAudit.md
-    ✔ Markdown non-empty: docs/CommandSafety.md
-    ✔ Markdown non-empty: cli/README.md
     ✔ Markdown non-empty: README.md
     ✔ Markdown non-empty: RELEASE.md
     ✔ Markdown non-empty: CONTRIBUTING.md
@@ -1170,6 +1164,7 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
     ✔ Markdown non-empty: templates/nestjs/README.md
     ✔ Markdown non-empty: templates/docker-compose/README.md
     ✔ Markdown non-empty: templates/react/README.md
+    ✔ Markdown non-empty: AGENTS.md
     ✔ Markdown non-empty: profiles/full/README.md
     ✔ Markdown non-empty: profiles/recommended/README.md
     ✔ Markdown non-empty: profiles/backend/README.md
@@ -1178,10 +1173,15 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
     ✔ Markdown non-empty: profiles/custom/README.md
     ✔ Markdown non-empty: CLAUDE.md
     ✔ Markdown non-empty: SECURITY.md
+    ✔ Markdown non-empty: reports/hardware.md
+    ✔ Markdown non-empty: reports/software.md
+    ✔ Markdown non-empty: reports/brew.md
+    ✔ Markdown non-empty: reports/fonts.md
+    ✔ Markdown non-empty: reports/system.md
     ✔ Node CLI lint
     ✔ Node CLI tests
   
-  769 passed, 1 warnings, 0 failed
+  781 passed, 1 warnings, 0 failed
 
   ```
   </details>
@@ -1190,46 +1190,46 @@ At least one required check failed - see the ❌ items below. Fix them and re-ru
   <details><summary>output</summary>
 
   ```
-  ✔ createSnapshot records the document verbatim plus metadata, and listSnapshots sorts newest-first (12.829166ms)
-  ✔ listSnapshots returns [] for a workspace with no snapshots yet (1.022542ms)
-  ✔ getSnapshotDoc/restoreSnapshot/deleteSnapshot throw a clear error for an unknown id (2.969916ms)
-  ✔ restoreSnapshot reverts fields but always keeps the workspace's real name/createdAt (6.942ms)
-  ✔ deleteSnapshot removes exactly that snapshot (20.43675ms)
-  ✔ exportSnapshot writes the recorded document to an arbitrary file path (5.611166ms)
-  ✔ compareSnapshots/compareWithCurrent report added/removed/changed top-level keys (2.692708ms)
-  ✔ PROVIDER_DEFAULT_HOSTS exposes the three well-known providers (1.3295ms)
-  ✔ applyWorkspaceSsh writes a Host block per identity, mode 0600, preserving pre-existing config content (2.832167ms)
-  ✔ re-applying the same workspace is idempotent (no duplicate Host blocks) (1.353792ms)
-  ✔ a workspace with no identities removes its own block instead of leaving a stale one (2.00075ms)
-  ✔ two workspaces' SSH blocks coexist independently (1.950833ms)
-  ✔ ensureKnownHost recognizes an already-known host without shelling out to ssh-keyscan (no network) (17.251083ms)
-  ✔ removeWorkspaceSsh returns false when the workspace never had a block (0.623791ms)
-  ✔ createWorkspace persists a workspace.json under ~/.config/devforgekit/workspaces/<name>/ (4.982ms)
-  ✔ createWorkspace rejects a duplicate name and an invalid name (1.908333ms)
-  ✔ getWorkspace throws a clear error for an unknown workspace (0.377584ms)
-  ✔ saveWorkspace re-validates, persists changes, and stamps a fresh modifiedAt (6.987708ms)
-  ✔ saveWorkspace refuses to save a workspace that was never created (0.951333ms)
-  ✔ listWorkspaces returns every workspace sorted by name, invalid ones included (8.438834ms)
-  ✔ active-workspace pointer: get/set round-trip, and getActiveWorkspace resolves the full document (3.966083ms)
-  ✔ setActiveWorkspaceName rejects an unknown workspace and accepts null to clear (2.058666ms)
-  ✔ deleteWorkspace refuses to delete the active workspace unless forced (1.587875ms)
-  ✔ renameWorkspace moves the directory, updates the document, and follows the active pointer (1.79125ms)
-  ✔ cloneWorkspace copies configuration but never secrets or snapshot history (2.943208ms)
-  ✔ searchWorkspaces matches name, tag, git email, and cloud reference (invalid workspaces excluded) (1.878208ms)
-  ✔ switchToWorkspace applies git identity live, writes the shell-export file, and moves the active pointer (146.152041ms)
-  ✔ switching workspaces re-applies git identity to match the newly-active one (341.718708ms)
-  ✔ switchToWorkspace throws for an unknown workspace without moving the active pointer (91.325041ms)
-  ✔ deactivateWorkspace clears the pointer and resets the shell-export file (95.756125ms)
-  ✔ rollbackToSnapshot on the active workspace restores the document AND re-applies live state, with an automatic safety snapshot first (358.568875ms)
-  ✔ rollbackToSnapshot on an inactive workspace only reverts the stored document, leaving live state untouched (91.591125ms)
-  ℹ tests 1350
+  ✔ createSnapshot records the document verbatim plus metadata, and listSnapshots sorts newest-first (28.575333ms)
+  ✔ listSnapshots returns [] for a workspace with no snapshots yet (1.099916ms)
+  ✔ getSnapshotDoc/restoreSnapshot/deleteSnapshot throw a clear error for an unknown id (1.130417ms)
+  ✔ restoreSnapshot reverts fields but always keeps the workspace's real name/createdAt (1.80825ms)
+  ✔ deleteSnapshot removes exactly that snapshot (2.575333ms)
+  ✔ exportSnapshot writes the recorded document to an arbitrary file path (12.962542ms)
+  ✔ compareSnapshots/compareWithCurrent report added/removed/changed top-level keys (40.043542ms)
+  ✔ PROVIDER_DEFAULT_HOSTS exposes the three well-known providers (4.512833ms)
+  ✔ applyWorkspaceSsh writes a Host block per identity, mode 0600, preserving pre-existing config content (2.016333ms)
+  ✔ re-applying the same workspace is idempotent (no duplicate Host blocks) (1.02675ms)
+  ✔ a workspace with no identities removes its own block instead of leaving a stale one (0.778458ms)
+  ✔ two workspaces' SSH blocks coexist independently (0.998916ms)
+  ✔ ensureKnownHost recognizes an already-known host without shelling out to ssh-keyscan (no network) (16.69325ms)
+  ✔ removeWorkspaceSsh returns false when the workspace never had a block (0.737625ms)
+  ✔ createWorkspace persists a workspace.json under ~/.config/devforgekit/workspaces/<name>/ (8.61825ms)
+  ✔ createWorkspace rejects a duplicate name and an invalid name (2.699542ms)
+  ✔ getWorkspace throws a clear error for an unknown workspace (0.827084ms)
+  ✔ saveWorkspace re-validates, persists changes, and stamps a fresh modifiedAt (7.430125ms)
+  ✔ saveWorkspace refuses to save a workspace that was never created (1.455ms)
+  ✔ listWorkspaces returns every workspace sorted by name, invalid ones included (11.019ms)
+  ✔ active-workspace pointer: get/set round-trip, and getActiveWorkspace resolves the full document (2.028125ms)
+  ✔ setActiveWorkspaceName rejects an unknown workspace and accepts null to clear (2.705834ms)
+  ✔ deleteWorkspace refuses to delete the active workspace unless forced (2.121042ms)
+  ✔ renameWorkspace moves the directory, updates the document, and follows the active pointer (3.629042ms)
+  ✔ cloneWorkspace copies configuration but never secrets or snapshot history (6.433584ms)
+  ✔ searchWorkspaces matches name, tag, git email, and cloud reference (invalid workspaces excluded) (2.543917ms)
+  ✔ switchToWorkspace applies git identity live, writes the shell-export file, and moves the active pointer (235.795458ms)
+  ✔ switching workspaces re-applies git identity to match the newly-active one (334.571167ms)
+  ✔ switchToWorkspace throws for an unknown workspace without moving the active pointer (110.416292ms)
+  ✔ deactivateWorkspace clears the pointer and resets the shell-export file (112.050958ms)
+  ✔ rollbackToSnapshot on the active workspace restores the document AND re-applies live state, with an automatic safety snapshot first (449.703792ms)
+  ✔ rollbackToSnapshot on an inactive workspace only reverts the stored document, leaving live state untouched (119.891291ms)
+  ℹ tests 1354
   ℹ suites 8
-  ℹ pass 1350
+  ℹ pass 1354
   ℹ fail 0
   ℹ cancelled 0
   ℹ skipped 0
   ℹ todo 0
-  ℹ duration_ms 212614.846584
+  ℹ duration_ms 261294.917708
 
   ```
   </details>
