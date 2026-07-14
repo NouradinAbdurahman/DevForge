@@ -18,16 +18,7 @@ class Devforgekit < Formula
   desc "Local-first development environment and workstation lifecycle manager"
   homepage "https://devforgekit.dev"
   url "https://github.com/NouradinAbdurahman/DevForgeKit/archive/refs/tags/v3.0.2.tar.gz"
-  # PENDING: this sha256 still describes the v3.0.1 archive - it can only
-  # be computed correctly against v3.0.2's real archive once that tag
-  # exists (the same circular dependency documented in RELEASE_CERTIFICATION.md
-  # and CHANGELOG.md's "Formula/tag circular dependency" note - the Formula
-  # lives inside the same repo/tag it describes). Corrected in a same-day
-  # follow-up commit once the tag is cut and the real archive can be
-  # downloaded and hashed for real - never hand-typed. Does not block the
-  # release-readiness gate, which only checks the version string in `url`
-  # above, not this checksum.
-  sha256 "58e8c3f82edf9301a4697157292c7290aeb0368728fbe048da81957f8f1d19ac"
+  sha256 "5d5a530e6b957b4dc316fab3a1775af1a8d2e8376b3e53d3e30eb249dc718932"
   license "MIT"
 
   # Tracks GitHub releases directly (the same vX.Y.Z tags `url` above
